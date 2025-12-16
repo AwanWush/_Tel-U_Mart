@@ -7,6 +7,8 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\KategoriProdukController;
+use App\Http\Controllers\UserGalonController;
+use App\Http\Controllers\UserTokenController;
 
 
 Route::get('/', function () {
@@ -98,6 +100,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/profil/transaksi', [ProfileController::class, 'transaksi'])
     ->middleware(['auth', 'verified'])
     ->name('profil.transaksi');
+
+// ==================== FITUR TAMBAHAN: GALON & TOKEN LISTRIK ==================== //
+Route::middleware(['auth'])->group(function () {
+
+    // Token
+    Route::get('/token-listrik', [UserTokenController::class, 'index'])->name('token.index');
+    Route::post('/token-listrik/beli', [UserTokenController::class, 'store'])->name('token.store');
+
+    // Riwayat Token
+    Route::get('/token-listrik/riwayat', [UserTokenController::class, 'history'])->name('token.history');
+    Route::get('/token-listrik/detail/{id}', [UserTokenController::class, 'detail'])->name('token.detail');
+
+    // Galon
+    Route::get('/galon', [UserGalonController::class, 'index'])->name('galon.index');
+    Route::post('/galon/beli', [UserGalonController::class, 'store'])->name('galon.store');
+
+    // Riwayat Galon
+    Route::get('/galon/riwayat', [UserGalonController::class, 'history'])->name('galon.history');
+
+    // Detail Galon
+    Route::get('/galon/detail/{id}', [UserGalonController::class, 'detail'])->name('galon.detail');
+});
 
 // Halaman akun khusus user
 Route::middleware(['auth'])->group(function () {
