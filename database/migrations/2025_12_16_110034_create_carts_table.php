@@ -23,6 +23,7 @@ return new class extends Migration
 
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');   // Untuk relasi antara User dan Cart
             $table->foreignId('produk_id')->constrained('produk')->onDelete('cascade'); // Untuk relasi antara Product dan Cart
+            $table->integer('quantity')->default(1);
             $table->index('user_id');   // Indexing untuk meningkatkan performa
             $table->index('produk_id');
 
