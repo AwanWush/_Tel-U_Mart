@@ -7,27 +7,31 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        Schema::dropIfExists('produk_mart'); 
+        Schema::dropIfExists('kategori_produk');
         
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        Schema::create('produk_mart', function (Blueprint $table) {
+        Schema::create('kategori_produk', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('produk_id')->constrained('produk')->onDelete('cascade');
-            $table->foreignId('mart_id')->constrained('mart')->onDelete('cascade');
+            $table->string('nama_kategori');
 
             $table->timestamps();
         });
     }
 
-
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('produk_mart');
+        Schema::dropIfExists('kategori_produk');
     }
 };

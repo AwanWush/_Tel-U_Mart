@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\KategoriProduk;
 use App\Models\Mart;
 
 class Produk extends Model

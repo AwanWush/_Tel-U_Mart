@@ -18,8 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 
-            // ✅ Tambahan: kolom role_id untuk relasi ke tabel roles
-           $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('cascade');
+            $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('cascade');
 
             $table->rememberToken();
             $table->timestamps();
