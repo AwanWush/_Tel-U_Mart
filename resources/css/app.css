@@ -1,6 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
 :root {
     /* Warna utama khas Breeze */
     --primary: #fdfdfd;   /* Indigo 500 - tombol utama */

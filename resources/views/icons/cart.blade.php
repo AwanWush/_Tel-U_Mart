@@ -1,0 +1,1 @@
+<img src="{{ asset('icons/shopping_cart_32dp_EA0000_FILL0_wght400_GRAD0_opsz40.svg') }}" class="w-6 h-6" alt="Cart">
