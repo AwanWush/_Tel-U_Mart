@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+    /* Warna utama khas Breeze */
+    --primary: #fdfdfd;   /* Indigo 500 - tombol utama */
+    --accent: #ffffff;    /* Indigo 700 - hover atau fokus */
+    --bg-light: #F9FAFB;  /* Background lembut */
+    --text-dark: #000000; /* Teks utama */
+    --text-gray: #6B7280; /* Teks sekunder */
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-family: 'Inter', sans-serif;
+}
+
+button,
+.bg-primary {
+    background-color: var(--primary);
+    color: white;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+button:hover,
+.bg-primary:hover {
+    background-color: var(--accent);
+}
+
+.text-accent {
+    color: var(--primary);
+}
+
+.text-accent:hover {
+    color: var(--accent);
+}
