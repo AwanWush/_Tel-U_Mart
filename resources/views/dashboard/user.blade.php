@@ -14,6 +14,21 @@
                     </h3>
                     <p class="mt-2 text-lg text-gray-300">Selamat datang di <b>TJ-T Mart!</b></p>
                 </div>
+                
+                {{-- Tombol Arah ke Fitur --}}
+                <div class="mt-8 flex justify-center gap-4">
+
+                    <a href="{{ route('token.index') }}"
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+                        🔌 Beli Token Listrik
+                    </a>
+
+                    <a href="{{ route('galon.index') }}"
+                        class="px-6 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">
+                        🧃 Beli Galon
+                    </a>
+
+                </div>
             </div>
         </div>
     </div>
