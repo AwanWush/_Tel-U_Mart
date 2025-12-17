@@ -4,6 +4,10 @@
 
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
+[x-cloak] {
+    display: none !important;
+}
+
 :root {
     /* Warna utama khas Breeze */
     --primary: #fdfdfd;   /* Indigo 500 - tombol utama */

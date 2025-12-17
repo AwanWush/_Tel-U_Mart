@@ -5,13 +5,13 @@
 ])
 
 @php
-$maxWidth = [
+$maxWidthClass = [
     'sm' => 'sm:max-w-sm',
     'md' => 'sm:max-w-md',
     'lg' => 'sm:max-w-lg',
     'xl' => 'sm:max-w-xl',
     '2xl' => 'sm:max-w-2xl',
-][$maxWidth];
+][$maxWidth] ?? 'sm:max-w-2xl';
 @endphp
 
 <div
@@ -45,9 +45,9 @@ $maxWidth = [
     x-on:keydown.escape.window="show = false"
     x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
     x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
+    x-cloak
     x-show="show"
     class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
-    style="display: {{ $show ? 'block' : 'none' }};"
 >
     <div
         x-show="show"

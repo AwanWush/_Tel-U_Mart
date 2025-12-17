@@ -21,6 +21,24 @@ class ProdukController extends Controller
         return view('produk.index', compact('produk', 'kategori'));
     }
 
+    public function show($id)
+    {
+        $produk = Produk::with([
+            'kategori',
+            'marts',
+            'variants',
+            'reviews.user'
+        ])->findOrFail($id);
+
+        $rekomendasi = Produk::where('kategori_id', $produk->kategori_id)
+            ->where('id', '!=', $produk->id)
+            ->limit(8)
+            ->get();
+
+        return view('produk.show', compact('produk', 'rekomendasi'));
+    }
+
+
     public function create()
     {
         // Ambil kategori dari tabel kategori_produk

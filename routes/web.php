@@ -200,7 +200,6 @@ Route::middleware(['auth'])->group(function () {
 Route::resource('pembayaran', PembayaranController::class)->except(['show', 'edit', 'update']);
 Route::post('/pembayaran', [PembayaranController::class, 'store'])->name('pembayaran.store');
 Route::delete('/pembayaran/{id}', [PembayaranController::class, 'destroy'])->name('pembayaran.destroy');
-Route::post('/payment/create', [App\Http\Controllers\PaymentController::class, 'createPayment']);
 Route::post('/payment/create', [PembayaranController::class, 'createPayment'])
     ->name('payment.create');
 
@@ -232,7 +231,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth'])->group(function () {
 
     // KATEGORI PRODUK
-    Route::resource('kategori', KategoriController::class)->except(['show']);
+    Route::resource('kategori', KategoriProdukController::class)->except(['show']);
 
     Route::get('/kategori', [KategoriProdukController::class, 'index'])
         ->name('kategori.index');
@@ -249,4 +248,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/produk', [ProdukController::class, 'store'])->name('produk.store');
     Route::delete('/produk/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
 
+    Route::get('/produk/{id}', [ProdukController::class, 'show'])
+        ->name('produk.show');
 });
