@@ -6,20 +6,31 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Produk;
 use App\Models\Pesanan;
 use App\Models\Penjualan;
+use App\Models\Banner;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        if (!Auth::check()) {
-            return view('dashboard.user');
+        $banners = Banner::where('is_active', true)
+            ->orderBy('order')
+            ->get();
+        $produk = Produk::latest()->take(8)->get(); // ambil 8 produk terbaru
+
+        if (!Auth::check() || Auth::user()->role_id > 2) {
+            return $this->user();
         }
 
         return match (Auth::user()->role_id) {
             1 => redirect()->route('dashboard.superadmin'),
             2 => redirect()->route('dashboard.admin'),
-            default => view('dashboard.user'),
+            default => view('dashboard.user', compact('banners', 'produk')),
         };
+    }
+    
+    public function superadmin()
+    {
+        return view('dashboard.superadmin');
     }
 
     public function admin()
@@ -32,13 +43,17 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function superadmin()
-    {
-        return view('dashboard.superadmin');
-    }
-
     public function user()
     {
-        return view('dashboard.user');
+        $banners = Banner::where('is_active', true)
+            ->orderBy('order')
+            ->get();
+
+        $produk = Produk::with('marts')
+            ->orderBy('created_at', 'desc')
+            ->take(8)
+            ->get();
+
+        return view('dashboard.user', compact('banners', 'produk'));
     }
 }

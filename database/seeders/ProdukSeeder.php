@@ -53,7 +53,7 @@ class ProdukSeeder extends Seeder
             'deskripsi' => null,
             'harga' => 17000,
             'stok' => 13,
-            'gambar' => 'products/product04.jpg',
+            'gambar' => 'produk/product04.jpg',
             'status_ketersediaan' => 'Tersedia',
             'is_active' => true,
             'persentase_diskon' => null
@@ -66,7 +66,7 @@ class ProdukSeeder extends Seeder
             'deskripsi' => null,
             'harga' => 7100,
             'stok' => 47,
-            'gambar' => 'products/product07.jpg',
+            'gambar' => 'produk/product07.jpg',
             'status_ketersediaan' => 'Tersedia',
             'is_active' => true,
             'persentase_diskon' => null
