@@ -23,7 +23,7 @@
             <a  href="/wishlist" 
                 class="relative"
             >
-                <i class="fa-regular fa-heart text-xl"></i>
+                @include('icons.heart')
                 @auth
                     @if($wishlistCount > 0)
                         <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1">
@@ -51,7 +51,7 @@
             <a  href="/notifications" 
                 class="relative"
             >
-                <i class="fa-regular fa-bell text-xl"></i>
+                @include('icons.notification-icon')
                 @auth
                     @if($notifCount > 0)
                         <span class="absolute -top-2 -right-3 bg-red-600 text-white text-xs rounded-full px-1">
@@ -64,7 +64,7 @@
             {{-- Profile Icon --}}
             @auth
                 <a href="/profile">
-                    <i class="fa-regular fa-user text-xl"></i>
+                    @include('icons.profile-icon')
                 </a>
             @endauth
 
