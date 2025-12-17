@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             KategoriProdukSeeder::class,
             MartSeeder::class,
             ProdukSeeder::class,
+            BannerSeeder::class,
         ]);
     }
 }
