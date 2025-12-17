@@ -6,19 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
-    protected $fillable = [
-        'user_id',
-        'product_id',
-        'quantity'
-    ];
+    protected $fillable = ['user_id'];
 
-    public function user() 
+    // ✅ INI YANG KURANG
+    public function items()
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function product()
-    {
-        return $this->belongsTo(Produk::class);
+        return $this->hasMany(CartItem::class);
     }
 }

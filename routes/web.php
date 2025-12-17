@@ -9,6 +9,10 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\KategoriProdukController;
 use App\Http\Controllers\UserGalonController;
 use App\Http\Controllers\UserTokenController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\NotificationController;
 
 
 Route::get('/', function () {
@@ -138,6 +142,60 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/profil/transaksi-page', [ProfileController::class, 'transaksiPage'])
     ->middleware(['auth', 'verified'])
     ->name('profil.transaksi.page');
+
+    
+Route::middleware(['auth'])->group(function () {
+    Route::get('/cart', [CartController::class,'index'])->name('cart.index');
+    Route::post('/cart/add', [CartController::class,'add'])->name('cart.add');
+    Route::patch('/cart/{id}', [CartController::class,'update'])->name('cart.update');
+    Route::delete('/cart/{id}', [CartController::class,'remove'])->name('cart.remove');
+});
+
+
+
+Route::middleware(['auth'])->post(
+    '/checkout/selected',
+    [CheckoutController::class, 'selected']
+)->name('checkout.selected');
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/wishlist', [WishlistController::class,'index'])
+        ->name('wishlist.index');
+
+    Route::post('/wishlist', [WishlistController::class,'store'])
+        ->name('wishlist.store');
+
+    Route::post('/wishlist/remove-selected', [WishlistController::class,'removeSelected'])
+        ->name('wishlist.removeSelected');
+
+    Route::post('/wishlist/move-to-cart', [WishlistController::class,'moveToCart'])
+        ->name('wishlist.moveToCart');
+
+    Route::delete('/wishlist/{id}', [WishlistController::class,'destroy'])
+        ->name('wishlist.destroy');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('produk', ProdukController::class)->except(['show']);
+    Route::resource('kategori', KategoriProdukController::class)->except(['show']);
+});
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+
+    Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])
+        ->name('notifications.read');
+
+    Route::post('/notifications/read-selected', [NotificationController::class, 'readSelected'])
+        ->name('notifications.readSelected');
+
+    Route::post('/notifications/delete-selected', [NotificationController::class, 'deleteSelected'])
+        ->name('notifications.deleteSelected');
+});
+
 
 Route::resource('pembayaran', PembayaranController::class)->except(['show', 'edit', 'update']);
 Route::post('/pembayaran', [PembayaranController::class, 'store'])->name('pembayaran.store');
