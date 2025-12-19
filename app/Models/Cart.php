@@ -8,7 +8,6 @@ class Cart extends Model
 {
     protected $fillable = ['user_id'];
 
-    // ✅ INI YANG KURANG
     public function items()
     {
         return $this->hasMany(CartItem::class);

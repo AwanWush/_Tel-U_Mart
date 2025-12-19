@@ -6,13 +6,14 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Produk;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
     public function index()
     {
         $cart = Cart::firstOrCreate([
-            'user_id' => auth()->id()
+            'user_id' => Auth::id()
         ]);
 
         $items = $cart->items()->with('produk')->get();
@@ -33,7 +34,7 @@ class CartController extends Controller
         }
 
         $cart = Cart::firstOrCreate([
-            'user_id' => auth()->id()
+            'user_id' => Auth::id()
         ]);
 
         $item = CartItem::firstOrNew([
@@ -63,18 +64,15 @@ class CartController extends Controller
         if ($request->quantity > $item->produk->stok) {
             return back()->with('error', 'Jumlah melebihi stok');
         }
+        $item->quantity = $request->quantity;
+        $item->save();
 
-        $item->update([
-            'quantity' => $request->quantity
-        ]);
-
-        return back();
+        return redirect()->route('cart.index');
     }
 
     public function remove($id)
     {
         CartItem::findOrFail($id)->delete();
-        return back();
+        return redirect()->route('cart.index');
     }
 }
-

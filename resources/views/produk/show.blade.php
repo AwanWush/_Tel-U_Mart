@@ -1,6 +1,5 @@
 <x-layout>
 
-    {{-- BREADCRUMB --}}
     <div class="max-w-7xl mx-auto px-4 mt-6">
         <x-breadcrumb>
             <a href="/" class="hover:text-blue-600">Home</a>
@@ -14,12 +13,9 @@
             </span>
         </x-breadcrumb>
     </div>
+    <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-7 gap-10 mt-8">
 
-    {{-- GRID UTAMA --}}
-    <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-7 gap-8 mt-6">
-
-        {{-- GAMBAR --}}
-        <div class="md:col-span-2 flex justify-center">
+        <div class="lg:col-span-2 flex justify-center">
             <div class="sticky top-24 w-full max-w-md">
                 <div class="aspect-square bg-white border rounded-2xl overflow-hidden shadow">
                     <img
@@ -31,8 +27,7 @@
             </div>
         </div>
 
-        {{-- INFO PRODUK --}}
-        <div class="md:col-span-3 space-y-5">
+        <div class="lg:col-span-3 space-y-5">
 
             <h1 class="text-3xl font-bold leading-snug">
                 {{ $produk->nama_produk }}
@@ -74,9 +69,8 @@
             </div>
         </div>
 
-        {{-- ACTION --}}
-        <div class="md:col-span-2">
-            <div class="sticky top-24 bg-white border rounded-2xl p-4 space-y-4 shadow">
+        <div class="lg:col-span-2">
+            <div class="sticky top-24 bg-white border rounded-2xl p-5 space-y-4 shadow">
 
                 <div>
                     <label class="text-sm font-semibold">Jumlah</label>
@@ -95,26 +89,41 @@
                     </span>
                 </div>
 
-                <div class="flex gap-3">
-                    <button class="flex-1 bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700">
-                        + Add to Cart
-                    </button>
+                <div class="flex items-center gap-3">
+                    <form action="{{ route('cart.add') }}" method="POST" class="flex-1">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $produk->id }}">
 
-                    <button class="w-12 h-12 border rounded-xl flex items-center justify-center hover:bg-gray-100">
-                        @include('icons.heart')
-                    </button>
+                        <button
+                            type="submit"
+                            class="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition"
+                        >
+                            + Add to Cart
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ route('wishlist.store') }}">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $produk->id }}">
+
+                        <button
+                            type="submit"
+                            class="w-12 h-12 border rounded-xl flex items-center justify-center hover:bg-gray-100"
+                        >
+                            @include('icons.heart')
+                        </button>
+                    </form>
                 </div>
-
-                <button class="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700">
+                <button
+                    class="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition"
+                >
                     Checkout
                 </button>
 
             </div>
         </div>
     </div>
-
-    {{-- REKOMENDASI --}}
-    <div class="max-w-7xl mx-auto px-4 mt-14">
+    <div class="max-w-7xl mx-auto px-4 mt-16">
         <h2 class="text-xl font-bold mb-4">Produk Serupa</h2>
 
         @include('produk._recommendation', ['produk' => $rekomendasi])
