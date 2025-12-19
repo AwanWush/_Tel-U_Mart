@@ -11,19 +11,18 @@ class CartController extends Controller
 {
     public function index()
     {
-        $cart = Cart::firstOrCreate([
-            'user_id' => auth()->id()
-        ]);
+        // Jangan gunakan firstOrCreate di sini jika tabel carts butuh produk_id
+        $cartItems = CartItem::whereHas('cart', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->with('produk')->get();
 
-        $items = $cart->items()->with('produk')->get();
-
-        return view('cart.index', compact('items'));
+        return view('cart.index', ['items' => $cartItems]);
     }
 
     public function add(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:produk,id'
+            'product_id' => 'required|exists:produk,id',
         ]);
 
         $produk = Produk::findOrFail($request->product_id);
@@ -33,12 +32,13 @@ class CartController extends Controller
         }
 
         $cart = Cart::firstOrCreate([
-            'user_id' => auth()->id()
+            'user_id' => auth()->id(),
+            'produk_id' => $produk->id
         ]);
 
         $item = CartItem::firstOrNew([
             'cart_id' => $cart->id,
-            'product_id' => $produk->id
+            'product_id' => $produk->id,
         ]);
 
         if ($item->exists && $item->quantity >= $produk->stok) {
@@ -57,7 +57,7 @@ class CartController extends Controller
         $item = CartItem::findOrFail($id);
 
         $request->validate([
-            'quantity' => 'required|integer|min:1'
+            'quantity' => 'required|integer|min:1',
         ]);
 
         if ($request->quantity > $item->produk->stok) {
@@ -65,7 +65,7 @@ class CartController extends Controller
         }
 
         $item->update([
-            'quantity' => $request->quantity
+            'quantity' => $request->quantity,
         ]);
 
         return back();
@@ -74,7 +74,7 @@ class CartController extends Controller
     public function remove($id)
     {
         CartItem::findOrFail($id)->delete();
+
         return back();
     }
 }
-

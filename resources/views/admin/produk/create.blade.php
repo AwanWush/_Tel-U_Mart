@@ -38,7 +38,7 @@
             @endif
 
             <form 
-                action="{{ route('produk.store') }}" 
+                action="{{ route('admin.produk.store') }}" 
                 method="POST" 
                 enctype="multipart/form-data"
                 @submit="loading = true"
@@ -114,6 +114,16 @@
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                </div>
+
+                {{-- Letakkan di bawah input Stok --}}
+                <div class="mb-6">
+                    <label for="status_ketersediaan" class="block text-sm font-medium text-gray-700 mb-1">Status Ketersediaan <span class="text-red-500">*</span></label>
+                    <select id="status_ketersediaan" name="status_ketersediaan" required
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-150 p-3">
+                        <option value="Tersedia" {{ old('status_ketersediaan') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
+                        <option value="Habis" {{ old('status_ketersediaan') == 'Habis' ? 'selected' : '' }}>Habis</option>
+                    </select>
                 </div>
 
                 <div class="mb-6">

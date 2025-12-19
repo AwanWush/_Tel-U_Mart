@@ -11,11 +11,23 @@ class Pesanan extends Model
 
     protected $table = 'pesanan';
 
+    public $timestamps = false; // PENTING
+
     protected $fillable = [
         'user_id',
-        'nomor_order',
-        'tanggal_order',
-        'total_harga',
+        'admin_id',
+        'mart_id',
+        'lokasi_id',
+        'tanggal_pesan',
+        'jenis_pesanan',
         'status',
+        'total',
+        'metode_pembayaran',
     ];
+
+    // RELASI
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

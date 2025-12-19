@@ -29,7 +29,7 @@
 
                     @foreach($items as $item)
                         @php
-                            $subtotal = $item->produk->harga * $item->qty;
+                            $subtotal = $item->produk->harga * $item->quantity;
                         @endphp
 
                         <div class="bg-white dark:bg-gray-800 p-4 mb-4 rounded shadow flex items-center gap-4">
@@ -40,12 +40,12 @@
                                    value="{{ $item->id }}"
                                    data-subtotal="{{ $subtotal }}">
 
-                            <img src="{{ asset('storage/'.$item->produk->image) }}"
+                            <img src="{{ asset('storage/'.$item->produk->gambar) }}"
                                  class="w-20 h-20 object-cover rounded">
 
                             <div class="flex-1">
                                 <h4 class="font-semibold">
-                                    {{ $item->produk->nama }}
+                                    {{ $item->produk->nama_produk }}
                                 </h4>
 
                                 <p class="text-sm text-gray-500">
@@ -73,7 +73,7 @@
 
                                 <input type="number"
                                        name="qty"
-                                       value="{{ $item->qty }}"
+                                       value="{{ $item->quantity }}"
                                        min="1"
                                        class="w-16 border rounded px-2 py-1 text-center">
 

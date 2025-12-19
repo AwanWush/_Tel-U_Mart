@@ -3,9 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\KategoriProduk;
-use App\Models\Mart;
-use App\Models\ProdukVariant;
 
 class Produk extends Model
 {
@@ -14,10 +11,13 @@ class Produk extends Model
     protected $fillable = [
         'kategori_id',
         'nama_produk',
+        'deskripsi',
         'harga',
         'stok',
-        'deskripsi',
         'gambar',
+        'status_ketersediaan',
+        'is_active',
+        'persentase_diskon',
     ];
 
     public function kategori()
@@ -29,9 +29,9 @@ class Produk extends Model
     {
         return $this->belongsToMany(
             Mart::class,
-            'produk_mart',    
-            'produk_id',    
-            'mart_id'  
+            'produk_mart',
+            'produk_id',
+            'mart_id'
         );
     }
 
@@ -49,5 +49,4 @@ class Produk extends Model
     {
         return $this->reviews()->avg('rating');
     }
-    
 }
