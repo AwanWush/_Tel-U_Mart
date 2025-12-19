@@ -36,7 +36,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                 {{-- ITEM 1: KELOLA PRODUK --}}
-                <a href="{{ route('produk.index') }}"
+                <a href="{{ route('admin.produk.index') }}"
                    class="group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 
                           transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-200">
                     
@@ -58,7 +58,7 @@
                 </a>
 
                 {{-- ITEM 2: KATEGORI --}}
-                <a href="{{ route('kategori.index') }}"
+                <a href="{{ route('admin.kategori.index') }}"
                    class="group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 
                           transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-200">
                     
@@ -79,7 +79,7 @@
                 </a>
 
                 {{-- ITEM 3: PESANAN --}}
-                <a href="{{ route('pesanan.index') }}"
+                <a href="{{ route('admin.pesanan.index') }}"
                    class="group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 
                           transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-200">
                     

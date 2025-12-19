@@ -5,7 +5,7 @@
 
     <div x-data="{ loading: false, preview: null }" class="py-6 max-w-4xl mx-auto">
         <div class="bg-white rounded shadow p-6">
-            <form action="{{ route('produk.update', $produk->id) }}" method="POST" enctype="multipart/form-data" @submit="loading = true">
+            <form action="{{ route('admin.produk.update', $produk->id) }}" method="POST" enctype="multipart/form-data" @submit="loading = true">
                 @csrf
                 @method('PUT')
 
@@ -46,6 +46,16 @@
                     </div>
                 </div>
 
+                {{-- Letakkan di bawah input Stok --}}
+                <div class="mb-6">
+                    <label for="status_ketersediaan" class="block text-sm font-medium text-gray-700 mb-1">Status Ketersediaan <span class="text-red-500">*</span></label>
+                    <select id="status_ketersediaan" name="status_ketersediaan" required
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-150 p-3">
+                        <option value="Tersedia" {{ old('status_ketersediaan') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
+                        <option value="Habis" {{ old('status_ketersediaan') == 'Habis' ? 'selected' : '' }}>Habis</option>
+                    </select>
+                </div>
+                
                 <div class="mb-4">
                     <label class="block text-sm font-medium">Deskripsi</label>
                     <textarea name="deskripsi" class="w-full border rounded p-2">{{ $produk->deskripsi }}</textarea>

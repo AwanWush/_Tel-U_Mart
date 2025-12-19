@@ -17,12 +17,12 @@ class KategoriProdukController extends Controller
     
         $mart = \App\Models\Mart::orderBy('id')->get();
 
-        return view('kategori.index', compact('kategori', 'produk', 'mart'));
+        return view('kategori.admin.index', compact('kategori', 'produk', 'mart'));
     }
 
     public function create()
     {
-        return view('kategori.create');
+        return view('kategori.admin.create');
     }
 
     public function store(Request $request)
@@ -39,7 +39,7 @@ class KategoriProdukController extends Controller
 
     public function edit(KategoriProduk $kategori)
     {
-        return view('kategori.edit', compact('kategori'));
+        return view('kategori.admin.edit', compact('kategori'));
     }
 public function update(Request $request, KategoriProduk $kategori)
 {

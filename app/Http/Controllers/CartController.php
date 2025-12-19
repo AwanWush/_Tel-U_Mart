@@ -16,15 +16,19 @@ class CartController extends Controller
             'user_id' => Auth::id()
         ]);
 
-        $items = $cart->items()->with('produk')->get();
+        $cartItems = CartItem::where('cart_id', $cart->id)
+            ->with('produk')
+            ->get();
 
-        return view('cart.index', compact('items'));
+        return view('cart.index', [
+            'items' => $cartItems
+        ]);
     }
 
     public function add(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:produk,id'
+            'product_id' => 'required|exists:produk,id',
         ]);
 
         $produk = Produk::findOrFail($request->product_id);
@@ -39,7 +43,7 @@ class CartController extends Controller
 
         $item = CartItem::firstOrNew([
             'cart_id' => $cart->id,
-            'product_id' => $produk->id
+            'product_id' => $produk->id,
         ]);
 
         if ($item->exists && $item->quantity >= $produk->stok) {
@@ -58,12 +62,13 @@ class CartController extends Controller
         $item = CartItem::findOrFail($id);
 
         $request->validate([
-            'quantity' => 'required|integer|min:1'
+            'quantity' => 'required|integer|min:1',
         ]);
 
         if ($request->quantity > $item->produk->stok) {
             return back()->with('error', 'Jumlah melebihi stok');
         }
+
         $item->quantity = $request->quantity;
         $item->save();
 
@@ -73,6 +78,7 @@ class CartController extends Controller
     public function remove($id)
     {
         CartItem::findOrFail($id)->delete();
+
         return redirect()->route('cart.index');
     }
 }
