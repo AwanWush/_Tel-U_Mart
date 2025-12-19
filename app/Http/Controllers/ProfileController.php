@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LokasiDelivery;
+use App\Models\MetodePembayaran;
+use App\Models\RiwayatPembelian;
+use App\Models\Transaksi;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
-use App\Models\LokasiDelivery;
-use App\Models\Transaksi; 
-use App\Models\RiwayatPembelian; 
-use App\Models\MetodePembayaran;
+use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
@@ -21,22 +21,22 @@ class ProfileController extends Controller
 
         if ($user->role_id == 3) {
 
-    $transaksi = Transaksi::where('user_id', $user->id)
-        ->orderBy('created_at', 'desc')
-        ->get();
+            $transaksi = Transaksi::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-    return view('user.akun', [
-        'user' => $user,
-        'pesanan' => $transaksi, // kalau ini masih dipakai tab pesanan
-        'transaksi' => $transaksi, // WAJIB untuk midtrans
-        'riwayat' => RiwayatPembelian::where('user_id', $user->id)
-            ->orderBy('id', 'desc')
-            ->get(),
-        'gedungs' => LokasiDelivery::orderBy('id', 'asc')->get(),
-        'pembayaran' => MetodePembayaran::where('user_id', $user->id)->get(),
-        'activeTab' => $request->query('tab', 'pesanan'),
-    ]);
-}
+            return view('user.akun', [
+                'user' => $user,
+                'pesanan' => $transaksi, // kalau ini masih dipakai tab pesanan
+                'transaksi' => $transaksi, // WAJIB untuk midtrans
+                'riwayat' => RiwayatPembelian::where('user_id', $user->id)
+                    ->orderBy('id', 'desc')
+                    ->get(),
+                'gedungs' => LokasiDelivery::orderBy('id', 'asc')->get(),
+                'pembayaran' => MetodePembayaran::where('user_id', $user->id)->get(),
+                'activeTab' => $request->query('tab', 'pesanan'),
+            ]);
+        }
 
         // ============================
 
@@ -50,8 +50,8 @@ class ProfileController extends Controller
             ->get();
 
         $transaksi = \App\Models\Transaksi::where('user_id', Auth::id())
-        ->orderBy('created_at', 'desc')
-        ->get();
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $gedungs = LokasiDelivery::orderBy('id', 'asc')->get();
 
@@ -62,7 +62,6 @@ class ProfileController extends Controller
         return view('profile.edit', compact('user', 'pesanan', 'activeTab', 'gedungs', 'riwayat', 'pembayaran'));
     }
 
-    
     public function update(Request $request): RedirectResponse
     {
         // dd("UPDATE MASUK", $request->all());
@@ -70,7 +69,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'no_telp' => ['nullable', 'string', 'max:20'],
             'penghuni_asrama' => ['required', 'in:ya,tidak'],
             'alamat_gedung' => ['nullable', 'string', 'max:255'],
@@ -80,17 +79,13 @@ class ProfileController extends Controller
 
         // Upload foto
         if ($request->hasFile('gambar')) {
-            $file = $request->file('gambar');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->storeAs('public/profil', $filename);
-        
-            // Hapus foto lama jika ada
-            if ($user->gambar && Storage::exists('public/' . $user->gambar)) {
-                Storage::delete('public/' . $user->gambar);
+            // Hapus foto lama jika ada di storage
+            if ($user->gambar && Storage::disk('public')->exists($user->gambar)) {
+                Storage::disk('public')->delete($user->gambar);
             }
-        
-            // Langsung update user
-            $user->gambar = 'profil/' . $filename;
+
+            $path = $request->file('gambar')->store('profil', 'public');
+            $user->gambar = $path;
         }
 
         // Password kosong → jangan diupdate
@@ -112,18 +107,18 @@ class ProfileController extends Controller
         $user->email = $validated['email'];
         $user->no_telp = $validated['no_telp'];
         $user->penghuni_asrama = $validated['penghuni_asrama'];
-        $user->alamat_gedung = $validated['penghuni_asrama'] === 'ya' 
-            ? $validated['alamat_gedung'] 
+        $user->alamat_gedung = $validated['penghuni_asrama'] === 'ya'
+            ? $validated['alamat_gedung']
             : null;
 
-        if (isset($validated['gambar'])) $user->gambar = $validated['gambar'];
-        if (isset($validated['password'])) $user->password = $validated['password'];
-
+        if (isset($validated['password'])) {
+            $user->password = $validated['password'];
+        }
 
         $user->save();
 
         return redirect()->route('profile.edit', ['tab' => 'profil'])
-                         ->with('status', 'Profil berhasil diperbarui!');
+            ->with('status', 'Profil berhasil diperbarui!');
     }
 
     public function destroy(Request $request): RedirectResponse

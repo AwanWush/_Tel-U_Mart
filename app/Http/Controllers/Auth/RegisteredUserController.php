@@ -14,6 +14,7 @@ use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
 
+
 class RegisteredUserController extends Controller
 {
 
@@ -37,6 +38,7 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'no_telp' => ['nullable', 'string', 'max:20'],
             'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'status_penghuni' => ['required', 'in:0,1'],
             'lokasi_id' => ['nullable', 'exists:lokasi_delivery,id'],
         ]);
 
@@ -45,12 +47,24 @@ class RegisteredUserController extends Controller
             $gambarPath = $request->file('gambar')->store('profil', 'public');
         }
 
+        $alamatGedung = null; 
+
+        // 3. Logika Asrama
+        if ($request->status_penghuni == '1' && $request->lokasi_id) {
+            $lokasi = LokasiDelivery::find($request->lokasi_id);
+            if ($lokasi) {
+                $alamatGedung = $lokasi->nama_lokasi; // Mengambil string nama gedung
+            }
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'no_telp' => $request->no_telp,     
             'gambar' => $gambarPath,            
             'lokasi_id' => $request->lokasi_id, 
+            'penghuni_asrama' => $request->status_penghuni == '1' ? 'ya' : 'tidak',
+            'alamat_gedung' => $alamatGedung,
             'password' => Hash::make($request->password),
             'role_id' => 3,
         ]);
