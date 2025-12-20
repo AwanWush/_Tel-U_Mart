@@ -72,6 +72,8 @@ class ProfileController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'no_telp' => ['nullable', 'string', 'max:20'],
             'penghuni_asrama' => ['required', 'in:ya,tidak'],
+            'lokasi_id' => ['nullable', 'exists:lokasi_delivery,id'],
+            'nomor_kamar' => ['nullable', 'string', 'max:10'],
             'alamat_gedung' => ['nullable', 'string', 'max:255'],
             'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'password' => ['nullable', 'string', 'min:8'],
@@ -103,13 +105,25 @@ class ProfileController extends Controller
         $user->name = $validated['name'];
 
         // Update data
+        // ... kode validasi di atas tetap sama ...
+
+        // Update data
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->no_telp = $validated['no_telp'];
         $user->penghuni_asrama = $validated['penghuni_asrama'];
-        $user->alamat_gedung = $validated['penghuni_asrama'] === 'ya'
-            ? $validated['alamat_gedung']
-            : null;
+
+        if ($validated['penghuni_asrama'] === 'ya') {
+            $gedung = \App\Models\LokasiDelivery::find($validated['lokasi_id']);
+
+            $user->lokasi_id = $validated['lokasi_id'];
+            $user->nomor_kamar = $validated['nomor_kamar'];
+            $user->alamat_gedung = $gedung ? $gedung->nama_lokasi : $validated['alamat_gedung'];
+        } else {
+            $user->lokasi_id = null;
+            $user->nomor_kamar = null;
+            $user->alamat_gedung = null;
+        }
 
         if (isset($validated['password'])) {
             $user->password = $validated['password'];

@@ -10,6 +10,10 @@ class UserGalonController extends Controller
 {
     public function index()
     {
+        $punyaGalon = \App\Models\GalonTransaction::where('user_id', Auth::id())
+                ->where('nama_galon', 'LIKE', '%Galon Baru%')
+                ->where('status', 'Berhasil') // Sesuaikan dengan status transaksi suksesmu
+                ->exists();
         $galons = [
             [
                 'nama' => 'Galon 19L (Isi Ulang)',
@@ -25,7 +29,7 @@ class UserGalonController extends Controller
             ],
         ];
 
-        return view('fitur-user.galon', compact('galons'));
+        return view('fitur-user.galon', compact('galons', 'punyaGalon'));
     }
 
     public function store(Request $request)

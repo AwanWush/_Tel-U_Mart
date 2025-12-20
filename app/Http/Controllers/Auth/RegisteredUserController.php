@@ -35,6 +35,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'nomor_kamar' => ['nullable', 'string', 'max:10'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'no_telp' => ['nullable', 'string', 'max:20'],
             'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
@@ -61,7 +62,8 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'no_telp' => $request->no_telp,     
-            'gambar' => $gambarPath,            
+            'gambar' => $gambarPath,         
+            'nomor_kamar' => $request->nomor_kamar,   
             'lokasi_id' => $request->lokasi_id, 
             'penghuni_asrama' => $request->status_penghuni == '1' ? 'ya' : 'tidak',
             'alamat_gedung' => $alamatGedung,

@@ -21,7 +21,9 @@ class User extends Authenticatable
         'role_id',
         'no_telp',
         'penghuni_asrama',
+        'lokasi_id',      
         'alamat_gedung',
+        'nomor_kamar',     
         'gambar',
         'remember_token',
         'email_verified_at'
@@ -31,6 +33,20 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function lokasi()
+    {
+        return $this->belongsTo(LokasiDelivery::class, 'lokasi_id', 'id');
+    }
+
+    public function getAlamatLengkapAttribute()
+    {
+        $gedung = $this->lokasi ? $this->lokasi->nama_lokasi : ($this->alamat_gedung ?? 'Gedung belum diset');
+        $kamar = $this->nomor_kamar ? "Kamar " . $this->nomor_kamar : 'Kamar belum diset';
+        
+        return "{$gedung} - {$kamar}";
+    }
+
 
     public function role()
     {
@@ -66,5 +82,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(ProdukReview::class);
     }
-    
 }

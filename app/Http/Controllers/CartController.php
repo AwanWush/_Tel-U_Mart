@@ -12,16 +12,18 @@ class CartController extends Controller
 {
     public function index()
     {
-        $cart = Cart::firstOrCreate([
-            'user_id' => Auth::id()
-        ]);
+        $cart = Cart::where('user_id', Auth::id())->first();
+
+        if (! $cart) {
+            return view('cart.index', ['items' => collect()]);
+        }
 
         $cartItems = CartItem::where('cart_id', $cart->id)
             ->with('produk')
             ->get();
 
         return view('cart.index', [
-            'items' => $cartItems
+            'items' => $cartItems,
         ]);
     }
 
@@ -37,9 +39,12 @@ class CartController extends Controller
             return back()->with('error', 'Stok produk habis');
         }
 
-        $cart = Cart::firstOrCreate([
-            'user_id' => Auth::id()
-        ]);
+        if (!$cart) {
+            $cart = Cart::create([
+                'user_id' => Auth::id(),
+                'produk_id' => $produk->id, 
+            ]);
+        }
 
         $item = CartItem::firstOrNew([
             'cart_id' => $cart->id,

@@ -33,9 +33,9 @@ class UserTokenController extends Controller
         $transaksi = TokenTransaction::create([
             'user_id' => Auth::id(),
             'nominal' => $request->nominal,
-            'harga' => $request->harga,
+            'total_harga' => $request->harga,
             'token_kode' => $tokenCode,
-            'metode_pembayaran' => $request->metode,
+            'metode' => $request->metode,
             'waktu_transaksi' => now(),
             'status' => 'Berhasil', 
         ]);
@@ -56,7 +56,7 @@ class UserTokenController extends Controller
         public function history()
     {
         $riwayat = TokenTransaction::where('user_id', Auth::id())
-                    ->orderBy('waktu_transaksi', 'desc')
+                    ->orderBy('created_at', 'desc')
                     ->get();
 
         return view('fitur-user.token-history', compact('riwayat'));

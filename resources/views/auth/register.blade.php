@@ -102,39 +102,64 @@
                         </div>
                     </div>
 
-                    {{-- 3. Status Penghuni (Logic Alpine) --}}
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <label class="block text-sm font-bold text-blue-900 mb-2">Status Tempat Tinggal</label>
-                        
-                        <div class="flex gap-4 mb-2">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="status_penghuni" value="1" x-model="isAsrama" class="text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm font-medium text-gray-700">Penghuni Asrama</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="status_penghuni" value="0" x-model="isAsrama" class="text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm font-medium text-gray-700">Luar Asrama</span>
-                            </label>
-                        </div>
-                        <x-input-error :messages="$errors->get('status_penghuni')" class="mt-1" />
+{{-- 3. Status Penghuni (Logic Alpine) --}}
+<div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+    <label class="block text-sm font-bold text-blue-900 mb-2">Status Tempat Tinggal</label>
+    
+    <div class="flex gap-4 mb-2">
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="status_penghuni" value="1" x-model="isAsrama" class="text-blue-600 focus:ring-blue-500">
+            <span class="text-sm font-medium text-gray-700">Penghuni Asrama</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="status_penghuni" value="0" x-model="isAsrama" class="text-blue-600 focus:ring-blue-500">
+            <span class="text-sm font-medium text-gray-700">Luar Asrama</span>
+        </label>
+    </div>
+    <x-input-error :messages="$errors->get('status_penghuni')" class="mt-1" />
 
-                        {{-- Dropdown Gedung --}}
-                        <div x-show="isAsrama == '1'" x-transition.opacity.duration.300ms class="mt-3 border-t border-blue-200 pt-3">
-                            <label class="block text-xs font-bold text-blue-800 mb-1 uppercase tracking-wider">Pilih Gedung Asrama</label>
-                            <div class="relative">
-                                <select name="lokasi_id" class="w-full border-blue-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 py-2 px-3 bg-white text-sm">
-                                    <option value="">-- Pilih Gedung --</option>
-                                    @foreach($lokasi as $lok)
-                                        <option value="{{ $lok->id }}">{{ $lok->nama_lokasi }}</option>
-                                    @endforeach
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-blue-500">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                                </div>
-                            </div>
-                            <x-input-error :messages="$errors->get('lokasi_id')" class="mt-1" />
-                        </div>
-                    </div>
+    {{-- Dropdown Gedung & Kamar (Hanya Muncul Jika Penghuni Asrama) --}}
+    <div x-show="isAsrama == '1'" x-transition.opacity.duration.300ms class="mt-3 border-t border-blue-200 pt-3 space-y-3">
+        
+        {{-- Pilih Gedung --}}
+        <div>
+            <label class="block text-xs font-bold text-blue-800 mb-1 uppercase tracking-wider">Pilih Gedung Asrama</label>
+            <div class="relative">
+                <select name="lokasi_id" class="w-full border-blue-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 py-2 px-3 bg-white text-sm">
+                    <option value="">-- Pilih Gedung --</option>
+                    @foreach($lokasi as $lok)
+                        <option value="{{ $lok->id }}" {{ old('lokasi_id') == $lok->id ? 'selected' : '' }}>{{ $lok->nama_lokasi }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <x-input-error :messages="$errors->get('lokasi_id')" class="mt-1" />
+        </div>
+
+        {{-- Pilih Nomor Kamar --}}
+        <div>
+            <label class="block text-xs font-bold text-blue-800 mb-1 uppercase tracking-wider">Pilih Nomor Kamar</label>
+            <div class="relative">
+                <select name="nomor_kamar" class="w-full border-blue-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 py-2 px-3 bg-white text-sm">
+                    <option value="">-- Pilih Nomor Kamar --</option>
+                    {{-- Kita panggil data dari tabel master_kamar yang sudah kita buat tadi --}}
+                    @php
+                        $masterKamars = \App\Models\MasterKamar::orderBy('nomor_kamar', 'asc')->get();
+                    @endphp
+                    @foreach($masterKamars as $kamar)
+                        <option value="{{ $kamar->nomor_kamar }}" {{ old('nomor_kamar') == $kamar->nomor_kamar ? 'selected' : '' }}>
+                            {{ $kamar->nomor_kamar }} (Lantai {{ $kamar->lantai }})
+                        </option>
+                    @endforeach
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-blue-500">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </div>
+            </div>
+            <x-input-error :messages="$errors->get('nomor_kamar')" class="mt-1" />
+        </div>
+
+    </div>
+</div>
 
                     {{-- 4. Foto Profil --}}
                     <div>

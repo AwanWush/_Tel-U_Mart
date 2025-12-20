@@ -118,20 +118,22 @@
                         <div class="border border-gray-200 rounded-lg p-5 bg-white">
                             <h3 class="text-lg font-semibold mb-4">Profil Saya</h3>
 
-                            {{-- VIEW PROFIL --}}
-                            <div id="profil-view" class="space-y-3">
-                                <p><strong>Nama:</strong> {{ $user->name }}</p>
-                                <p><strong>Email:</strong> {{ $user->email }}</p>
-                                <p><strong>Nomor HP:</strong> {{ $user->no_telp ?? '-' }}</p>
-                                @if($user->penghuni_asrama === 'ya')
-                                    <p><strong>Gedung:</strong> {{ $user->alamat_gedung ?? '-' }}</p>
-                                @endif
-                                <p><strong>Tanggal Registrasi:</strong> {{ $user->created_at->format('d-m-Y') }}</p>
-                                <button id="editProfilBtn"
-                                        class="mt-4 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-500 transition">
-                                    Edit Profil
-                                </button>
-                            </div>
+{{-- VIEW PROFIL --}}
+<div id="profil-view" class="space-y-3">
+    <p><strong>Nama:</strong> {{ $user->name }}</p>
+    <p><strong>Email:</strong> {{ $user->email }}</p>
+    <p><strong>Nomor HP:</strong> {{ $user->no_telp ?? '-' }}</p>
+    @if($user->penghuni_asrama === 'ya')
+        {{-- Gunakan relasi lokasi yang sudah kita buat di Model User --}}
+        <p><strong>Gedung:</strong> {{ $user->lokasi->nama_lokasi ?? $user->alamat_gedung ?? '-' }}</p>
+        <p><strong>Nomor Kamar:</strong> {{ $user->nomor_kamar ?? '-' }}</p>
+    @endif
+    <p><strong>Tanggal Registrasi:</strong> {{ $user->created_at->format('d-m-Y') }}</p>
+    <button id="editProfilBtn"
+            class="mt-4 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-500 transition">
+        Edit Profil
+    </button>
+</div>
 
                             {{-- FORM EDIT PROFIL --}}
                             <div id="profil-form" class="hidden space-y-3">
@@ -170,17 +172,33 @@
                                     </div>
 
                                     {{-- ALAMAT GEDUNG --}}
-                                    <div id="alamatGedungField" style="display: {{ $user->penghuni_asrama === 'ya' ? 'block' : 'none' }}">
-                                        <label class="block text-sm font-medium text-gray-700">Alamat Gedung</label>
-                                        <select name="alamat_gedung" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                            <option value="">-- Pilih Gedung --</option> {{-- tambahkan option kosong --}}
-                                            @foreach($gedungs as $gedung)
-                                                <option value="{{ $gedung->nama_lokasi }}" {{ $user->alamat_gedung === $gedung->nama_lokasi ? 'selected' : '' }}>
-                                                    {{ $gedung->nama_lokasi }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+<div id="alamatGedungField" style="display: {{ $user->penghuni_asrama === 'ya' ? 'block' : 'none' }}" class="space-y-3">
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Alamat Gedung</label>
+        <select name="lokasi_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+            <option value="">-- Pilih Gedung --</option>
+            @foreach($gedungs as $gedung)
+                <option value="{{ $gedung->id }}" {{ $user->lokasi_id == $gedung->id ? 'selected' : '' }}>
+                    {{ $gedung->nama_lokasi }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Nomor Kamar</label>
+        <select name="nomor_kamar" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+            <option value="">-- Pilih Nomor Kamar --</option>
+            @php
+                // Mengambil data kamar dari model MasterKamar
+                $listKamar = \App\Models\MasterKamar::orderBy('nomor_kamar', 'asc')->get();
+            @endphp
+            @foreach($listKamar as $kamar)
+                <option value="{{ $kamar->nomor_kamar }}" {{ $user->nomor_kamar == $kamar->nomor_kamar ? 'selected' : '' }}>
+                    {{ $kamar->nomor_kamar }} (Lantai {{ $kamar->lantai }})
+                </option>
+            @endforeach
+        </select>
+    </div>
 
                                     {{-- FOTO --}}
                                     <div class="mt-4">
@@ -398,7 +416,8 @@
             alamatField.style.display = 'block';
         } else {
             alamatField.style.display = 'none';
-            if (alamatSelect) alamatSelect.value = '';
+            // if (alamatSelect) alamatSelect.value = '';
+            alamatField.querySelectorAll('select').forEach(select => select.value = '');
         }
     }
 
