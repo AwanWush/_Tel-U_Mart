@@ -41,7 +41,6 @@
                             Profil
                         </button>
 
-
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
@@ -51,6 +50,7 @@
                         </form>
                     </div>
                 </div>
+                
 
                 {{-- KONTEN KANAN --}}
                 <div class="md:col-span-3 p-6">
@@ -118,22 +118,21 @@
                         <div class="border border-gray-200 rounded-lg p-5 bg-white">
                             <h3 class="text-lg font-semibold mb-4">Profil Saya</h3>
 
-{{-- VIEW PROFIL --}}
-<div id="profil-view" class="space-y-3">
-    <p><strong>Nama:</strong> {{ $user->name }}</p>
-    <p><strong>Email:</strong> {{ $user->email }}</p>
-    <p><strong>Nomor HP:</strong> {{ $user->no_telp ?? '-' }}</p>
-    @if($user->penghuni_asrama === 'ya')
-        {{-- Gunakan relasi lokasi yang sudah kita buat di Model User --}}
-        <p><strong>Gedung:</strong> {{ $user->lokasi->nama_lokasi ?? $user->alamat_gedung ?? '-' }}</p>
-        <p><strong>Nomor Kamar:</strong> {{ $user->nomor_kamar ?? '-' }}</p>
-    @endif
-    <p><strong>Tanggal Registrasi:</strong> {{ $user->created_at->format('d-m-Y') }}</p>
-    <button id="editProfilBtn"
-            class="mt-4 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-500 transition">
-        Edit Profil
-    </button>
-</div>
+                            {{-- VIEW PROFIL --}}
+                            <div id="profil-view" class="space-y-3">
+                                <p><strong>Nama:</strong> {{ $user->name }}</p>
+                                <p><strong>Email:</strong> {{ $user->email }}</p>
+                                <p><strong>Nomor HP:</strong> {{ $user->no_telp ?? '-' }}</p>
+                                @if($user->penghuni_asrama === 'ya')
+                                    <p><strong>Gedung:</strong> {{ $user->lokasi->nama_lokasi ?? $user->alamat_gedung ?? '-' }}</p>
+                                    <p><strong>Nomor Kamar:</strong> {{ $user->nomor_kamar ?? '-' }}</p>
+                                @endif
+                                <p><strong>Tanggal Registrasi:</strong> {{ $user->created_at->format('d-m-Y') }}</p>
+                                <button id="editProfilBtn"
+                                        class="mt-4 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-500 transition">
+                                    Edit Profil
+                                </button>
+                            </div>
 
                             {{-- FORM EDIT PROFIL --}}
                             <div id="profil-form" class="hidden space-y-3">
@@ -145,21 +144,21 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Nama</label>
                                         <input type="text" name="name" value="{{ $user->name }}" 
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                                     </div>
 
                                     {{-- EMAIL --}}
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Email</label>
                                         <input type="email" name="email" value="{{ $user->email }}" 
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                                     </div>
 
                                     {{-- NOMOR HP --}}
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Nomor HP</label>
                                         <input type="text" name="no_telp" value="{{ $user->no_telp}}" 
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                                     </div>
 
                                     {{-- PENGHUNI ASRAMA --}}
@@ -172,33 +171,33 @@
                                     </div>
 
                                     {{-- ALAMAT GEDUNG --}}
-<div id="alamatGedungField" style="display: {{ $user->penghuni_asrama === 'ya' ? 'block' : 'none' }}" class="space-y-3">
-    <div>
-        <label class="block text-sm font-medium text-gray-700">Alamat Gedung</label>
-        <select name="lokasi_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-            <option value="">-- Pilih Gedung --</option>
-            @foreach($gedungs as $gedung)
-                <option value="{{ $gedung->id }}" {{ $user->lokasi_id == $gedung->id ? 'selected' : '' }}>
-                    {{ $gedung->nama_lokasi }}
-                </option>
-            @endforeach
-        </select>
-    </div>
-    <div>
-        <label class="block text-sm font-medium text-gray-700">Nomor Kamar</label>
-        <select name="nomor_kamar" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-            <option value="">-- Pilih Nomor Kamar --</option>
-            @php
-                // Mengambil data kamar dari model MasterKamar
-                $listKamar = \App\Models\MasterKamar::orderBy('nomor_kamar', 'asc')->get();
-            @endphp
-            @foreach($listKamar as $kamar)
-                <option value="{{ $kamar->nomor_kamar }}" {{ $user->nomor_kamar == $kamar->nomor_kamar ? 'selected' : '' }}>
-                    {{ $kamar->nomor_kamar }} (Lantai {{ $kamar->lantai }})
-                </option>
-            @endforeach
-        </select>
-    </div>
+                                    <div id="alamatGedungField" style="display: {{ $user->penghuni_asrama === 'ya' ? 'block' : 'none' }}" class="space-y-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Alamat Gedung</label>
+                                            <select name="lokasi_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                                <option value="">-- Pilih Gedung --</option>
+                                                @foreach($gedungs as $gedung)
+                                                    <option value="{{ $gedung->id }}" {{ $user->lokasi_id == $gedung->id ? 'selected' : '' }}>
+                                                        {{ $gedung->nama_lokasi }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Nomor Kamar</label>
+                                            <select name="nomor_kamar" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                                <option value="">-- Pilih Nomor Kamar --</option>
+                                                @php
+                                                    $listKamar = \App\Models\MasterKamar::orderBy('nomor_kamar', 'asc')->get();
+                                                @endphp
+                                                @foreach($listKamar as $kamar)
+                                                    <option value="{{ $kamar->nomor_kamar }}" {{ $user->nomor_kamar == $kamar->nomor_kamar ? 'selected' : '' }}>
+                                                        {{ $kamar->nomor_kamar }} (Lantai {{ $kamar->lantai }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
 
                                     {{-- FOTO --}}
                                     <div class="mt-4">
@@ -213,16 +212,16 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Password Baru (optional)</label>
                                         <input type="password" name="password" 
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" 
-                                            placeholder="Kosongkan jika tidak ingin diganti">
+                                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" 
+                                               placeholder="Kosongkan jika tidak ingin diganti">
                                     </div>
 
                                     {{-- KONFIRMASI PASSWORD --}}
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Konfirmasi Password</label>
                                         <input type="password" name="password_confirmation" 
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" 
-                                            placeholder="Konfirmasi password baru">
+                                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" 
+                                               placeholder="Konfirmasi password baru">
                                     </div>
                                     
                                     <div class="flex space-x-2 mt-4">
@@ -245,12 +244,11 @@
                         <div class="border border-gray-200 rounded-lg p-5 bg-white">
                             <h3 class="text-lg font-semibold mb-4">Metode Pembayaran</h3>
 
-                            {{-- List Metode Pembayaran --}}                   
+                            {{-- List Metode Pembayaran --}}
                             @if($pembayaran->isEmpty())
                                 <p class="text-gray-600 text-sm mb-4">Belum ada metode pembayaran yang ditambahkan.</p>
                             @else
                                 <ul class="space-y-2 text-gray-800 text-sm">
-
                                     @foreach($pembayaran as $pay)
                                         @php
                                             $showPay = true;
@@ -261,28 +259,19 @@
 
                                         @if($showPay)
                                             <li class="flex justify-between items-center bg-gray-50 border rounded p-3">
-
-                                                {{-- Kategori + keterangan / nomor --}}
                                                 <div>
                                                     <div class="font-semibold">{{ $pay->kategori }}</div>
-
-                                                    {{-- Keterangan umum (E-Wallet, QRIS) --}}
                                                     @if($pay->keterangan)
                                                         <div class="text-gray-700">{{ $pay->keterangan }}</div>
                                                     @endif
-
-                                                    {{-- Nomor telepon --}}
                                                     @if($pay->telepon)
                                                         <div class="text-gray-700">No: {{ $pay->telepon }}</div>
                                                     @endif
-
-                                                    {{-- Virtual Account --}}
                                                     @if($pay->bank)
                                                         <div class="text-gray-700">{{ $pay->bank }} - {{ $pay->norek }}</div>
                                                     @endif
                                                 </div>
 
-                                                {{-- Tombol hapus --}}
                                                 <form method="POST" action="{{ route('pembayaran.destroy', $pay->id) }}">
                                                     @csrf
                                                     @method('DELETE')
@@ -291,12 +280,9 @@
                                                         Hapus
                                                     </button>
                                                 </form>
-
                                             </li>
                                         @endif
-
                                     @endforeach
-
                                 </ul>
                             @endif
 
