@@ -72,5 +72,18 @@ class ProdukSeeder extends Seeder
             'persentase_diskon' => null
         ]);
         $produk4->marts()->attach([2]);
+
+                $produk4 = Produk::create([
+            'kategori_id' => 2, 
+            'nama_produk' => 'Cimory Squeee',
+            'deskripsi' => null,
+            'harga' => 7100,
+            'stok' => 47,
+            'gambar' => 'produk/product07.jpg',
+            'status_ketersediaan' => 'Tersedia',
+            'is_active' => true,
+            'persentase_diskon' => null
+        ]);
+        $produk4->marts()->attach([2]);
     }
 }

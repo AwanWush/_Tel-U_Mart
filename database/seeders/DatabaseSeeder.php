@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 
+
+
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
@@ -19,6 +21,7 @@ class DatabaseSeeder extends Seeder
             MartSeeder::class,
             ProdukSeeder::class,
             BannerSeeder::class,
+            ProdukssSeeder::class,
         ]);
     }
 }
