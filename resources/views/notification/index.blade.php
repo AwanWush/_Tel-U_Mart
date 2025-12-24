@@ -1,4 +1,3 @@
-<x-layout>
 <x-app-layout>
 
     <x-slot name="header">
@@ -156,4 +155,3 @@
     </script>
 
 </x-app-layout>
-</x-layout>

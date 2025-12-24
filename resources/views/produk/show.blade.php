@@ -1,5 +1,4 @@
-<x-layout>
-
+<x-app-layout>
     <div class="max-w-7xl mx-auto px-4 mt-6">
         <x-breadcrumb>
             <a href="/" class="hover:text-blue-600">Home</a>
@@ -129,5 +128,4 @@
 
         @include('produk._recommendation', ['produk' => $rekomendasi])
     </div>
-
-</x-layout>
+</x-app-layout>

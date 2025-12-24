@@ -1,31 +1,22 @@
-<x-layout>
-    <x-app-layout>
-        <x-slot name="header">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Dashboard Pengguna
-            </h2>
-        </x-slot>
+<x-app-layout>
     
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        {{-- Banner Slider --}}
+        <x-banner-slider :banners="$banners" />
+    </div>
+
+    <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
 
-            {{-- Banner Slider --}}
-            <x-banner-slider :banners="$banners" />
+                {{-- Welcome + Features --}}
+                <x-main-features />
 
-        </div>
-
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-
-                    {{-- Welcome + Features --}}
-                    <x-main-features />
-
-                </div>
             </div>
         </div>
+    </div>
 
-        {{-- Product Grid --}}
-        <x-product-grid :produk="$produk" />
+    {{-- Product Grid --}}
+    <x-product-grid :produk="$produk" />
 
-    </x-app-layout>
-</x-layout>
+</x-app-layout>
