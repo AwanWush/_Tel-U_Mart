@@ -21,6 +21,23 @@
             <div class="mt-1 font-bold text-blue-600 text-sm">
                 Rp {{ number_format($item->harga, 0, ',', '.') }}
             </div>
+
+            <div class="text-sm text-gray-600">
+                Tersedia di: <br>
+                @foreach ($item->highlightedMarts() as $mart)
+                    <span
+                        class="
+                            px-2 py-0.5 rounded-full text-xs
+                            {{ $mart['is_active']
+                                ? 'text-red-700 font-semibold'
+                                : 'text-gray-600'
+                            }}"
+                    >
+                        {{ $mart['nama'] }}
+                    </span>
+                @endforeach
+            </div>
+
         </a>
     @empty
         <p class="text-sm text-gray-500">

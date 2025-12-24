@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Scopes\ActiveMartScope;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
 
 class Produk extends Model
 {
@@ -48,5 +51,31 @@ class Produk extends Model
     public function ratingAvg()
     {
         return $this->reviews()->avg('rating');
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope('activeMart', function (Builder $query) {
+            $user = Auth::user();
+
+            if ($user && $user->active_mart_id) {
+                $query->whereHas('marts', function ($q) use ($user) {
+                    $q->where('mart.id', $user->active_mart_id);
+                });
+            }
+        });
+    }
+
+    public function highlightedMarts()
+    {
+        $activeMart = activeMart();
+
+        return $this->marts->map(function ($mart) use ($activeMart) {
+            return [
+                'id' => $mart->id,
+                'nama' => $mart->nama_mart,
+                'is_active' => $activeMart && $mart->id === $activeMart->id,
+            ];
+        });
     }
 }

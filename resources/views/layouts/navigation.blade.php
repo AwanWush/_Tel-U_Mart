@@ -36,7 +36,7 @@
 
             {{-- SEARCH --}}
             <div x-data="{ focused: false }" class="relative flex-1 mx-4 max-w-xl">
-                <form action="/search" method="GET" class="relative">
+                <form action="/search" method="GET" class="relative hover:text-[#DB4B3A] hover:border-[#DB4B3A]">
 
                     {{-- SEARCH ICON --}}
                     <span 
@@ -203,3 +203,85 @@
         </a>
     </div>
 </nav>
+{{-- SUB HEADER NAVIGATION --}}
+<div 
+    x-data="{ openMart: false }"
+    class="sticky top-[80px] z-50 w-full bg-gradient-to-r from-[#5B000B] via-[#930014] to-[#DB4B3A] text-white"
+>
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex items-center justify-between h-10 text-sm">
+
+            {{-- LEFT MENU --}}
+            <ul class="flex items-center gap-4 font-medium">
+
+                <li>
+                    <a href="/" class="relative transition hover:text-[#E7BD8A]
+                                       after:absolute after:left-0 after:-bottom-1
+                                       after:w-0 after:h-[2px]
+                                       after:bg-[#E7BD8A]
+                                       after:transition-all
+                                       hover:after:w-full"
+                        >Berand
+                    </a>
+                </li>
+
+                <li class="h-4 w-px bg-white/40"></li>
+
+                <li>
+                    <a href="/produk" class="relative transition hover:text-[#E7BD8A]
+                                             after:absolute after:left-0 after:-bottom-1
+                                             after:w-0 after:h-[2px]
+                                             after:bg-[#E7BD8A]
+                                             after:transition-all
+                                             hover:after:w-full"                    
+                        >Produk
+                    </a>
+                </li>
+
+                <li class="h-4 w-px bg-white/40"></li>
+
+                <li>
+                    <a href="/kontak" class="relative transition hover:text-[#E7BD8A]
+                                             after:absolute after:left-0 after:-bottom-1
+                                             after:w-0 after:h-[2px]
+                                             after:bg-[#E7BD8A]
+                                             after:transition-all
+                                             hover:after:w-full"                    
+                        >Kontak
+                    </a>
+                </li>
+
+                <li class="h-4 w-px bg-white/40"></li>
+
+                <li>
+                    <a href="/tentang-kami" class="relative transition hover:text-[#E7BD8A]
+                                                   after:absolute after:left-0 after:-bottom-1
+                                                   after:w-0 after:h-[2px]
+                                                   after:bg-[#E7BD8A]
+                                                   after:transition-all
+                                                   hover:after:w-full"                    
+                        >Tentang Kami
+                    </a>
+                </li>
+            </ul>
+
+            {{-- RIGHT PRIORITY MART --}}
+            <button
+                @click="openMart = true"
+                class="flex items-center gap-1 px-3 py-1.5 rounded-full
+                       bg-white/0
+                       font-semibold
+                       hover:bg-white/20 transition"
+            >
+                <span class="text-xs opacity-80">Prioritas Toko</span>
+                @include('icons.map-pin-icon')
+                <span class="font-bold text-[#E7BD8A]">
+                    {{ $activeMart->nama_mart ?? 'TJMart Putra' }}
+                </span>
+            </button>
+        </div>
+    </div>
+
+    {{-- MODAL --}}
+    @include('partials.mart-selector')
+</div>

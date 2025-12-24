@@ -18,11 +18,10 @@
             <div class="sticky top-24 w-full max-w-md">
                 <div class="aspect-square bg-white border rounded-2xl overflow-hidden shadow">
                     <img
-                        src="{{ $produk->gambar ? asset('storage/' . $produk->gambar) : asset('images/no-image.png') }}"
+                        src="{{ $produk->gambar ? asset($produk->gambar) : asset('images/no-image.png') }}"
                         class="w-full h-full object-contain"
                         alt="{{ $produk->nama_produk }}"
                     >
-
                 </div>
             </div>
         </div>
@@ -45,9 +44,18 @@
 
             <div class="text-sm text-gray-600">
                 Tersedia di:
-                <span class="font-medium">
-                    {{ $produk->marts->pluck('nama_mart')->join(', ') }}
-                </span>
+                @foreach ($produk->highlightedMarts() as $mart)
+                    <span
+                        class="
+                            px-2 py-0.5 rounded-full text-xs
+                            {{ $mart['is_active']
+                                ? 'bg-red-100 text-red-700 font-semibold'
+                                : 'bg-gray-100 text-gray-600'
+                            }}"
+                    >
+                        {{ $mart['nama'] }}
+                    </span>
+                @endforeach
             </div>
 
             @if($produk->variants->count())
@@ -108,7 +116,7 @@
 
                         <button
                             type="submit"
-                            class="w-12 h-12 border rounded-xl flex items-center justify-center hover:bg-gray-100"
+                            class="w-12 h-12 bg-[#DB3B4A]/90 border rounded-xl flex items-center justify-center hover:bg-[#E68757]"
                         >
                             @include('icons.heart')
                         </button>

@@ -26,7 +26,8 @@ class User extends Authenticatable
         'nomor_kamar',     
         'gambar',
         'remember_token',
-        'email_verified_at'
+        'email_verified_at',
+        'active_mart_id',
     ];
 
     protected $hidden = [
@@ -81,5 +82,10 @@ class User extends Authenticatable
     public function reviews()
     {
         return $this->hasMany(ProdukReview::class);
+    }
+
+    public function activeMart()
+    {
+        return $this->belongsTo(Mart::class, 'active_mart_id');
     }
 }

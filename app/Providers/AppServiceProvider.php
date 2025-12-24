@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
 use App\Models\Cart;
 use App\Models\Wishlist;
 use App\Models\Notification;
+use App\Models\Mart;
 use Midtrans\Config;
 
 
@@ -25,7 +27,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        view()->composer('*', function ($view) {
+        /**
+         * GLOBAL DATA (cart, wishlist, notif)
+         */
+        View::composer('*', function ($view) {
             if (Auth::check()) {
                 $view->with('cartCount', Cart::where('user_id', Auth::id())->count());
                 $view->with('wishlistCount', Wishlist::where('user_id', Auth::id())->count());
@@ -36,9 +41,31 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('notifCount', 0);
             }
         });
+
+        /**
+         * MIDTRANS CONFIG
+         */
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = true;
         Config::$is3ds = true;
+
+        /**
+         * NAVIGATION + MART SELECTOR
+         */
+        View::composer('layouts.navigation', function ($view) {
+            $user = Auth::user();
+
+            $activeMart = $user?->activeMart
+                ?? Mart::where('nama_mart', 'TJMart Putra')->first();
+
+            $marts = Mart::where('is_active', true)
+                ->withCount([
+                    'produkAll as produk_count'
+                ])
+                ->get();
+
+            $view->with(compact('activeMart', 'marts'));
+        });
     }
 }

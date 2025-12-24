@@ -37,7 +37,7 @@
             @endisset
 
             {{-- CONTENT --}}
-            <main class="pt-20 pb-20">
+            <main class="pt-8 pb-24">
                 {{ $slot }}
             </main>
 

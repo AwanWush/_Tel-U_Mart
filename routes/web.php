@@ -15,6 +15,7 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\PesananController;
 use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
+use App\Http\Controllers\MartController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -237,3 +238,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('/grafik-produk', 'dashboard.superadmin')->name('grafik.produk');
     Route::view('/gaji-admin', 'dashboard.superadmin')->name('gaji.admin');
 });
+
+// ===== Mart to user ===== //
+Route::post('/select-mart', [MartController::class, 'select'])
+    ->middleware('auth')
+    ->name('mart.select');

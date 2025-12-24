@@ -45,8 +45,20 @@
                 </div>
 
                 {{-- Lokasi mart --}}
-                <div class="text-xs text-gray-500">
-                    Lokasi: {{ $produk->marts->pluck('nama_mart')->join(', ') }}
+                <div class="text-xs">
+                    Lokasi:
+                    @foreach ($produk->highlightedMarts() as $mart)
+                        <span
+                            class="
+                                {{ $mart['is_active']
+                                    ? 'text-red-600 font-semibold'
+                                    : 'text-gray-500'
+                                }}"
+                        >
+                            {{ $mart['nama'] }}
+                        </span>
+                        @if (! $loop->last), @endif
+                    @endforeach
                 </div>
 
             </a>

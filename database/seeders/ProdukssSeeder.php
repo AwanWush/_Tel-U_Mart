@@ -429,7 +429,7 @@ class ProdukssSeeder extends Seeder
         ];
 
         foreach ($products as $p) {
-            $created = Produk::create([
+            $produkId = DB::table('produk')->insertGetId([
                 'kategori_id' => $p['cat'],
                 'nama_produk' => $p['name'],
                 'deskripsi'   => $p['desc'],
@@ -441,8 +441,14 @@ class ProdukssSeeder extends Seeder
                 'persentase_diskon' => null
             ]);
             
-            // Pasangkan produk ke semua Mart yang tersedia di database (ID 1, 2, 3)
-            $created->marts()->attach([1, 2, 3]); 
+            $randomMarts = collect([1,2,3])->shuffle()->take(rand(1,3));
+
+            foreach ($randomMarts as $martId) {
+                DB::table('produk_mart')->insert([
+                    'produk_id' => $produkId,
+                    'mart_id' => $martId,
+                ]);
+            }
         }
     }
 }
