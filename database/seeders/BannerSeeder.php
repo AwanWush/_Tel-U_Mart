@@ -14,11 +14,17 @@ class BannerSeeder extends Seeder
      */
     public function run(): void
     {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        DB::table('banners')->truncate();   // Hapus data lama agar tidak duplikat data
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         $now = Carbon::now();
 
         $banners = [];
 
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 3; $i <= 5; $i++) {
             $number = str_pad($i, 2, '0', STR_PAD_LEFT);
 
             $banners[] = [

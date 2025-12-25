@@ -221,7 +221,7 @@
                                        after:bg-[#E7BD8A]
                                        after:transition-all
                                        hover:after:w-full"
-                        >Berand
+                        >Beranda
                     </a>
                 </li>
 

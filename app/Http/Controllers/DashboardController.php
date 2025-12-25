@@ -54,6 +54,15 @@ class DashboardController extends Controller
             ->take(8)
             ->get();
 
-        return view('dashboard.user', compact('banners', 'produk'));
+        $latestProducts = Produk::orderBy('updated_at', 'desc')
+            ->take(8)
+            ->get();
+
+        // return view('dashboard.user', compact('banners', 'produk', 'latestProducts'));
+        return view('dashboard.user', [
+            'banners' => $banners,
+            'produk' => $produk,
+            'latestProducts' => $latestProducts,
+        ]);
     }
 }

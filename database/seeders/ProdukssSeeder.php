@@ -24,7 +24,7 @@ class ProdukssSeeder extends Seeder
         $products = [
             // --- KATEGORI 1: MAKANAN (10 PRODUK) ---
             [
-                'cat' => 1, 'name' => 'Indomie Goreng Spesial Pak isi 5', 
+                'cat' => 1, 'name' => 'Indomie Goreng Spesial isi 5', 
                 'desc' => 'Paket hemat Indomie Goreng Spesial isi 5 bungkus. Dibuat dari tepung terigu berkualitas dengan perpaduan rempah-rempah pilihan terbaik, dilengkapi dengan bawang goreng renyah dan saus cabai mantap. Sangat cocok sebagai stok makanan praktis di kamar asrama saat lembur tugas.',
                 'price' => 15500, 'stok' => 50, 
                 'img' => 'produk/makanan_indomie.jpg'
@@ -42,7 +42,7 @@ class ProdukssSeeder extends Seeder
                 'img' => 'produk/makanan_sarden.jpg'
             ],
             [
-                'cat' => 1, 'name' => 'Telur Ayam Negeri 1o butir', 
+                'cat' => 1, 'name' => 'Telur Ayam Negeri 10 butir', 
                 'desc' => 'Telur ayam negeri segar pilihan, kaya akan protein hewani untuk menjaga stamina tubuh. Kami pastikan telur dalam kondisi bersih dan tidak retak. Sumber nutrisi esensial yang sangat mudah diolah menjadi berbagai menu sarapan sehat.',
                 'price' => 28000, 'stok' => 15, 'img' => 
                 'produk/makanan_telur.jpg'

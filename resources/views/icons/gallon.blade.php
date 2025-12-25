@@ -1,1 +1,4 @@
-<img src="{{ asset('icons/water_bottle_large_32dp_EA0000_FILL0_wght400_GRAD0_opsz40.svg') }}" class="w-6 h-6" alt="Electricity">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=water_drop" />
+<span class="material-symbols-outlined">
+water_drop
+</span>
