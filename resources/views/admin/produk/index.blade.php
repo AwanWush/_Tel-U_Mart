@@ -45,7 +45,7 @@
                     <td class="py-2 px-2">
                         @if($p->gambar)
                             <img 
-                                src="{{ asset('storage/' . $p->gambar) }}"
+                                src="{{ asset($p->gambar) }}"
                                 class="h-16 w-16 object-cover rounded-lg shadow"
                             >
                         @else
