@@ -2,7 +2,6 @@
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\DashboardController;
@@ -206,7 +205,18 @@ Route::middleware(['auth'])->group(function () {
     ->name('wishlist.destroy');
 });
 
+// Hapus atau keluarkan dari Route::prefix('bantuan')
+Route::get('/kontak', function () {
+    return view('fitur-user.kontak');
+})->name('kontak.index');
 
+Route::get('/tentang-kami', function () {
+    return view('fitur-user.tentang');
+})->name('tentang.index');
+
+Route::get('/faq', function () {
+    return view('fitur-user.faq');
+})->name('faq.index');
 
 Route::middleware(['auth'])->group(function () {
     
