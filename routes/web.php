@@ -16,13 +16,17 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\PesananController;
 use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
-<<<<<<< Updated upstream
 use App\Http\Controllers\MartController;
-=======
 use App\Http\Controllers\OrderController;
->>>>>>> Stashed changes
 
 
+
+Route::get('/order/success/{order_id}', [App\Http\Controllers\CheckoutController::class, 'showSuccess'])->name('order.success');
+Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('checkout.process');
+Route::post('/checkout/process', [CheckoutController::class, 'processCheckout'])->name('checkout.process');
+Route::post('/checkout/process', [CheckoutController::class, 'processSuccess'])->name('checkout.process');
+Route::get('/order/success/{order_id}', [CheckoutController::class, 'showSuccess'])->name('order.success');
+Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile');
 Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
 Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
 Route::post('/cart/add', [CartController::class, 'store'])->name('cart.add');

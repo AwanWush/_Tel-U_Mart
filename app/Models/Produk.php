@@ -24,9 +24,10 @@ class Produk extends Model
     ];
 
     public function kategori()
-    {
-        return $this->belongsTo(KategoriProduk::class, 'kategori_id');
-    }
+{
+    // Di SQL nama tabelnya 'kategori_produk'
+    return $this->belongsTo(KategoriProduk::class, 'kategori_id');
+}
 
     public function marts()
     {

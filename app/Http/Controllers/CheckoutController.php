@@ -4,22 +4,29 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Produk;
+use App\Models\RiwayatPembelian;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
+    /**
+     * Langkah 1: Direct Checkout
+     */
     public function directCheckout(Request $request)
     {
         $produk = Produk::findOrFail($request->product_id);
-        $qty = $request->qty ?? 1;
-
-        $totalHarga = $produk->harga * $qty;
+        $totalHarga = $produk->harga * ($request->qty ?? 1);
 
         return redirect()->route('payment.method', [
             'type'   => 'delivery',
-            'amount' => $totalHarga
+            'amount' => $totalHarga,
         ]);
     }
 
+    /**
+     * Langkah 2: Tampilkan Halaman Metode Pembayaran
+     */
     public function showPaymentMethod(Request $request)
     {
         $totalPrice  = $request->query('amount', 0);
@@ -28,36 +35,57 @@ class CheckoutController extends Controller
         return view('payment.method', compact('totalPrice', 'serviceType'));
     }
 
-    public function showSuccess(Request $request)
+    /**
+     * Langkah 3: PROSES SIMPAN DINAMIS (Kunci Jawaban Anda)
+     */
+    public function processCheckout(Request $request)
     {
-        $serviceType   = $request->query('type', 'delivery');
-        $paymentMethod = $request->query('method', 'cash_cod');
-        $status        = $request->query('status', 'pending');
-        $amount        = (int) $request->query('amount', 0);
+        // A. Ambil nilai metode dari form (misal: 'cash_cod' atau 'transfer_va')
+        $metodePilihan = $request->payment_method;
+        
+        // B. Buat ID Transaksi Unik agar bisa banyak order
+        $unique_order_id = 'TM-' . strtoupper(Str::random(12));
 
-        $order_id   = strtoupper(uniqid('TM-'));
-        $order_date = now()->format('d M Y, H:i');
-        $delivery_address = 'Jl. Contoh Alamat No. 123, Bandung';
+        // C. LOGIKA STATUS (Skenario 1 & 2)
+        // Jika COD -> Langsung Sukses
+        // Jika Selain itu (Transfer) -> Status Pending
+        if ($metodePilihan == 'cash_cod') {
+            $statusFinal = 'Sukses';
+            $labelMetode = 'Cash On Delivery (COD)';
+        } else {
+            $statusFinal = 'pending';
+            $labelMetode = 'Transfer Virtual Account';
+        }
 
-        $order_data = [
-            [
-                'name'  => 'Produk Pesanan',
-                'qty'   => 1,
-                'price' => $amount
-            ]
-        ];
+        // D. SIMPAN KE DATABASE
+        // Menggunakan create() agar muncul baris baru di riwayat_pembelian
+        $riwayat = RiwayatPembelian::create([
+            'user_id'           => Auth::id(),
+            'id_transaksi'      => $unique_order_id,
+            'total_harga'       => $request->total_price ?? 0,
+            'status'            => $statusFinal, // Berubah sesuai pilihan user
+            'metode_pembayaran' => $labelMetode,
+        ]);
 
-        $total_payment = $amount;
+        // E. Arahkan ke Halaman Sukses membawa ID Transaksi
+        return redirect()->route('order.success', ['order_id' => $unique_order_id]);
+    }
 
-        return view('order.success', compact(
-    'serviceType',
-    'paymentMethod',
-    'status',
-    'order_id',
-    'order_date',
-    'order_data',
-    'total_payment',
-    'delivery_address'
-));
+    /**
+     * Langkah 4: Tampilkan Struk (Invoice)
+     */
+    public function showSuccess($order_id)
+    {
+        // Ambil data dari riwayat yang baru saja dibuat
+        $riwayat = RiwayatPembelian::where('id_transaksi', $order_id)->firstOrFail();
+
+        return view('order.success', [
+            'order_id'       => $riwayat->id_transaksi,
+            'status'         => $riwayat->status, // Akan tampil 'Sukses' atau 'pending'
+            'paymentMethod'  => $riwayat->metode_pembayaran,
+            'total_payment'  => $riwayat->total_harga,
+            'order_date'     => $riwayat->created_at->format('d M Y, H:i'),
+            'delivery_address' => Auth::user()->alamat_gedung ?? 'Alamat Belum Diatur'
+        ]);
     }
 }

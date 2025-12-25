@@ -9,26 +9,19 @@ class Transaksi extends Model
 {
     use HasFactory;
 
-    protected $table = 'transaksi'; // nama tabel di database kamu
+    // Nama tabel di database Anda adalah 'transaksi'
+    protected $table = 'transaksi';
 
+    // Sesuaikan fillable dengan kolom yang ada di SQL
     protected $fillable = [
         'user_id',
-        'produk_id',
         'status',
-        'metode_pembayaran',
-        'total',
-        'created_at',
+        'total_harga',
     ];
 
-    // Relasi ke tabel user
+    // Relasi ke User
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    // Relasi ke tabel produk (jika ada tabel produk)
-    public function produk()
-    {
-        return $this->belongsTo(Produk::class);
     }
 }

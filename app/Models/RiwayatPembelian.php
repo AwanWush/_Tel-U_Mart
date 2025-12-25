@@ -9,25 +9,25 @@ class RiwayatPembelian extends Model
 {
     use HasFactory;
 
-    protected $table = 'riwayat_pembelian';
+    protected $table = 'riwayat_pembelian'; // Paksa nama tabel sesuai phpMyAdmin
+
     protected $fillable = [
         'user_id',
-        'produk_id',
-        'jumlah',
+        'id_transaksi',
         'total_harga',
-        'metode_pembayaran',
-        'jenis_pemesanan',
-        'lokasi_pengantaran',
         'status',
+        'metode_pembayaran',
     ];
+
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function produk()
+    // Jika ingin menghubungkan ke transaksi
+    public function transaksi()
     {
-        return $this->belongsTo(Produk::class);
+        return $this->belongsTo(Transaksi::class, 'id_transaksi', 'id');
     }
 }

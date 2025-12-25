@@ -4,67 +4,68 @@ namespace App\Http\Controllers;
 
 use App\Models\LokasiDelivery;
 use App\Models\MetodePembayaran;
-use App\Models\RiwayatPembelian;
 use App\Models\Transaksi;
+use App\Models\User;
+use App\Models\RiwayatPembelian;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Schema;
 
 class ProfileController extends Controller
 {
+    /**
+     * Menampilkan halaman profil (Edit)
+     */
     public function edit(Request $request): View
     {
         $user = $request->user();
+        $userId = $user->id;
 
-        if ($user->role_id == 3) {
-
-            $transaksi = Transaksi::where('user_id', $user->id)
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            return view('user.akun', [
-                'user' => $user,
-                'pesanan' => $transaksi, // kalau ini masih dipakai tab pesanan
-                'transaksi' => $transaksi, // WAJIB untuk midtrans
-                'riwayat' => RiwayatPembelian::where('user_id', $user->id)
-                    ->orderBy('id', 'desc')
-                    ->get(),
-                'gedungs' => LokasiDelivery::orderBy('id', 'asc')->get(),
-                'pembayaran' => MetodePembayaran::where('user_id', $user->id)->get(),
-                'activeTab' => $request->query('tab', 'pesanan'),
-            ]);
-        }
-
-        // ============================
-
-        // Admin & superadmin tetap pakai edit.blade lama
-        $pesanan = Transaksi::where('user_id', $user->id)
+        // Ambil data transaksi (untuk tab pesanan aktif)
+        $transaksi = Transaksi::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $riwayat = RiwayatPembelian::where('user_id', $user->id)
+        // 1. Cek tabel riwayat_pembelian untuk Riwayat Pesanan Saya
+        $riwayat = [];
+        if (Schema::hasTable('riwayat_pembelian')) {
+            $riwayat = RiwayatPembelian::where('user_id', $userId)
             ->orderBy('id', 'desc')
             ->get();
+        }
 
-        $transaksi = \App\Models\Transaksi::where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // 2. Cek tabel metode_pembayaran
+        $pembayaran = [];
+        if (Schema::hasTable('metode_pembayaran')) {
+            $pembayaran = MetodePembayaran::where('user_id', $userId)->get();
+        }
 
         $gedungs = LokasiDelivery::orderBy('id', 'asc')->get();
-
-        $pembayaran = MetodePembayaran::where('user_id', $user->id)->get();
-
         $activeTab = $request->query('tab', 'pesanan');
 
-        return view('profile.edit', compact('user', 'pesanan', 'activeTab', 'gedungs', 'riwayat', 'pembayaran'));
+        // Logic penentuan View: Customer (Role 3) ke user.akun, Admin/Super ke profile.edit
+        $viewPath = ($user->role_id == 3) ? 'user.akun' : 'profile.edit';
+
+        return view($viewPath, [
+            'user' => $user,
+            'pesanan' => $transaksi,
+            'transaksi' => $transaksi,
+            'riwayat' => $riwayat,
+            'gedungs' => $gedungs,
+            'pembayaran' => $pembayaran,
+            'activeTab' => $activeTab,
+        ]);
     }
 
+    /**
+     * Update data profil
+     */
     public function update(Request $request): RedirectResponse
     {
-        // dd("UPDATE MASUK", $request->all());
         $user = $request->user();
 
         $validated = $request->validate([
@@ -79,62 +80,48 @@ class ProfileController extends Controller
             'password' => ['nullable', 'string', 'min:8'],
         ]);
 
-        // Upload foto
+        // Upload foto profil
         if ($request->hasFile('gambar')) {
-            // Hapus foto lama jika ada di storage
             if ($user->gambar && Storage::disk('public')->exists($user->gambar)) {
                 Storage::disk('public')->delete($user->gambar);
             }
-
             $path = $request->file('gambar')->store('profil', 'public');
             $user->gambar = $path;
         }
 
-        // Password kosong → jangan diupdate
-        if (empty($validated['password'])) {
-            unset($validated['password']);
-        } else {
-            $validated['password'] = bcrypt($validated['password']);
-        }
-
-        // Email berubah → reset verifikasi
-        if ($user->email !== $validated['email']) {
-            $user->email = $validated['email'];
-            $user->email_verified_at = null; // reset verifikasi jika email berubah
-        }
-        $user->name = $validated['name'];
-
-        // Update data
-        // ... kode validasi di atas tetap sama ...
-
-        // Update data
+        // Update data dasar
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->no_telp = $validated['no_telp'];
         $user->penghuni_asrama = $validated['penghuni_asrama'];
 
+        // Logika Lokasi Asrama
         if ($validated['penghuni_asrama'] === 'ya') {
-            $gedung = \App\Models\LokasiDelivery::find($validated['lokasi_id']);
-
             $user->lokasi_id = $validated['lokasi_id'];
             $user->nomor_kamar = $validated['nomor_kamar'];
+            
+            $gedung = LokasiDelivery::find($validated['lokasi_id']);
             $user->alamat_gedung = $gedung ? $gedung->nama_lokasi : $validated['alamat_gedung'];
         } else {
             $user->lokasi_id = null;
             $user->nomor_kamar = null;
-            $user->alamat_gedung = null;
+            $user->alamat_gedung = $validated['alamat_gedung'] ?? null;
         }
 
-        if (isset($validated['password'])) {
-            $user->password = $validated['password'];
+        // Update Password jika diisi
+        if (!empty($validated['password'])) {
+            $user->password = bcrypt($validated['password']);
         }
 
         $user->save();
 
         return redirect()->route('profile.edit', ['tab' => 'profil'])
-            ->with('status', 'Profil berhasil diperbarui!');
+            ->with('success', 'Profil berhasil diperbarui!');
     }
 
+    /**
+     * Hapus akun
+     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -142,9 +129,7 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
-
         Auth::logout();
-
         $user->delete();
 
         $request->session()->invalidate();
@@ -153,19 +138,51 @@ class ProfileController extends Controller
         return Redirect::to('/');
     }
 
+    /**
+     * Halaman khusus transaksi (Opsional)
+     */
     public function transaksiPage(Request $request): View
     {
         $user = $request->user();
-
         $query = Transaksi::where('user_id', $user->id)->orderBy('created_at', 'desc');
 
-        $statusFilter = $request->query('status');
-        if ($statusFilter) {
-            $query->where('status', $statusFilter);
+        if ($request->filled('status')) {
+            $query->where('status', $request->query('status'));
         }
 
         $transaksi = $query->get();
 
-        return view('profile.transaksi-page', compact('user', 'transaksi', 'statusFilter'));
+        return view('profile.transaksi-page', [
+            'user' => $user,
+            'transaksi' => $transaksi,
+            'statusFilter' => $request->query('status')
+        ]);
     }
+    public function simpanKeRiwayat($transaksiId) 
+{
+    $transaksi = Transaksi::find($transaksiId);
+
+    if ($transaksi) {
+        RiwayatPembelian::create([
+            'user_id'           => $transaksi->user_id,
+            'id_transaksi'      => $transaksi->id_transaksi, // Sesuaikan dengan field di tabel transaksi Anda
+            'total_harga'       => $transaksi->total_harga,
+            'status'            => 'Sukses',
+            'metode_pembayaran' => $transaksi->metode_pembayaran,
+        ]);
+    }
+}
+
+public function index()
+{
+    $userId = auth()->id();
+
+    // Mengambil riwayat berdasarkan user yang sedang login
+    $riwayat = \App\Models\RiwayatPembelian::where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+    // Kembalikan ke view user/akun (karena Anda tidak pakai profile/index)
+    return view('user.akun', compact('riwayat'));
+}
 }

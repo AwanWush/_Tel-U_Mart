@@ -88,4 +88,6 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Mart::class, 'active_mart_id');
     }
+
+    
 }

@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
 <x-app-layout>
-=======
-<x-layout>
->>>>>>> Stashed changes
     <div class="max-w-7xl mx-auto px-4 mt-6">
         <x-breadcrumb>
             <a href="/" class="hover:text-blue-600">Home</a>
@@ -22,16 +18,11 @@
         <div class="lg:col-span-2 flex justify-center">
             <div class="sticky top-24 w-full max-w-md">
                 <div class="aspect-square bg-white border rounded-2xl overflow-hidden shadow">
-<<<<<<< Updated upstream
                     <img
                         src="{{ $produk->gambar ? asset($produk->gambar) : asset('images/no-image.png') }}"
                         class="w-full h-full object-contain"
                         alt="{{ $produk->nama_produk }}"
                     >
-=======
-                    <img src="{{ $produk->gambar ? asset('storage/' . $produk->gambar) : asset('images/no-image.png') }}"
-                        class="w-full h-full object-contain" alt="{{ $produk->nama_produk }}">
->>>>>>> Stashed changes
                 </div>
             </div>
         </div>
@@ -114,16 +105,11 @@
                     <form method="POST" action="{{ route('wishlist.store') }}">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $produk->id }}">
-<<<<<<< Updated upstream
 
                         <button
                             type="submit"
                             class="w-12 h-12 bg-[#DB3B4A]/90 border rounded-xl flex items-center justify-center hover:bg-[#E68757]"
                         >
-=======
-                        <button type="submit"
-                            class="w-12 h-12 border rounded-xl flex items-center justify-center hover:bg-gray-100 transition">
->>>>>>> Stashed changes
                             @include('icons.heart')
                         </button>
                     </form>
@@ -149,9 +135,6 @@
         <h2 class="text-xl font-bold mb-4">Produk Serupa</h2>
         @include('produk._recommendation', ['produk' => $rekomendasi])
     </div>
-<<<<<<< Updated upstream
-</x-app-layout>
-=======
 
     {{-- Script Sinkronisasi --}}
     <script>
@@ -179,5 +162,4 @@
             });
         });
     </script>
-</x-layout>
->>>>>>> Stashed changes
+</x-app-layout>
