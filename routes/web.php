@@ -118,6 +118,9 @@ Route::get('/produk', [ProdukController::class, 'index'])
 
 Route::get('/produk/{produk}', [ProdukController::class, 'show'])
     ->name('produk.show');
+// ==================== USER KATEGORI PRODUK ====================
+Route::get('/kategori/{kategori}', [ProdukController::class, 'byKategori'])
+    ->name('produk.by-kategori');
 
 // ==================== CHECKOUT (WAJIB LOGIN) ==================== //
 Route::middleware(['auth', 'verified'])->group(function () {

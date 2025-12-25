@@ -14,4 +14,10 @@ class KategoriProduk extends Model
     {
         return $this->hasMany(Produk::class, 'kategori_id');
     }
+
+    public function produkAktif()
+    {
+        return $this->hasMany(Produk::class, 'kategori_id')
+            ->where('is_active', true);
+    }
 }

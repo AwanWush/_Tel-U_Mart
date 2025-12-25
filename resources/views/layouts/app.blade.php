@@ -61,7 +61,7 @@
             @endisset
 
             {{-- CONTENT --}}
-            <main class="flex-grow pt-8 pb-24">
+            <main class="pt-0 pb-20">
                 {{ $slot }}
             </main>
 

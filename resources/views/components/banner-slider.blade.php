@@ -3,7 +3,7 @@
         @forelse($banners ?? [] as $banner)
             <a href="{{ $banner->redirect_url ?? '#' }}" class="min-w-full">
                 <img src="{{ asset('banners/' . $banner->image_path) }}" 
-                    class="w-full h-64 object-cover rounded-lg" />
+                    class="w-full h-52 object-cover rounded-xl" />
             </a>
         @empty
             <p>Tidak ada banner tersedia</p>

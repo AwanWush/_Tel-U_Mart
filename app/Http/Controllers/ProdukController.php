@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Produk;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Mart;
+use App\Models\KategoriProduk;
 
 class ProdukController extends Controller
 {
@@ -33,9 +34,19 @@ class ProdukController extends Controller
         $rekomendasi = Produk::where('kategori_id', $produk->kategori_id)
             ->where('id', '!=', $produk->id)
             ->where('is_active', true)
-            ->take(8)
+            ->take(12)
             ->get();
 
         return view('produk.show', compact('produk', 'rekomendasi'));
+    }
+
+    public function byKategori(KategoriProduk $kategori)
+    {
+        $produk = Produk::with(['kategori', 'marts'])
+            ->where('kategori_id', $kategori->id)
+            ->where('is_active', true)
+            ->paginate(24);
+
+        return view('produk.by-kategori', compact('kategori', 'produk'));
     }
 }

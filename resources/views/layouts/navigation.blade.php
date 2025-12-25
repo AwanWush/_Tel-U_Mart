@@ -206,7 +206,7 @@
 {{-- SUB HEADER NAVIGATION --}}
 <div 
     x-data="{ openMart: false }"
-    class="sticky top-[80px] z-50 w-full bg-gradient-to-r from-[#5B000B] via-[#930014] to-[#DB4B3A] text-white"
+    class="sticky top-[80px] z-40 w-full bg-gradient-to-r from-[#5B000B] via-[#930014] to-[#DB4B3A] text-white"
 >
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center justify-between h-10 text-sm">

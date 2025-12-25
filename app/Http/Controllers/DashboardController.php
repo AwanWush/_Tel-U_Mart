@@ -7,6 +7,7 @@ use App\Models\Produk;
 use App\Models\Pesanan;
 use App\Models\Penjualan;
 use App\Models\Banner;
+use App\Models\KategoriProduk;
 
 class DashboardController extends Controller
 {
@@ -58,11 +59,21 @@ class DashboardController extends Controller
             ->take(8)
             ->get();
 
-        // return view('dashboard.user', compact('banners', 'produk', 'latestProducts'));
-        return view('dashboard.user', [
-            'banners' => $banners,
-            'produk' => $produk,
-            'latestProducts' => $latestProducts,
-        ]);
+        $kategoriProduk = KategoriProduk::with([
+            'produkAktif' => function ($query) {
+                $query
+                    ->with(['marts'])
+                    ->latest()
+                    ->take(13); // ambil 13 untuk cek >12
+            }
+        ])->get();
+
+        return view('dashboard.user', compact('banners', 'produk', 'latestProducts', 'kategoriProduk'));
+        // return view('dashboard.user', [
+        //     'banners' => $banners,
+        //     'produk' => $produk,
+        //     'latestProducts' => $latestProducts,
+        //     'kategoriProduk' => $kategoriProduk
+        // ]);
     }
 }
