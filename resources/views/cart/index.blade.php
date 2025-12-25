@@ -69,7 +69,7 @@
                 min="1"
                 class="w-16 border rounded px-2 py-1 text-center">
 
-            <button class="text-xs text-indigo-600 mt-1">
+            <button class="text-xs text-red-600 mt-1">
                 Update
             </button>
 
@@ -106,7 +106,7 @@
             </div>
 
             <button type="submit"
-                    class="w-full mt-5 bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+                    class="w-full mt-5 bg-red-600 text-white py-2 rounded hover:bg-red-700">
                 Checkout
             </button>
         </form>
