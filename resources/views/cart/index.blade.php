@@ -9,7 +9,7 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2">
 
-    @if($items->isEmpty())
+    @if(!$cart || $cart->items->isEmpty())
         <div class="bg-white p-10 text-center rounded shadow">
             <h3 class="text-lg font-semibold">
                 Yah, keranjangmu kosong 😢
@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    @foreach($items as $item)
+    @foreach($cart->items as $item)
     @php
         $subtotal = $item->produk->harga * $item->quantity;
 

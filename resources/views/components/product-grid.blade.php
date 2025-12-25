@@ -1,85 +1,131 @@
-<!-- <div class="max-w-7xl mx-auto px-4 pt-4 pb-8">
-
-</div> -->
 @props(['kategoriProduk'])
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8">
+<div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pt-4 pb-8">
 
 @foreach ($kategoriProduk as $kategori)
     @php
-        $produkList = $kategori->produkAktif;
-        $hasMore = $produkList->count() > 12;
-        $produkTampil = $produkList->take(12);
+        $produkList   = $kategori->produkAktif;
+        $produkTampil = $produkList->take(6);
+        $hasMore      = $produkList->count() > 6;
     @endphp
 
     @if ($produkTampil->count())
-        {{-- Judul kategori --}}
-        <div class="flex items-center justify-between mb-2 mt-6">
-            <h2 class="text-2xl font-bold">
+        {{-- HEADER KATEGORI --}}
+        <div class="flex items-center justify-between mb-4 mt-10">
+            <h2 class="text-xl font-semibold text-[#5B000B] tracking-tight">
                 {{ $kategori->nama_kategori }}
             </h2>
 
             @if ($hasMore)
                 <a href="{{ route('produk.by-kategori', $kategori) }}"
-                   class="text-blue-600 hover:underline font-medium text-sm">
-                    See more →
+                   class="text-sm font-medium
+                          text-[#930014]
+                          hover:text-[#DB4B3A]
+                          transition inline-flex items-center gap-1">
+                    Lihat semua →
                 </a>
             @endif
         </div>
 
-        {{-- Grid produk --}}
+        {{-- GRID --}}
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             @foreach ($produkTampil as $produk)
-                <a href="{{ route('produk.show', $produk) }}"
-                   class="group relative block bg-white p-3 rounded-xl shadow hover:shadow-lg transition">
+                <div
+                    x-data="{ hover: false }"
+                    @mouseenter="hover = true"
+                    @mouseleave="hover = false"
+                    class="group relative bg-white rounded-2xl
+                           border border-black/5
+                           hover:border-[#E68757]
+                           hover:shadow-lg
+                           transition overflow-hidden"
+                >
+                    <a href="{{ route('produk.show', $produk) }}" class="block p-3">
 
-                    {{-- Wishlist & Cart --}}
-                    <div class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">
-                        <button class="bg-white p-1 rounded-full shadow hover:bg-red-100">
-                            @include('icons.heart')
-                        </button>
-                        <button class="bg-white p-1 rounded-full shadow hover:bg-blue-100">
-                            @include('icons.cart')
-                        </button>
-                    </div>
-
-                    {{-- Gambar --}}
-                    <img src="{{ asset(str_replace('produk/', 'produk_assets/', $produk->gambar)) }}"
-                         class="w-full h-40 object-cover rounded-lg" />
-
-                    {{-- Nama --}}
-                    <h3 class="mt-2 text-sm font-semibold line-clamp-2">
-                        {{ $produk->nama_produk }}
-                    </h3>
-
-                    {{-- Diskon --}}
-                    @if ($produk->persentase_diskon)
-                        <div class="text-red-500 font-bold text-sm">
-                            Diskon {{ $produk->persentase_diskon }}%
+                        {{-- IMAGE --}}
+                        <div class="relative rounded-xl overflow-hidden">
+                            <img
+                                src="{{ asset(str_replace('produk/', 'produk_assets/', $produk->gambar)) }}"
+                                class="w-full h-40 object-cover
+                                       transition-transform duration-300
+                                       group-hover:scale-105"
+                            />
                         </div>
-                    @endif
 
-                    {{-- Harga --}}
-                    <div class="text-lg font-bold text-blue-600">
-                        Rp {{ number_format($produk->harga, 0, ',', '.') }}
+                        {{-- NAMA --}}
+                        <h3 class="mt-3 text-sm font-medium text-black line-clamp-2">
+                            {{ $produk->nama_produk }}
+                        </h3>
+
+                        {{-- HARGA --}}
+                        <div class="mt-1 text-base font-semibold text-[#930014]">
+                            Rp {{ number_format($produk->harga, 0, ',', '.') }}
+                        </div>
+
+                        {{-- STOK (JUMLAH TETAP ADA & DIHIGHLIGHT) --}}
+                        <div class="mt-1 text-xs font-semibold flex items-center gap-1
+                            {{ $produk->stok > 0
+                                ? 'text-green-600' : 'text-red-600'
+                            }}">
+                            <span class="uppercase tracking-wide">
+                                Stok:
+                            </span>
+                            <span class="text-sm">
+                                {{ $produk->stok }}
+                            </span>
+                        </div>
+
+                        {{-- LOKASI / MART --}}
+                        <div class="mt-1 text-xs text-black/60 leading-snug">
+                            Lokasi:
+                            <div>
+                                @foreach ($produk->highlightedMarts() as $mart)
+                                    <span class="
+                                        {{ $mart['is_active']
+                                            ? 'text-[#930014] font-semibold'
+                                            : 'text-black/50'
+                                        }}">
+                                        {{ $mart['nama'] }}
+                                    </span>@if(!$loop->last), @endif
+                                @endforeach
+                            </div>
+                        </div>
+                    </a>
+
+                    {{-- ACTION BUTTON --}}
+                    <div
+                        x-show="hover"
+                        x-transition.opacity
+                        class="absolute top-3 right-3 flex flex-col gap-2"
+                    >
+                        {{-- Wishlist --}}
+                        <form action="{{ route('wishlist.store') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $produk->id }}">
+
+                            <button type="submit"
+                                class="w-9 h-9 rounded-full bg-[#E7BD8A]/80 hover:bg-[#E68757]
+                                    border border-[#930014]/30 flex items-center justify-center
+                                    text-[#930014] hover:text-white transition">
+                                @include('icons.heart')
+                            </button>
+                        </form>
+
+
+                        {{-- Cart --}}
+                        <form action="{{ route('cart.add') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $produk->id }}">
+
+                            <button type="submit"
+                                class="w-9 h-9 rounded-full bg-[#DB4B3A] hover:bg-[#930014]
+                                    border border-[#930014] flex items-center justify-center
+                                    text-white transition">
+                                @include('icons.cart')
+                            </button>
+                        </form>
                     </div>
-
-                    {{-- Stok --}}
-                    <div class="text-xs mt-1
-                        {{ $produk->stok > 0 ? 'text-green-600' : 'text-red-600' }}">
-                        Stok: {{ $produk->stok }}
-                    </div>
-
-                    {{-- Mart --}}
-                    <div class="text-xs mt-1 text-gray-500">
-                        @foreach ($produk->highlightedMarts() as $mart)
-                            <span class="{{ $mart['is_active'] ? 'text-red-600 font-semibold' : '' }}">
-                                {{ $mart['nama'] }}
-                            </span>@if(!$loop->last), @endif
-                        @endforeach
-                    </div>
-
-                </a>
+                </div>
             @endforeach
         </div>
     @endif

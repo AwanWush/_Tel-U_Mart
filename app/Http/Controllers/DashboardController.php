@@ -64,7 +64,7 @@ class DashboardController extends Controller
                 $query
                     ->with(['marts'])
                     ->latest()
-                    ->take(13); // ambil 13 untuk cek >12
+                    ->take(7);
             }
         ])->get();
 

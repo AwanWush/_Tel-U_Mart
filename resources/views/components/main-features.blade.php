@@ -1,6 +1,6 @@
 <div 
     x-data
-    class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2"
+    class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pt-4 pb-8"
 >
     {{-- ONE UNIFIED BACKGROUND --}}
     <div class="bg-white rounded-3xl shadow border border-[#E7BD8A]/1 p-6">

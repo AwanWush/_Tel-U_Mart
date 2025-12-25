@@ -58,12 +58,20 @@
                                     </button>
                                 </form>
 
-                                <form method="POST" action="{{ route('cart.add') }}">
+                                <form action="{{ route('wishlist.store') }}" method="POST">
                                     @csrf
-                                    <input type="hidden" name="product_id" value="{{ $item->produk->id }}">
-                                    <button
-                                    class="px-4 py-1 text-indigo-600 text-sm border border-indigo-300 rounded-full hover:bg-indigo-50 transition">
-                                    Ke Cart
+                                    <input type="hidden" name="product_id" value="{{ $produk->id }}">
+
+                                    <button type="submit"
+                                        class="w-9 h-9 rounded-full
+                                            bg-[#E7BD8A]/80
+                                            hover:bg-[#E68757]
+                                            border border-[#930014]/30
+                                            flex items-center justify-center
+                                            text-[#930014]
+                                            hover:text-white
+                                            transition">
+                                        @include('icons.heart')
                                     </button>
                                 </form>
 

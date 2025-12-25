@@ -60,7 +60,6 @@ class ProdukSeeder extends Seeder
     //     ]);
     //     $produk3->marts()->attach([3]);
 
-<<<<<<< Updated upstream
     //     $produk4 = Produk::create([
     //         'kategori_id' => 2, 
     //         'nama_produk' => 'Cimory Squeee',
@@ -88,32 +87,3 @@ class ProdukSeeder extends Seeder
     //     $produk4->marts()->attach([2]);
     // }
 }
-=======
-        $produk4 = Produk::create([
-            'kategori_id' => 2, 
-            'nama_produk' => 'Cimory Squeee',
-            'deskripsi' => null,
-            'harga' => 7100,
-            'stok' => 47,
-            'gambar' => 'produk/product07.jpg',
-            'status_ketersediaan' => 'Tersedia',
-            'is_active' => true,
-            'persentase_diskon' => null
-        ]);
-        $produk4->marts()->attach([2]);
-
-                $produk4 = Produk::create([
-            'kategori_id' => 2, 
-            'nama_produk' => 'Cimory Squeee',
-            'deskripsi' => null,
-            'harga' => 7100,
-            'stok' => 47,
-            'gambar' => 'produk/product07.jpg',
-            'status_ketersediaan' => 'Tersedia',
-            'is_active' => true,
-            'persentase_diskon' => null
-        ]);
-        $produk4->marts()->attach([2]);
-    }
-}
->>>>>>> Stashed changes
