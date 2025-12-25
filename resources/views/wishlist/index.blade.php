@@ -15,7 +15,7 @@
                     </p>
 
                     <a href="{{ route('dashboard') }}"
-                        class="inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
+                        class="inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
                         Ke Beranda
                     </a>
                 </div>

@@ -14,7 +14,7 @@
                 <a href="{{ route('notifications.index') }}"
                    class="px-4 py-2 rounded text-sm
                    {{ request('tab') == null
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-red-600 text-white'
                         : 'bg-white dark:bg-white-800 text-gray-700 dark:text-black-200 shadow' }}">
                     Semua
                 </a>
@@ -22,7 +22,7 @@
                 <a href="{{ route('notifications.index', ['tab' => 'unread']) }}"
                    class="px-4 py-2 rounded text-sm
                    {{ request('tab') == 'unread'
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-red-600 text-white'
                         : 'bg-white dark:bg-white-800 text-gray-700 dark:text-black-200 shadow' }}">
                     Belum Dibaca
                 </a>
@@ -30,7 +30,7 @@
                 <a href="{{ route('notifications.index', ['tab' => 'read']) }}"
                    class="px-4 py-2 rounded text-sm
                    {{ request('tab') == 'read'
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-red-600 text-white'
                         : 'bg-white dark:bg-white-800 text-gray-700 dark:text-black-200 shadow' }}">
                     Sudah Dibaca
                 </a>
