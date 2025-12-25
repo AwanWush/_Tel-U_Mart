@@ -219,18 +219,20 @@ Route::get('/faq', function () {
 })->name('faq.index');
 
 Route::middleware(['auth'])->group(function () {
-    
     Route::get('/notifications', [NotificationController::class, 'index'])
-    ->name('notifications.index');
-    
+        ->name('notifications.index');
+
     Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])
-    ->name('notifications.read');
-    
+        ->name('notifications.read');
+
     Route::post('/notifications/read-selected', [NotificationController::class, 'readSelected'])
-    ->name('notifications.readSelected');
-    
+        ->name('notifications.readSelected');
+
     Route::post('/notifications/delete-selected', [NotificationController::class, 'deleteSelected'])
-    ->name('notifications.deleteSelected');
+        ->name('notifications.deleteSelected');
+
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])
+        ->name('notifications.destroy');
 });
 
 
