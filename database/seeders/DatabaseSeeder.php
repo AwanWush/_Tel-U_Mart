@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             // ProdukSeeder::class,
             BannerSeeder::class,
             ProdukssSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }
