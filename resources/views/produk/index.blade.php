@@ -5,12 +5,11 @@
         </h2>
     </x-slot>
 
-    {{-- pt-2 agar mepet ke header, pb-8 untuk jarak bawah --}}
     <div class="pt-2 pb-8 bg-gray-50 min-h-screen font-sans" x-data="{ openFilter: false, showAll: false }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             {{-- DROPDOWN FILTER KATEGORI --}}
-            <div class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 sm:px-0">
+            <div class="mb-4 mt-4 flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 sm:px-0">
                 <div class="relative inline-block text-left">
                     <button @click="openFilter = !openFilter" type="button" 
                             class="inline-flex justify-center items-center rounded-xl border border-gray-200 shadow-sm px-4 py-1.5 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all active:scale-95">
@@ -22,6 +21,7 @@
                     </button>
 
                     <div x-show="openFilter" 
+                         x-cloak
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 translate-y-1"
                          x-transition:enter-end="opacity-100 translate-y-0"
@@ -39,87 +39,97 @@
                 </div>
             </div>
 
-            @if (!empty($kategoriId))
-                {{-- GRID SAAT FILTER AKTIF --}}
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 px-4 sm:px-0">
-                    @forelse ($produk as $p)
-                        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
-                            <a href="{{ route('produk.show', $p) }}" class="block p-3 aspect-square overflow-hidden bg-white">
-                                <img src="{{ asset('produk_assets/' . basename($p->gambar)) }}" class="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-500">
-                            </a>
-                            <div class="px-3 pb-3 flex flex-col flex-grow">
-                                <h4 class="text-[11px] font-semibold text-gray-800 line-clamp-2 mb-0.5 leading-tight tracking-tight min-h-[28px]">{{ $p->nama_produk }}</h4>
-                                <p class="text-[#5B000B] font-bold text-[14px] mb-0.5">Rp {{ number_format($p->harga, 0, ',', '.') }}</p>
-                                <div class="mt-auto">
-                                    <p class="text-[10px] font-medium text-green-500 flex items-center leading-none">
-                                        <span class="w-1 h-1 bg-green-500 rounded-full mr-1 animate-pulse"></span>
-                                        Stok: {{ $p->stok }}
-                                    </p>
-                                    <p class="text-[9px] text-gray-400 font-medium truncate mt-0.5 italic leading-none">{{ $p->marts->pluck('nama_mart')->implode(', ') }}</p>
+            <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pt-4 pb-8">
+                @if (!empty($kategoriId))
+                    {{-- GRID SAAT FILTER AKTIF --}}
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        @forelse ($produk as $p)
+                            <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false"
+                                 class="group relative bg-white rounded-2xl border border-black/5 hover:border-[#E68757] hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+                                <a href="{{ route('produk.show', $p) }}" class="block p-3 flex-grow text-left">
+                                    <div class="relative rounded-xl overflow-hidden bg-white">
+                                        <img src="{{ asset('produk_assets/' . basename($p->gambar)) }}" class="w-full h-40 object-contain transition-transform duration-500 group-hover:scale-110" />
+                                    </div>
+                                    <h3 class="mt-3 text-[13px] font-semibold text-gray-900 line-clamp-2 leading-tight min-h-[34px] tracking-tight">{{ $p->nama_produk }}</h3>
+                                    <div class="mt-1 text-base font-bold text-[#930014]">Rp {{ number_format($p->harga, 0, ',', '.') }}</div>
+                                    <div class="mt-1 text-[11px] font-bold text-[#009661] uppercase tracking-wide">STOK: {{ $p->stok }}</div>
+                                    <div class="mt-1 text-[10px] text-gray-500 default"> {{ $p->marts->pluck('nama_mart')->implode(', ') }}</div>
+                                </a>
+                                <div x-show="hover" x-cloak x-transition.opacity class="absolute top-3 right-3 flex flex-col gap-2 z-10">
+                                    <button class="w-9 h-9 rounded-full bg-[#E7BD8A]/80 hover:bg-[#E68757] border border-[#930014]/30 flex items-center justify-center text-[#930014] hover:text-white transition-all transform active:scale-75 duration-200 shadow-sm">
+                                        @include('icons.heart')
+                                    </button>
+                                    <button class="w-9 h-9 rounded-full bg-[#DB4B3A] hover:bg-[#930014] flex items-center justify-center text-white transition-all transform active:scale-75 duration-200 shadow-sm">
+                                        @include('icons.cart')
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                    @empty
-                        <p class="col-span-full text-center text-gray-400 py-10 text-sm">Produk tidak tersedia.</p>
-                    @endforelse
-                </div>
-            @else
-                {{-- TAMPILAN HALAMAN UTAMA --}}
-                @foreach ($kategori as $index => $k)
-                    @if ($k->produk->count() > 0)
-                        <div class="mb-5" x-show="showAll || {{ $index }} < 2" x-transition:enter="transition ease-out duration-300">
-                            <div class="flex justify-between items-center mb-1 px-4 sm:px-0">
-                                <h3 class="text-sm font-bold text-gray-800 tracking-tight uppercase">{{ $k->nama_kategori }}</h3>
-                                <a href="{{ route('produk.index', ['kategori' => $k->id]) }}" 
-                                   class="group flex items-center text-[10px] font-bold text-blue-600 hover:text-[#5B000B] transition-all uppercase tracking-wider">
-                                    Lihat Semua 
-                                    <svg class="ml-1 w-3 h-3 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                </a>
-                            </div>
+                        @empty
+                            <p class="col-span-full text-center text-gray-400 py-10 text-sm italic">Produk tidak tersedia.</p>
+                        @endforelse
+                    </div>
+                @else
+                    {{-- CAROUSEL KATEGORI (DIBATASI 2 PERTAMA) --}}
+                    @foreach ($kategori as $index => $k)
+                        @if ($k->produk->count() > 0)
+                            <div class="mb-10" x-show="showAll || {{ $index }} < 2" x-cloak x-transition:enter="transition ease-out duration-300 opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+                                <div class="flex items-center justify-between mb-4 px-4 sm:px-0">
+                                    <h2 class="text-xl font-bold text-[#5B000B] tracking-tight uppercase italic border-l-4 border-[#5B000B] pl-3">{{ $k->nama_kategori }}</h2>
+                                    <a href="{{ route('produk.index', ['kategori' => $k->id]) }}" class="text-xs font-bold text-[#930014] hover:underline uppercase tracking-widest">Lihat Semua →</a>
+                                </div>
 
-                            <div class="flex overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory gap-3 px-4 sm:px-0 -mx-4 sm:mx-0">
-                                @foreach ($k->produk as $p)
-                                    <div class="min-w-[155px] sm:min-w-[180px] md:min-w-[200px] snap-start h-full flex flex-col">
-                                        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
-                                            <a href="{{ route('produk.show', $p) }}" class="block p-3 aspect-square overflow-hidden bg-white">
-                                                <img src="{{ asset('produk_assets/' . basename($p->gambar)) }}" class="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-500">
-                                            </a>
-                                            <div class="px-3 pb-3 flex flex-col flex-grow">
-                                                {{-- min-h-[28px] menjaga agar nama produk tidak membuat tinggi kartu berbeda --}}
-                                                <h4 class="text-[11px] font-semibold text-gray-800 line-clamp-2 mb-0.5 leading-tight tracking-tight min-h-[28px]">{{ $p->nama_produk }}</h4>
-                                                
-                                                <p class="text-[#5B000B] font-bold text-[14px] mb-0.5">Rp {{ number_format($p->harga, 0, ',', '.') }}</p>
-                                                
-                                                <div class="mt-auto">
-                                                    <p class="text-[10px] font-medium text-green-500 flex items-center leading-none">
-                                                        <span class="w-1 h-1 bg-green-500 rounded-full mr-1 animate-pulse"></span>
-                                                        Stok: {{ $p->stok }}
-                                                    </p>
-                                                    <p class="text-[9px] text-gray-400 font-medium truncate mt-0.5 leading-none italic">{{ $p->marts->pluck('nama_mart')->implode(', ') }}</p>
+                                <div class="relative">
+                                    <div class="flex overflow-x-auto gap-4 pb-6 px-4 sm:px-0 scrollbar-hide snap-x snap-mandatory">
+                                        @foreach ($k->produk as $p)
+                                            <div class="min-w-[170px] sm:min-w-[200px] md:min-w-[220px] snap-start">
+                                                <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" 
+                                                     class="group relative bg-white rounded-2xl border border-black/5 hover:border-[#E68757] hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+                                                    <a href="{{ route('produk.show', $p) }}" class="block p-3 flex-grow text-left">
+                                                        <div class="relative rounded-xl overflow-hidden bg-white">
+                                                            <img src="{{ asset('produk_assets/' . basename($p->gambar)) }}" class="w-full h-40 object-contain transition-transform duration-500 group-hover:scale-110" />
+                                                        </div>
+                                                        <h3 class="mt-3 text-[13px] font-semibold text-gray-900 line-clamp-2 min-h-[34px] tracking-tight">{{ $p->nama_produk }}</h3>
+                                                        <div class="mt-1 text-base font-bold text-[#930014]">Rp {{ number_format($p->harga, 0, ',', '.') }}</div>
+                                                        <div class="mt-1 text-[11px] font-bold text-[#009661] uppercase tracking-wide">STOK: {{ $p->stok }}</div>
+                                                        <div class="mt-1 text-[10px] text-gray-500 default"> {{ $p->marts->pluck('nama_mart')->implode(', ') }}</div>
+                                                    </a>
+                                                    <div x-show="hover" x-cloak x-transition.opacity class="absolute top-3 right-3 flex flex-col gap-2 z-10">
+                                                        <button class="w-9 h-9 rounded-full bg-[#E7BD8A]/80 hover:bg-[#E68757] border border-[#930014]/30 flex items-center justify-center text-[#930014] hover:text-white transition-all transform active:scale-75 duration-200 shadow-sm">
+                                                            @include('icons.heart')
+                                                        </button>
+                                                        <button class="w-9 h-9 rounded-full bg-[#DB4B3A] hover:bg-[#930014] flex items-center justify-center text-white transition-all transform active:scale-75 duration-200 shadow-sm">
+                                                            @include('icons.cart')
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        @endforeach
                                     </div>
-                                @endforeach
+                                </div>
                             </div>
+                        @endif
+                    @endforeach
+
+                    {{-- TOMBOL LIHAT SEMUA KATEGORI --}}
+                    @if($kategori->count() > 2)
+                        <div class="mt-4 mb-10 text-center" x-show="!showAll">
+                            <button @click="showAll = true" 
+                                    class="inline-block px-10 py-3 bg-[#5B000B] text-white text-[10px] font-black rounded-2xl shadow-lg uppercase tracking-widest active:scale-95 transition-all hover:bg-black">
+                                    LIHAT SEMUA KATEGORI &darr;
+                            </button>
                         </div>
                     @endif
-                @endforeach
-
-                <div class="mt-1 mb-6 text-center" x-show="!showAll">
-                    <button @click="showAll = true" 
-                           class="inline-block px-8 py-2 bg-white border border-gray-200 text-[#5B000B] text-[10px] font-bold rounded-xl shadow-sm hover:bg-red-50 transition-all active:scale-95 uppercase tracking-widest">
-                           LIHAT SEMUA KATEGORI &darr;
-                    </button>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
     </div>
 
     <style>
         [x-cloak] { display: none !important; }
+        .font-sans { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif !important; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .font-sans { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif !important; }
+        .snap-x { scroll-snap-type: x mandatory; }
+        .snap-start { scroll-snap-align: start; }
     </style>
-</x-app-layout> 
+</x-app-layout>

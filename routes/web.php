@@ -218,6 +218,8 @@ Route::get('/faq', function () {
     return view('fitur-user.faq');
 })->name('faq.index');
 
+Route::get('/search', [ProdukController::class, 'search'])->name('produk.search');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])
         ->name('notifications.index');
