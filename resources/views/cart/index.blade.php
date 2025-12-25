@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -135,67 +134,3 @@
     checkboxes.forEach(cb => cb.addEventListener('change', hitungTotal));
     </script>
 </x-app-layout>
-=======
-<x-layout>
-    <div class="max-w-7xl mx-auto px-4 mt-6">
-        <h1 class="text-2xl font-bold mb-4">Keranjang Belanja</h1>
-
-        @if($items->isEmpty())
-            <p class="text-gray-600">Keranjangmu kosong.</p>
-            <a href="{{ route('produk.index') }}" class="text-blue-600 hover:underline">Belanja Sekarang</a>
-        @else
-            <table class="w-full border rounded-lg overflow-hidden">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="p-2 text-left">Produk</th>
-                        <th class="p-2 text-left">Harga</th>
-                        <th class="p-2 text-left">Jumlah</th>
-                        <th class="p-2 text-left">Subtotal</th>
-                        <th class="p-2">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($items as $item)
-                        <tr class="border-t">
-                            <td class="p-2 flex items-center gap-2">
-                                <img src="{{ $item->produk->gambar ? asset('storage/' . $item->produk->gambar) : asset('images/no-image.png') }}"
-                                     alt="{{ $item->produk->nama_produk }}" class="w-12 h-12 object-cover rounded">
-                                {{ $item->produk->nama_produk }}
-                            </td>
-                            <td class="p-2">Rp {{ number_format($item->produk->harga, 0, ',', '.') }}</td>
-                            <td class="p-2">
-                                <form action="{{ route('cart.update', $item->id) }}" method="POST">
-                                    @csrf
-                                    @method('PATCH')
-                                    <input type="number" name="quantity" value="{{ $item->quantity }}" min="1"
-                                           class="w-16 border rounded px-1 py-0.5">
-                                    <button type="submit" class="ml-2 px-2 py-1 bg-blue-600 text-white rounded">Update</button>
-                                </form>
-                            </td>
-                            <td class="p-2">
-                                Rp {{ number_format($item->produk->harga * $item->quantity, 0, ',', '.') }}
-                            </td>
-                            <td class="p-2 text-center">
-                                <form action="{{ route('cart.remove', $item->id) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="px-2 py-1 bg-red-600 text-white rounded">Hapus</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-            <div class="mt-4 text-right font-bold text-lg">
-                Total: Rp {{ number_format($items->sum(fn($i) => $i->produk->harga * $i->quantity), 0, ',', '.') }}
-            </div>
-
-            <div class="mt-4 text-right">
-                <a href="{{ route('checkout.index') }}"
-                   class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Checkout</a>
-            </div>
-        @endif
-    </div>
-</x-layout>
->>>>>>> Stashed changes

@@ -67,6 +67,7 @@ class Produk extends Model
         });
     }
 
+    
     public function highlightedMarts()
     {
         $activeMart = activeMart();

@@ -4,7 +4,7 @@
            class="group block bg-white p-3 rounded-xl shadow hover:shadow-lg transition">
 
             <div class="relative">
-                <img src="{{ asset($item->gambar) }}"
+                <img src="{{ asset(str_replace('produk/', 'produk_assets/', $item->gambar)) }}"
                      class="w-full h-40 object-cover rounded-lg">
 
                 @if($item->persentase_diskon)

@@ -23,7 +23,7 @@
                         </div>
 
                         <p class="mt-3 text-gray-600 leading-relaxed">
-                            Temukan kebutuhan harian asramamu dengan 
+                            Temukan kebutuhan harian asramamu dengan
                             cepat, praktis, dan aman langsung dari mart asrama.
                         </p>
 
@@ -45,8 +45,7 @@
                             class="w-12 h-12 aspect-square
                                 flex items-center justify-center
                                 bg-white rounded-lg shadow
-                                text-[#5B000B]"
-                        >
+                                text-[#5B000B]">
                             @include('icons.electricity')
                         </div>
 
@@ -73,8 +72,7 @@
                             class="w-12 h-12 aspect-square
                                 flex items-center justify-center
                                 bg-white rounded-lg shadow
-                                text-[#5B000B]"
-                        >
+                                text-[#5B000B]">
                             @include('icons.gallon')
                         </div>
 
@@ -94,10 +92,10 @@
             {{-- ================= RIGHT (BIGGER) ================= --}}
             @php
                 /**
-                * Bagi produk terbaru menjadi 2 grup
-                * - Total 8 produk
-                * - Tiap grup isi 4 (2 atas, 2 bawah)
-                */
+                 * Bagi produk terbaru menjadi 2 grup
+                 * - Total 8 produk
+                 * - Tiap grup isi 4 (2 atas, 2 bawah)
+                 */
                 $groups = collect($latestProducts)->chunk(4);
             @endphp
             <div
@@ -133,16 +131,16 @@
                 {{-- DESKTOP --}}
                 <div class="hidden lg:grid grid-cols-2 gap-4 flex-1 h-full">
 
-                    @foreach($groups as $groupIndex => $group)
+                    @foreach ($groups as $groupIndex => $group)
                         <div class="grid grid-cols-2 grid-rows-2 gap-3 h-full">
 
-                            @foreach($group as $product)
+                            @foreach ($group as $product)
                                 <a href="{{ route('produk.show', $product->id) }}"
                                    class="group relative rounded-xl overflow-hidden border border-[#DB4B3A]/10 transition hover:shadow-lg">
 
                                     <div class="w-full h-full">
                                         <img
-                                            src="{{ asset($product->gambar) }}"
+                                            src="{{ asset(str_replace('produk/', 'produk_assets/', $product->gambar)) }}"
                                             alt="{{ $product->nama_produk }}"
                                             class="w-full h-full object-cover
                                                 transition-transform duration-300 ease-out
@@ -179,7 +177,7 @@
                                     <a href="{{ route('produk.show', $product->id) }}"
                                         class="group relative rounded-xl overflow-hidden border border-[#DB4B3A]/10">
                                         <img
-                                            src="{{ asset($product->gambar) }}"
+                                            src="{{ asset(str_replace('produk/', 'produk_assets/', $product->gambar)) }}"
                                             alt="{{ $product->nama_produk }}"
                                             class="w-full h-full object-cover
                                                 transition-transform duration-300 ease-out
@@ -226,20 +224,18 @@
                         {{-- CONTENT --}}
                         <div class="grid grid-cols-2 gap-3">
 
-                            @foreach($groups as $groupIndex => $group)
+                            @foreach ($groups as $groupIndex => $group)
                                 <template x-if="openGroup === {{ $groupIndex }}">
                                     <div class="contents">
-                                        @foreach($group as $product)
+                                        @foreach ($group as $product)
                                             <a href="{{ route('produk.show', $product->id) }}"
                                             class="group relative rounded-xl overflow-hidden
                                                     border border-[#DB4B3A]/10">
 
                                                 <div class="aspect-square">
-                                                    <img
-                                                        src="{{ asset($product->gambar) }}"
+                                                    <img src="{{ asset(str_replace('produk/', 'produk_assets/', $product->gambar)) }}"
                                                         alt="{{ $product->nama_produk }}"
-                                                        class="w-full h-full object-cover"
-                                                    >
+                                                        class="w-full h-full object-cover hover:scale-105 transition">
                                                 </div>
 
                                                 <div class="absolute bottom-3 left-3 right-3">

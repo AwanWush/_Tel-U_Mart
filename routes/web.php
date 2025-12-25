@@ -52,25 +52,25 @@ Route::get('/', function () {
 });
 
 //==================== DASHBOARD SESUAI ROLE ==================== //
-Route::get('/dashboard', function () {
-    $user = Auth::user();
+// Route::get('/dashboard', function () {
+//     $user = Auth::user();
 
-    // Jika belum login → langsung tampilkan dashboard user umum (tanpa auth)
-    if (!$user) {
-        return view('dashboard.user');
-    }
+//     // Jika belum login → langsung tampilkan dashboard user umum (tanpa auth)
+//     if (!$user) {
+//         return view('dashboard.user');
+//     }
 
-    // Jika login → arahkan sesuai role
-    switch ($user->role_id) {
-        case 1:
-            return view('dashboard.superadmin'); // Super Admin wajib login
-        case 2:
-            return view('dashboard.admin');      // Admin wajib login
-        case 3:
-        default:
-            return view('dashboard.user');       // User login pun ke dashboard user
-    }
-})->name('dashboard');
+//     // Jika login → arahkan sesuai role
+//     switch ($user->role_id) {
+//         case 1:
+//             return view('dashboard.superadmin'); // Super Admin wajib login
+//         case 2:
+//             return view('dashboard.admin');      // Admin wajib login
+//         case 3:
+//         default:
+//             return view('dashboard.user');       // User login pun ke dashboard user
+//     }
+// })->name('dashboard');
 
 // satu pintu dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -100,7 +100,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
 
 
 // ==================== USER (TIDAK WAJIB LOGIN) ==================== //
@@ -121,7 +120,11 @@ Route::get('/produk/{produk}', [ProdukController::class, 'show'])
 // ==================== USER KATEGORI PRODUK ====================
 Route::get('/kategori/{kategori}', [ProdukController::class, 'byKategori'])
     ->name('produk.by-kategori');
+// // routes/web.php
+// Route::get('/produk', [App\Http\Controllers\ProdukController::class, 'index'])->name('produk.index');
+// Route::get('/produk/{produk}', [App\Http\Controllers\ProdukController::class, 'show'])->name('produk.show');
 
+require __DIR__.'/auth.php';
 // ==================== CHECKOUT (WAJIB LOGIN) ==================== //
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('/checkout', 'checkout.index')->name('checkout.index');
@@ -221,9 +224,10 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-Route::resource('pembayaran', PembayaranController::class)->except(['show', 'edit', 'update']);
-Route::post('/pembayaran', [PembayaranController::class, 'store'])->name('pembayaran.store');
-Route::delete('/pembayaran/{id}', [PembayaranController::class, 'destroy'])->name('pembayaran.destroy');
+// Route::resource('pembayaran', PembayaranController::class)->except(['show', 'edit', 'update']);
+// Route::post('/pembayaran', [PembayaranController::class, 'store'])->name('pembayaran.store');
+// Route::delete('/pembayaran/{id}', [PembayaranController::class, 'destroy'])->name('pembayaran.destroy');
+Route::resource('pembayaran', PembayaranController::class)->only(['index', 'create', 'store', 'destroy']);
 Route::post('/payment/create', [PembayaranController::class, 'createPayment'])
 ->name('payment.create');
 

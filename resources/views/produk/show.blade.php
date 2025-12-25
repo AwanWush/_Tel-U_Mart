@@ -19,7 +19,7 @@
             <div class="sticky top-24 w-full max-w-md">
                 <div class="aspect-square bg-white border rounded-2xl overflow-hidden shadow">
                     <img
-                        src="{{ $produk->gambar ? asset($produk->gambar) : asset('images/no-image.png') }}"
+                        src="{{ asset(str_replace('produk/', 'produk_assets/', $produk->gambar)) ? asset(str_replace('produk/', 'produk_assets/', $produk->gambar)) : asset('images/no-image.png') }}"
                         class="w-full h-full object-contain"
                         alt="{{ $produk->nama_produk }}"
                     >

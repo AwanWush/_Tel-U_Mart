@@ -228,7 +228,7 @@
                 <li class="h-4 w-px bg-white/40"></li>
 
                 <li>
-                    <a href="/produk" class="relative transition hover:text-[#E7BD8A]
+                    <a href="{{ route('produk.index') }}" class="relative transition hover:text-[#E7BD8A]
                                              after:absolute after:left-0 after:-bottom-1
                                              after:w-0 after:h-[2px]
                                              after:bg-[#E7BD8A]

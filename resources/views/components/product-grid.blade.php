@@ -44,7 +44,7 @@
                     </div>
 
                     {{-- Gambar --}}
-                    <img src="{{ asset($produk->gambar) }}"
+                    <img src="{{ asset(str_replace('produk/', 'produk_assets/', $produk->gambar)) }}"
                          class="w-full h-40 object-cover rounded-lg" />
 
                     {{-- Nama --}}

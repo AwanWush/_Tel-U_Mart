@@ -2,24 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KategoriProduk;
 use App\Models\Produk;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Mart;
-use App\Models\KategoriProduk;
+use Illuminate\Http\Request;
 
 class ProdukController extends Controller
 {
     // USER: list produk
-    public function index()
+    public function index(Request $request)
     {
-        $produk = Produk::with(['kategori', 'marts'])
-            ->where('is_active', true)
+        $kategoriId = $request->kategori;
+
+        // Load kategori beserta produk aktifnya sekaligus
+        $kategori = KategoriProduk::with(['produk' => function ($q) {
+            $q->where('is_active', true)->latest();
+        }])->get();
+
+        // Query untuk filter
+        $produk = Produk::where('is_active', true)
+            ->when($kategoriId, function ($q) use ($kategoriId) {
+                $q->where('kategori_id', $kategoriId);
+            })
             ->latest()
             ->get();
 
-        return view('produk.index', compact('produk'));
+        return view('produk.index', compact('produk', 'kategori', 'kategoriId'));
     }
-
 
     // USER: detail produk
     public function show(Produk $produk)
