@@ -39,3 +39,4 @@ return new class extends Migration
         Schema::dropIfExists('produk_reviews');
     }
 };
+
