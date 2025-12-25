@@ -1,7 +1,8 @@
 <?php
-
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\DashboardController;
@@ -15,10 +16,35 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\PesananController;
 use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
+<<<<<<< Updated upstream
 use App\Http\Controllers\MartController;
+=======
+use App\Http\Controllers\OrderController;
+>>>>>>> Stashed changes
 
+
+Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
+Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
+Route::post('/cart/add', [CartController::class, 'store'])->name('cart.add');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
+Route::get('/order/success', [CheckoutController::class, 'showSuccess'])
+    ->name('order.success');
+Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])
+    ->name('payment.method');
+Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])
+    ->name('payment.snap-token');
+Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])->name('payment.snap-token');
+Route::post('/checkout/direct', [CheckoutController::class, 'directCheckout'])->name('checkout.direct');
+Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])->name('payment.method');
+Route::get('/order/success', [CheckoutController::class, 'showSuccess'])->name('order.success');
+
+Route::get('/order/success', [OrderController::class, 'success'])
+    ->name('order.success');
 Route::get('/', function () {
     return redirect()->route('login');
+    
 });
 
 //==================== DASHBOARD SESUAI ROLE ==================== //

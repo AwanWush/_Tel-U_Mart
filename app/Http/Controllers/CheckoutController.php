@@ -2,25 +2,62 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CartItem;
 use Illuminate\Http\Request;
+use App\Models\Produk;
 
 class CheckoutController extends Controller
 {
-    public function selected(Request $request)
+    public function directCheckout(Request $request)
     {
-        $request->validate([
-            'cart_items' => 'required|array|min:1',
+        $produk = Produk::findOrFail($request->product_id);
+        $qty = $request->qty ?? 1;
+
+        $totalHarga = $produk->harga * $qty;
+
+        return redirect()->route('payment.method', [
+            'type'   => 'delivery',
+            'amount' => $totalHarga
         ]);
+    }
 
-        $items = CartItem::with('produk')
-            ->whereIn('id', $request->cart_items)
-            ->get();
+    public function showPaymentMethod(Request $request)
+    {
+        $totalPrice  = $request->query('amount', 0);
+        $serviceType = $request->query('type', 'delivery');
 
-        $total = $items->sum(function ($item) {
-            return $item->quantity * $item->price;
-        });
+        return view('payment.method', compact('totalPrice', 'serviceType'));
+    }
 
-        return view('checkout.index', compact('items', 'total'));
+    public function showSuccess(Request $request)
+    {
+        $serviceType   = $request->query('type', 'delivery');
+        $paymentMethod = $request->query('method', 'cash_cod');
+        $status        = $request->query('status', 'pending');
+        $amount        = (int) $request->query('amount', 0);
+
+        $order_id   = strtoupper(uniqid('TM-'));
+        $order_date = now()->format('d M Y, H:i');
+        $delivery_address = 'Jl. Contoh Alamat No. 123, Bandung';
+
+        $order_data = [
+            [
+                'name'  => 'Produk Pesanan',
+                'qty'   => 1,
+                'price' => $amount
+            ]
+        ];
+
+        $total_payment = $amount;
+
+        return view('order.success', compact(
+    'serviceType',
+    'paymentMethod',
+    'status',
+    'order_id',
+    'order_date',
+    'order_data',
+    'total_payment',
+    'delivery_address'
+));
     }
 }

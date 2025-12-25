@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Midtrans\Config;
 use Midtrans\Snap;
 
-class PembayaranController extends Controller
+class PaymentController extends Controller
 {
     public function getSnapToken(Request $request)
     {
