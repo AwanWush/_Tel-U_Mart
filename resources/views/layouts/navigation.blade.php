@@ -1,5 +1,5 @@
 <nav x-data="{ open: false }"
-     class="fixed top-0 z-50 bg-white border-b border-[#E7BD8A]/40">
+     class="fixed top-0 z-50 w-full bg-white border-b border-[#E7BD8A]/40">
 
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex h-20 items-center justify-between">
@@ -20,18 +20,6 @@
                     TJ&TMart
                 </a>
 
-            </div>
-
-            {{-- CATEGORY --}}
-            <div class="hidden md:flex items-center">
-                <a href="/category"
-                class="px-4 py-2 rounded-full text-sm font-medium
-                       text-black
-                       hover:bg-[#E7BD8A]/40
-                       hover:text-[#DB4B3A]
-                       transition">
-                    Kategori
-                </a>
             </div>
 
             {{-- SEARCH --}}
@@ -276,7 +264,7 @@
                 <span class="text-xs opacity-80">Prioritas Toko</span>
                 @include('icons.map-pin-icon')
                 <span class="font-bold text-[#E7BD8A]">
-                    {{ $activeMart->nama_mart ?? 'TJMart Putra' }}
+                    {{ $activeMart->nama_mart ?? 'Semua Mart' }}
                 </span>
             </button>
         </div>

@@ -5,28 +5,68 @@ namespace App\Http\Controllers;
 use App\Models\KategoriProduk;
 use App\Models\Produk;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProdukController extends Controller
 {
     // USER: list produk
     public function index(Request $request)
     {
-        $kategoriId = $request->kategori;
+        // $kategoriId = $request->kategori;
 
-        // Ambil data kategori
-        $kategori = KategoriProduk::with(['produk' => function ($q) {
-            $q->where('is_active', true)->latest();
+        // // Ambil data kategori
+        // $kategori = KategoriProduk::with(['produk' => function ($q) {
+        //     $q->where('is_active', true)->latest();
+        // }])->get();
+
+        // // Query untuk filter
+        // $produk = Produk::where('is_active', true)
+        //     ->when($kategoriId, function ($q) use ($kategoriId) {
+        //         $q->where('kategori_id', $kategoriId);
+        //     })
+        //     ->latest()
+        //     ->get();
+
+        // // Kirimkan $kategori untuk Dropdown DAN $kategoriProduk untuk Grid
+        // return view('produk.index', [
+        //     'produk' => $produk,
+        //     'kategori' => $kategori,             // Digunakan untuk Dropdown Filter
+        //     'kategoriProduk' => $kategori,       // Digunakan untuk Komponen Grid
+        //     'kategoriId' => $kategoriId,
+        // ]);
+        $kategoriId = $request->kategori;
+        $activeMart = Auth::user()?->activeMart;
+
+        $kategori = KategoriProduk::with(['produk' => function ($q) use ($activeMart) {
+            $q->where('is_active', true);
+
+            if ($activeMart) {
+                $q->whereHas('marts', function ($m) use ($activeMart) {
+                    $m->where('mart.id', $activeMart->id);
+                });
+            }
+
+            $q->latest();
         }])->get();
 
-        // Query untuk filter
         $produk = Produk::where('is_active', true)
-            ->when($kategoriId, function ($q) use ($kategoriId) {
-                $q->where('kategori_id', $kategoriId);
-            })
+            ->when($kategoriId, fn ($q) =>
+                $q->where('kategori_id', $kategoriId)
+            )
+            ->when($activeMart, fn ($q) =>
+                $q->whereHas('marts', fn ($m) =>
+                    $m->where('mart.id', $activeMart->id)
+                )
+            )
             ->latest()
             ->get();
 
-        // Kirimkan $kategori untuk Dropdown DAN $kategoriProduk untuk Grid
+        // return view('produk.index', compact(
+        //     'produk',
+        //     'kategori',
+        //     'kategoriId',
+        //     'kategoriProduk'    
+        // ));
         return view('produk.index', [
             'produk' => $produk,
             'kategori' => $kategori,             // Digunakan untuk Dropdown Filter
@@ -38,6 +78,8 @@ class ProdukController extends Controller
     // USER: detail produk
     public function show(Produk $produk)
     {
+        $activeMart = Auth::user()?->activeMart;
+
         $produk->load([
             'kategori',
             'marts',
@@ -48,6 +90,12 @@ class ProdukController extends Controller
         $rekomendasi = Produk::where('kategori_id', $produk->kategori_id)
             ->where('id', '!=', $produk->id)
             ->where('is_active', true)
+            ->when($activeMart, fn ($q) =>
+                $q->whereHas('marts', fn ($m) =>
+                    $m->where('mart.id', $activeMart->id)
+                )
+            )
+            ->with('marts')
             ->take(12)
             ->get();
 

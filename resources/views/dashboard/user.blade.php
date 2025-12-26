@@ -5,7 +5,7 @@
         <x-banner-slider :banners="$banners" />
     </div>
 
-    <div class="py-4">
+    <div class="py-2">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
                 {{-- Welcome + Features --}}
@@ -15,6 +15,8 @@
     </div>
 
     {{-- Product Grid --}}
-    <x-product-grid :kategori-produk="$kategoriProduk" />
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <x-product-grid :kategori-produk="$kategoriProduk" />
+    </div>
 
 </x-app-layout>

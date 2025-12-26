@@ -9,6 +9,7 @@ use App\Models\Cart;
 use App\Models\Wishlist;
 use App\Models\Notification;
 use App\Models\Mart;
+use App\Models\Produk;
 use Midtrans\Config;
 
 
@@ -66,6 +67,14 @@ class AppServiceProvider extends ServiceProvider
                 ->get();
 
             $view->with(compact('activeMart', 'marts'));
+        });
+
+        View::composer('partials.mart-selector', function ($view) {
+            $totalProdukSemuaMart = Produk::where('is_active', true)
+                ->distinct('produk.id')
+                ->count('produk.id');
+
+            $view->with('totalProdukSemuaMart', $totalProdukSemuaMart);
         });
     }
 }

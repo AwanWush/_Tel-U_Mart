@@ -1,12 +1,17 @@
 @props(['kategoriProduk'])
 
-<div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pt-4 pb-8">
+<div class="max-w-screen-2xl mx-auto px-4 pt-4 pb-8">
 
 @foreach ($kategoriProduk as $kategori)
     @php
-        $produkList   = $kategori->produkAktif;
+        $activeMart = activeMart();
+
+        $produkList = $kategori
+            ->produkAktifByMart($activeMart)
+            ->get();
+
         $produkTampil = $produkList->take(6);
-        $hasMore      = $produkList->count() > 6;
+        $hasMore = $produkList->count() > 6;
     @endphp
 
     @if ($produkTampil->count())
@@ -113,7 +118,7 @@
 
 
                         {{-- Cart --}}
-                        <form action="{{ route('cart.add') }}" method="POST">
+                        <form action="{{ route('cart.store') }}" method="POST">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $produk->id }}">
 

@@ -54,19 +54,10 @@ class Produk extends Model
         return $this->reviews()->avg('rating');
     }
 
-    protected static function booted()
-    {
-        static::addGlobalScope('activeMart', function (Builder $query) {
-            $user = Auth::user();
-
-            if ($user && $user->active_mart_id) {
-                $query->whereHas('marts', function ($q) use ($user) {
-                    $q->where('mart.id', $user->active_mart_id);
-                });
-            }
-        });
-    }
-
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope(new ActiveMartScope);
+    // }
     
     public function highlightedMarts()
     {

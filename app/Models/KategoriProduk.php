@@ -20,4 +20,18 @@ class KategoriProduk extends Model
         return $this->hasMany(Produk::class, 'kategori_id')
             ->where('is_active', true);
     }
+
+    public function produkAktifByMart(?Mart $mart)
+    {
+        return Produk::query()
+            ->where('kategori_id', $this->id)
+            ->where('is_active', true)
+            ->when($mart, function ($q) use ($mart) {
+                $q->whereHas('marts', function ($m) use ($mart) {
+                    $m->where('mart.id', $mart->id);
+                });
+            })
+            ->with('marts')
+            ->latest();
+    }
 }

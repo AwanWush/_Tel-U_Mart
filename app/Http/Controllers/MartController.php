@@ -11,18 +11,18 @@ class MartController extends Controller
     public function select(Request $request)
     {
         $request->validate([
-            'mart_id' => 'required|exists:mart,id',
+            'mart_id' => 'nullable|exists:mart,id',
         ]);
 
-        /** @var User|null $user */
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         if (!$user) {
-            abort(403, 'Unauthorized');
+            abort(403);
         }
 
         $user->update([
-            'active_mart_id' => $request->mart_id,
+            'active_mart_id' => $request->mart_id ?: null,
         ]);
 
         return back()->with('success', 'Prioritas toko berhasil diperbarui');

@@ -53,7 +53,21 @@
                                     <h3 class="mt-3 text-[13px] font-semibold text-gray-900 line-clamp-2 leading-tight min-h-[34px] tracking-tight">{{ $p->nama_produk }}</h3>
                                     <div class="mt-1 text-base font-bold text-[#930014]">Rp {{ number_format($p->harga, 0, ',', '.') }}</div>
                                     <div class="mt-1 text-[11px] font-bold text-[#009661] uppercase tracking-wide">STOK: {{ $p->stok }}</div>
-                                    <div class="mt-1 text-[10px] text-gray-500 default"> {{ $p->marts->pluck('nama_mart')->implode(', ') }}</div>
+                                    {{-- LOKASI / MART --}}
+                                    <div class="mt-1 text-xs text-black/60 leading-snug">
+                                        Lokasi:
+                                        <div>
+                                            @foreach ($p->highlightedMarts() as $mart)
+                                                <span class="
+                                                    {{ $mart['is_active']
+                                                        ? 'text-[#930014] font-semibold'
+                                                        : 'text-black/50'
+                                                    }}">
+                                                    {{ $mart['nama'] }}
+                                                </span>@if(!$loop->last), @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </a>
                                 <div x-show="hover" x-cloak x-transition.opacity class="absolute top-3 right-3 flex flex-col gap-2 z-10">
                                     <button class="w-9 h-9 rounded-full bg-[#E7BD8A]/80 hover:bg-[#E68757] border border-[#930014]/30 flex items-center justify-center text-[#930014] hover:text-white transition-all transform active:scale-75 duration-200 shadow-sm">
@@ -91,7 +105,21 @@
                                                         <h3 class="mt-3 text-[13px] font-semibold text-gray-900 line-clamp-2 min-h-[34px] tracking-tight">{{ $p->nama_produk }}</h3>
                                                         <div class="mt-1 text-base font-bold text-[#930014]">Rp {{ number_format($p->harga, 0, ',', '.') }}</div>
                                                         <div class="mt-1 text-[11px] font-bold text-[#009661] uppercase tracking-wide">STOK: {{ $p->stok }}</div>
-                                                        <div class="mt-1 text-[10px] text-gray-500 default"> {{ $p->marts->pluck('nama_mart')->implode(', ') }}</div>
+                                                        {{-- LOKASI / MART --}}
+                                                        <div class="mt-1 text-xs text-black/60 leading-snug">
+                                                            Lokasi:
+                                                            <div>
+                                                                @foreach ($p->highlightedMarts() as $mart)
+                                                                    <span class="
+                                                                        {{ $mart['is_active']
+                                                                            ? 'text-[#930014] font-semibold'
+                                                                            : 'text-black/50'
+                                                                        }}">
+                                                                        {{ $mart['nama'] }}
+                                                                    </span>@if(!$loop->last), @endif
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
                                                     </a>
                                                     <div x-show="hover" x-cloak x-transition.opacity class="absolute top-3 right-3 flex flex-col gap-2 z-10">
                                                         <button class="w-9 h-9 rounded-full bg-[#E7BD8A]/80 hover:bg-[#E68757] border border-[#930014]/30 flex items-center justify-center text-[#930014] hover:text-white transition-all transform active:scale-75 duration-200 shadow-sm">
