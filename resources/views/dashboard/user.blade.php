@@ -15,7 +15,7 @@
     </div>
 
     {{-- Product Grid --}}
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 -mt-[150px]">
         <x-product-grid :kategori-produk="$kategoriProduk" />
     </div>
 

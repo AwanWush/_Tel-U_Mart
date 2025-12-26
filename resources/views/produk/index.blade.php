@@ -5,9 +5,9 @@
         </h2>
     </x-slot>
 
-    <div class="pt-2 pb-8 bg-gray-50 min-h-screen font-sans" x-data="{ openFilter: false, showAll: false }">
+    <div class="pt-2 pb-8 bg-gray-50 min-h-screen font-sans">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
+                <div x-data="{ openFilter: false, showAll: false }" x-cloak>
             {{-- DROPDOWN FILTER KATEGORI --}}
             <div class="mb-4 mt-4 flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 sm:px-0">
                 <div class="relative inline-block text-left">
@@ -153,7 +153,6 @@
     </div>
 
     <style>
-        [x-cloak] { display: none !important; }
         .font-sans { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif !important; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

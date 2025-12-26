@@ -18,7 +18,7 @@
                         </h2>
 
                         <div class="mt-2 text-sm text-gray-500">
-                            📍 {{ auth()->user()->gedung ?? 'Gedung belum diatur' }}
+                             {{ auth()->user()->gedung ?? 'Gedung belum diatur' }}
                             • Kamar {{ auth()->user()->kamar ?? '-' }}
                         </div>
 
@@ -192,12 +192,13 @@
                 </div>
 
                 {{-- MOBILE POPUP --}}
-                <div
-                    x-show="openGroup !== null"
-                    x-transition.opacity
-                    class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-                    @click.self="closePopup()"
-                >
+                    <template x-if="openGroup !== null">
+                        <div
+                            class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+                            @click.self="closePopup()"
+                        >
+                    </template>
+
                     <div
                         class="bg-white rounded-2xl w-[90%] max-w-sm
                             relative pt-10 px-4 pb-4

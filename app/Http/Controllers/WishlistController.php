@@ -28,7 +28,7 @@ class WishlistController extends Controller
 
         Wishlist::firstOrCreate([
             'user_id'    => Auth::id(),
-            'produk_id' => $request->id
+            'product_id' => $request->produk_id
         ]);
 
         return back()->with('success', 'Produk ditambahkan ke wishlist');

@@ -75,7 +75,7 @@
                 {{-- Wishlist --}}
                 <form action="{{ route('wishlist.store') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="product_id" value="{{ $item->id }}">
+                    <input type="hidden" name="produk_id" value="{{ $item->id }}">
                     <button type="submit"
                         class="w-9 h-9 rounded-full
                                bg-[#E7BD8A]/80 hover:bg-[#E68757]
