@@ -10,14 +10,15 @@ use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    public function index()
-    {
-        $cart = Cart::with('items.produk')
-            ->where('user_id', Auth::id())
-            ->first();
+public function index()
+{
+    // Mengambil semua data keranjang milik user yang sedang login
+    $cartItems = Cart::where('user_id', auth()->id())
+        ->with('produk') // Load data produk agar tidak query berulang (Eager Loading)
+        ->get();
 
-        return view('cart.index', compact('cart'));
-    }
+    return view('cart.index', compact('cartItems'));
+}
 
     public function add(Request $request)
     {
@@ -50,31 +51,32 @@ class CartController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:produk,id',
+            'produk_id' => 'required|exists:produk,id', // Pastikan namanya produk_id sesuai database
             'qty' => 'nullable|integer|min:1',
         ]);
 
         $qty = $request->qty ?? 1;
+        $userId = Auth::id();
+        $produkId = $request->produk_id;
 
-        $cart = Cart::firstOrCreate([
-            'user_id' => Auth::id(),
-        ]);
-
-        $item = $cart->items()
-            ->where('product_id', $request->product_id)
+        // Cari apakah produk ini sudah ada di keranjang user tersebut
+        $cartItem = Cart::where('user_id', $userId)
+            ->where('produk_id', $produkId)
             ->first();
 
-        if ($item) {
-            $item->increment('quantity', $qty);
+        if ($cartItem) {
+            // Jika sudah ada, tambahkan jumlahnya
+            $cartItem->increment('quantity', $qty);
         } else {
-            $cart->items()->create([
-                'product_id' => $request->product_id,
+            // Jika belum ada, buat baris baru
+            Cart::create([
+                'user_id' => $userId,
+                'produk_id' => $produkId,
                 'quantity' => $qty,
-                'price' => Produk::find($request->product_id)->harga,
             ]);
         }
 
-        return back()->with('success', 'Produk ditambahkan ke keranjang');
+        return redirect()->back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
     }
 
     public function update(Request $request, $id)

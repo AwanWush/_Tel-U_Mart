@@ -111,12 +111,13 @@
                             {{-- Cart --}}
                             <form action="{{ route('cart.store') }}" method="POST">
                                 @csrf
-                                <input type="hidden" name="product_id" value="{{ $produk->id }}">
+                                {{-- Ubah name menjadi 'produk_id' agar sesuai dengan Controller & Database --}}
+                                <input type="hidden" name="produk_id" value="{{ $produk->id }}">
 
                                 <button type="submit"
                                     class="w-9 h-9 rounded-full bg-[#DB4B3A] hover:bg-[#930014]
-                                    border border-[#930014] flex items-center justify-center
-                                    text-white transition">
+        border border-[#930014] flex items-center justify-center
+        text-white transition">
                                     @include('icons.cart')
                                 </button>
                             </form>

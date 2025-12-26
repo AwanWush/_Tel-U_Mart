@@ -5,177 +5,176 @@
         </h2>
     </x-slot>
 
-    <div class="py-10">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2">
+    {{-- 
+        PENYESUAIAN:
+        -mt-6 atau -mt-8 digunakan untuk menarik konten ke atas agar menempel pas dengan header navigasi.
+        bg-gray-100 (atau bg-[#f3f4f6]) untuk warna dasar yang soft.
+    --}}
+    {{-- Ganti baris 13-23 dengan ini --}}
+    
+    <div class="py-0 -mt-10 bg-gray-100 min-h-screen" x-data="{
+        items: [
+            @foreach ($cartItems as $item)
+        {
+            id: {{ $item->id }},
+            price: {{ $item->produk->harga }},
+            qty: {{ $item->quantity }},
+            selected: true
+        }, @endforeach
+        ],
+        selectAll: true,
+    
+        {{-- Logika toggleAll, totalSelected, dll tetap sama --}}
+    
+        toggleAll() {
+            this.selectAll = !this.selectAll;
+            this.items.forEach(i => i.selected = this.selectAll);
+        },
+    
+        get totalSelected() {
+            return this.items.filter(i => i.selected).reduce((sum, i) => sum + (i.price * i.qty), 0);
+        },
+    
+        get countSelected() {
+            return this.items.filter(i => i.selected).length;
+        },
+    
+        formatRupiah(num) {
+            return 'Rp ' + num.toLocaleString('id-ID');
+        }
+    }">
+        {{-- pt-6 memberikan jarak tipis agar box pertama tidak terlalu "penyek" tapi tetap menempel --}}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
 
-                @if (!$cart || $cart->items->isEmpty())
-                    <div class="bg-white p-10 text-center rounded shadow">
-                        <h3 class="text-lg font-semibold">Yah, keranjangmu kosong 😢</h3>
-                        <p class="text-gray-500 mt-2">Yuk belanja dulu!</p>
+            {{-- Kolom Kiri: Daftar Produk --}}
+            <div class="lg:col-span-2 space-y-3">
+
+                {{-- Box Pilih Semua --}}
+                <div
+                    class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" @click="toggleAll()" :checked="selectAll"
+                            class="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer">
+                        <span class="text-sm font-semibold text-gray-700">Pilih Semua</span>
+                    </label>
+                    <div class="text-right">
+                        <p class="text-[9px] text-gray-400 uppercase font-bold tracking-tighter leading-none">WAKTU
+                            AKSES</p>
+                        <p class="text-[11px] font-medium text-gray-600">
+                            {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</p>
+                    </div>
+                </div>
+
+                {{-- Cek apakah koleksi $cartItems kosong --}}
+                @if ($cartItems->isEmpty())
+                    <div class="bg-white py-12 text-center rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-800">Keranjang kosong 🛒</h3>
+                        <a href="{{ route('dashboard') }}" class="text-red-600 text-sm font-bold hover:underline">
+                            Mulai Belanja Sekarang
+                        </a>
                     </div>
                 @else
-                    @foreach ($cart->items as $item)
-                        @php
-                            $subtotal = $item->produk->harga * $item->quantity;
-
-                            $gambar = $item->produk->gambar;
-                            $imagePath = asset('produk_assets/' . basename($gambar));
-                        @endphp
-
-
-
-
-                        <div class="bg-white p-4 mb-4 rounded shadow flex items-center gap-4 border border-gray-100">
-                            <input type="checkbox" class="item-check w-5 h-5 accent-red-600 cursor-pointer"
-                                name="cart_items[]" value="{{ $item->id }}" data-price="{{ $item->produk->harga }}"
-                                data-qty="{{ $item->quantity }}">
+                    @foreach ($cartItems as $item)
+                        <div
+                            class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 transition-all hover:border-red-100">
+                            <input type="checkbox" x-model="items.find(i => i.id === {{ $item->id }}).selected"
+                                class="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer">
 
                             <div
-                                class="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
-                                <img src="{{ $imagePath }}" alt="{{ $item->produk->nama_produk }}"
-                                    class="w-full h-full object-cover" />
-
+                                class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+                                <img src="{{ asset('produk_assets/' . basename($item->produk->gambar)) }}"
+                                    class="w-full h-full object-contain p-1"
+                                    onerror="this.src='{{ asset('images/no-image.png') }}'">
                             </div>
 
                             <div class="flex-1 min-w-0">
-                                <h4 class="font-bold text-gray-800 truncate">{{ $item->produk->nama_produk }}</h4>
-                                <p class="text-xs text-gray-400">Stok: {{ $item->produk->stok }}</p>
-                                <p class="text-sm font-semibold text-gray-900 mt-1">
-                                    Rp {{ number_format($item->produk->harga, 0, ',', '.') }}
-                                </p>
+                                <h4 class="font-bold text-gray-800 text-sm truncate">{{ $item->produk->nama_produk }}
+                                </h4>
+                                <p class="text-[10px] text-gray-400 font-medium">Stok: {{ $item->produk->stok }}</p>
+                                <p class="text-sm font-black text-gray-900 mt-0.5">Rp
+                                    {{ number_format($item->produk->harga, 0, ',', '.') }}</p>
                             </div>
 
-                            <div class="flex flex-col items-center gap-1">
-                                <input type="number" name="quantity" value="{{ $item->quantity }}" min="1"
-                                    max="{{ $item->produk->stok }}"
-                                    class="qty-input w-16 border rounded px-2 py-1 text-center text-sm focus:ring-1 focus:ring-red-500">
-
-                                <div class="text-center mt-2">
-                                    <span class="text-[10px] text-gray-400 block uppercase">Subtotal</span>
-                                    <strong class="item-subtotal text-sm text-red-600">
-                                        Rp {{ number_format($subtotal, 0, ',', '.') }}
-                                    </strong>
+                            <div class="flex items-center gap-3">
+                                <div class="flex flex-col items-center">
+                                    <input type="number" min="1" max="{{ $item->produk->stok }}"
+                                        x-model.number="items.find(i => i.id === {{ $item->id }}).qty"
+                                        class="w-12 h-8 border-gray-200 rounded text-center text-xs focus:ring-red-500 p-0">
+                                    <span class="text-[8px] text-gray-400 mt-0.5 uppercase font-bold">Jumlah</span>
                                 </div>
-                            </div>
 
-                            <form method="POST" action="{{ route('cart.remove', $item->id) }}"
-                                onsubmit="return confirm('Hapus item ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-gray-300 hover:text-red-600 transition p-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </form>
+                                <div class="text-right min-w-[80px]">
+                                    <span
+                                        class="text-[8px] text-gray-400 block uppercase leading-none font-bold">Subtotal</span>
+                                    <strong class="text-red-600 text-xs font-black"
+                                        x-text="formatRupiah(items.find(i => i.id === {{ $item->id }}).qty * {{ $item->produk->harga }})"></strong>
+                                </div>
+
+                                <form method="POST" action="{{ route('cart.remove', $item->id) }}"
+                                    onsubmit="return confirm('Hapus item ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-gray-300 hover:text-red-600 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     @endforeach
                 @endif
             </div>
 
-            <div class="bg-white p-6 rounded shadow h-fit sticky top-6">
-                <h3 class="font-bold text-lg mb-4 text-gray-800 border-b pb-2">Ringkasan Belanja</h3>
+            {{-- 
+                KOLOM KANAN: Ringkasan Belanja 
+                PERUBAHAN: 
+                - sticky top-[5rem]: Memberi jarak 5rem dari paling atas (pas di bawah nav).
+                - z-10: Memastikan tidak tertutup konten lain saat scroll.
+                - self-start: Penting agar sticky berfungsi di dalam grid.
+            --}}
+            <div class="lg:col-span-1">
+                <div
+                    class="bg-white p-5 rounded-xl shadow-md border border-gray-100 sticky top-[5.5rem] z-10 self-start">
+                    <h3 class="font-bold text-sm text-gray-800 mb-4 border-b pb-2 uppercase tracking-tight">Ringkasan
+                        Belanja</h3>
 
-                <form method="POST" action="{{ route('checkout.selected') }}">
-                    @csrf
-                    <div id="hidden-checkout-inputs"></div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-gray-500 text-[11px] font-medium">
+                            <span>Total Harga (<span x-text="countSelected"></span> barang)</span>
+                            <span x-text="formatRupiah(totalSelected)"></span>
+                        </div>
+                        <div class="flex justify-between text-gray-500 text-[11px] font-medium">
+                            <span>Biaya Layanan</span>
+                            <span class="text-green-600 font-bold">Gratis</span>
+                        </div>
 
-                    <div class="flex justify-between mb-2 text-gray-600">
-                        <span>Total Harga</span>
-                        <span id="subtotalText" class="font-medium">Rp 0</span>
+                        <div class="pt-3 border-t border-gray-100 mt-2">
+                            <div class="flex justify-between items-center mb-5">
+                                <span class="font-bold text-xs text-gray-800">Total Tagihan</span>
+                                <span class="text-base font-black text-red-600"
+                                    x-text="formatRupiah(totalSelected)"></span>
+                            </div>
+                        </div>
                     </div>
 
-                    <hr class="my-4">
+                    <form method="POST" action="{{ route('checkout.selected') }}">
+                        @csrf
+                        <template x-for="item in items.filter(i => i.selected)" :key="item.id">
+                            <input type="hidden" name="cart_items[]" :value="item.id">
+                        </template>
 
-                    <div class="flex justify-between font-bold text-xl text-gray-900">
-                        <span>Total Bayar</span>
-                        <span id="totalText" class="text-red-600">Rp 0</span>
-                    </div>
-
-                    <button type="submit" id="checkoutBtn" disabled
-                        class="w-full mt-6 bg-gray-300 text-white py-3 rounded-lg font-bold transition-all duration-300 cursor-not-allowed">
-                        Checkout (0)
-                    </button>
-                </form>
+                        <button type="submit" :disabled="countSelected === 0"
+                            :class="countSelected === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' :
+                                'bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-200'"
+                            class="w-full py-2.5 rounded-lg font-bold text-xs transition-all duration-300 uppercase tracking-wider">
+                            Checkout <span x-show="countSelected > 0" x-text="'(' + countSelected + ')'"></span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const checkboxes = document.querySelectorAll('.item-check');
-            const qtyInputs = document.querySelectorAll('.qty-input');
-            const subtotalText = document.getElementById('subtotalText');
-            const totalText = document.getElementById('totalText');
-            const checkoutBtn = document.getElementById('checkoutBtn');
-            const hiddenContainer = document.getElementById('hidden-checkout-inputs');
-
-            function formatRupiah(number) {
-                return 'Rp ' + number.toLocaleString('id-ID');
-            }
-
-            function hitungTotal() {
-                let total = 0;
-                let count = 0;
-                hiddenContainer.innerHTML = '';
-
-                checkboxes.forEach(cb => {
-                    if (cb.checked) {
-                        const price = parseInt(cb.dataset.price);
-                        const qty = parseInt(cb.dataset.qty);
-                        total += price * qty;
-                        count++;
-
-                        const hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = 'cart_items[]';
-                        hiddenInput.value = cb.value;
-                        hiddenContainer.appendChild(hiddenInput);
-                    }
-                });
-
-                subtotalText.innerText = formatRupiah(total);
-                totalText.innerText = formatRupiah(total);
-
-                if (count > 0) {
-                    checkoutBtn.disabled = false;
-                    checkoutBtn.className =
-                        "w-full mt-6 bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-bold transition-all cursor-pointer";
-                    checkoutBtn.innerText = `Checkout (${count})`;
-                } else {
-                    checkoutBtn.disabled = true;
-                    checkoutBtn.className =
-                        "w-full mt-6 bg-gray-300 text-white py-3 rounded-lg font-bold cursor-not-allowed";
-                    checkoutBtn.innerText = 'Checkout (0)';
-                }
-            }
-
-            qtyInputs.forEach(input => {
-                input.addEventListener('change', (e) => {
-                    let val = parseInt(e.target.value);
-                    if (isNaN(val) || val < 1) {
-                        val = 1;
-                        e.target.value = 1;
-                    }
-
-                    const parent = e.target.closest('.bg-white');
-                    const cb = parent.querySelector('.item-check');
-                    const subtotalEl = parent.querySelector('.item-subtotal');
-                    const price = parseInt(cb.dataset.price);
-
-                    cb.dataset.qty = val;
-                    subtotalEl.innerText = formatRupiah(price * val);
-
-                    hitungTotal();
-                });
-            });
-
-            checkboxes.forEach(cb => {
-                cb.addEventListener('change', hitungTotal);
-            });
-        });
-    </script>
 </x-app-layout>

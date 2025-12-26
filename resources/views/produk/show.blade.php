@@ -87,25 +87,26 @@
                     {{-- Form Add to Cart --}}
                     <form action="{{ route('cart.store') }}" method="POST" class="flex-1">
                         @csrf
-                        <input type="hidden" name="product_id" value="{{ $produk->id }}">
+                        <input type="hidden" name="produk_id" value="{{ $produk->id }}"> {{-- GUNAKAN produk_id --}}
                         <input type="hidden" name="qty" value="1" id="cart-qty-hidden">
                         <button type="submit"
                             class="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition font-semibold">
                             + Keranjang
                         </button>
                     </form>
+                    </form>
 
                     {{-- Tombol Wishlist --}}
-<form method="POST" action="{{ route('wishlist.store') }}">
-    @csrf
-    {{-- Pastikan name adalah produk_id menggunakan huruf 'u' --}}
-    <input type="hidden" name="produk_id" value="{{ $produk->id }}">
+                    <form method="POST" action="{{ route('wishlist.store') }}">
+                        @csrf
+                        {{-- Pastikan name adalah produk_id menggunakan huruf 'u' --}}
+                        <input type="hidden" name="produk_id" value="{{ $produk->id }}">
 
-    <button type="submit"
-        class="w-12 h-12 bg-[#DB3B4A] border rounded-xl flex items-center justify-center hover:bg-[#E68757] text-white transition shadow-sm">
-        @include('icons.heart')
-    </button>
-</form>
+                        <button type="submit"
+                            class="w-12 h-12 bg-[#DB3B4A] border rounded-xl flex items-center justify-center hover:bg-[#E68757] text-white transition shadow-sm">
+                            @include('icons.heart')
+                        </button>
+                    </form>
                     </form>
                 </div>
 
