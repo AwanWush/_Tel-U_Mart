@@ -1,5 +1,5 @@
 <nav x-data="{ open: false }"
-     class="sticky top-0 z-50 bg-white border-b border-[#E7BD8A]/40 backdrop-blur">
+     class="fixed top-0 z-50 bg-white border-b border-[#E7BD8A]/40">
 
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex h-20 items-center justify-between">
@@ -206,7 +206,7 @@
 {{-- SUB HEADER NAVIGATION --}}
 <div 
     x-data="{ openMart: false }"
-    class="sticky top-[80px] z-40 w-full bg-gradient-to-r from-[#5B000B] via-[#930014] to-[#DB4B3A] text-white"
+    class="fixed top-[80px] z-40 w-full bg-gradient-to-r from-[#5B000B] via-[#930014] to-[#DB4B3A] text-white"
 >
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center justify-between h-10 text-sm">
