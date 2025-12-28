@@ -9,15 +9,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-  public function up()
+public function up()
 {
-    Schema::create('riwayat_pembelian', function (Blueprint $table) {
+    Schema::create('riwayat_pembelian', function (Table $table) {
         $table->id();
         $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-        $table->string('id_transaksi')->unique();
+        $table->string('id_transaksi')->unique(); // Contoh: TM-ABC123456789
         $table->integer('total_harga');
-        $table->string('status')->default('pending');
-        $table->string('metode_pembayaran')->nullable();
+        $table->string('status'); // Sukses, Pending, Gagal
+        $table->string('metode_pembayaran'); // COD, Transfer VA
         $table->timestamps();
     });
 }

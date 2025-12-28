@@ -19,7 +19,9 @@ use App\Http\Controllers\MartController;
 use App\Http\Controllers\OrderController;
 
 
-
+Route::patch('/cart/update/{id}', [App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/remove/{id}', [App\Http\Controllers\CartController::class, 'destroy'])->name('cart.remove');
+Route::post('/checkout/selected', [CheckoutController::class, 'index'])->name('checkout.selected');
 Route::get('/order/success/{order_id}', [App\Http\Controllers\CheckoutController::class, 'showSuccess'])->name('order.success');
 Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('checkout.process');
 Route::post('/checkout/process', [CheckoutController::class, 'processCheckout'])->name('checkout.process');
@@ -29,9 +31,10 @@ Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])
 Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
 Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
 Route::post('/cart/add', [CartController::class, 'store'])->name('cart.add');
+Route::post('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
-Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
 Route::get('/order/success', [CheckoutController::class, 'showSuccess'])
     ->name('order.success');
 Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])
@@ -40,7 +43,6 @@ Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])
     ->name('payment.snap-token');
 Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])->name('payment.snap-token');
 Route::post('/checkout/direct', [CheckoutController::class, 'directCheckout'])->name('checkout.direct');
-Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])->name('payment.method');
 Route::get('/order/success', [CheckoutController::class, 'showSuccess'])->name('order.success');
 
 Route::get('/order/success', [OrderController::class, 'success'])
@@ -136,7 +138,8 @@ Route::get('/profil/transaksi', [ProfileController::class, 'transaksi'])
 
 // ==================== FITUR TAMBAHAN: GALON & TOKEN LISTRIK ==================== //
 Route::middleware(['auth'])->group(function () {
-    
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])->name('payment.method');
     // Token
     Route::get('/token-listrik', [UserTokenController::class, 'index'])->name('token.index');
     Route::post('/token-listrik/beli', [UserTokenController::class, 'store'])->name('token.store');

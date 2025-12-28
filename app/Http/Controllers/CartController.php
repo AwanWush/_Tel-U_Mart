@@ -80,17 +80,26 @@ public function index()
     }
 
     public function update(Request $request, $id)
-    {
-        $cart = Cart::findOrFail($id);
-        $cart->update(['quantity' => $request->quantity]);
+{
+    $cart = \App\Models\Cart::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+    $cart->update(['quantity' => $request->quantity]);
 
-        return back()->with('success', 'Keranjang diperbarui');
-    }
+    return response()->json(['success' => true]);
+}
+
 
     public function destroy($id)
-    {
-        Cart::findOrFail($id)->delete();
+{
+    // Gunakan Model Cart karena di index Anda mengambil data dari Model Cart
+    $cartItem = \App\Models\Cart::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->first();
 
-        return back()->with('success', 'Produk dihapus dari keranjang');
+    if ($cartItem) {
+        $cartItem->delete();
+        return redirect()->back()->with('success', 'Produk berhasil dihapus dari keranjang');
     }
+
+    return redirect()->back()->with('error', 'Gagal menghapus produk');
+}
 }
