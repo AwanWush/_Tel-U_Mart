@@ -125,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hidden  = document.getElementById('selected_method_hidden');
     const payBtn  = document.getElementById('payBtn');
 
+    // Fungsi ganti warna tombol metode
     buttons.forEach(btn => {
         btn.addEventListener('click', () => {
             buttons.forEach(b => b.classList.remove('method-active', 'border-indigo-600'));
@@ -133,21 +134,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Event Klik tombol Konfirmasi
     payBtn.addEventListener('click', async () => {
         const method = hidden.value;
         const amount = document.getElementById('total_amount').value;
 
+        // TANGKAP DATA PRODUK DARI URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('product_id') || ''; 
+        const qty       = urlParams.get('qty') || '';
+        const type      = urlParams.get('type') || 'delivery';
+        const address   = urlParams.get('address') || '';
+
         payBtn.disabled = true;
         payBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Memproses...';
 
-        // Logika Pembayaran Tunai (COD atau Kasir)
+        // 1. LOGIKA COD (CASH) - Meneruskan data ke OrderController@success
         if (method.includes('cash')) {
             window.location.href = 
-                `/order/success?method=${method}&type={{ $serviceType }}&amount=${amount}&status=unpaid`;
+                `/order/success?method=${method}&type=${type}&amount=${amount}&status=unpaid&product_id=${productId}&qty=${qty}&address=${encodeURIComponent(address)}`;
             return;
         }
 
-        // Logika Pembayaran Online Midtrans
+        // 2. LOGIKA ONLINE (MIDTRANS)
         try {
             const res = await fetch("{{ route('payment.snap-token') }}", {
                 method: 'POST',
@@ -155,20 +164,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({ total_amount: amount })
+                body: JSON.stringify({ 
+                    total_amount: amount,
+                    product_id: productId,
+                    qty: qty
+                })
             });
 
             const data = await res.json();
 
             window.snap.pay(data.snap_token, {
                 onSuccess: (result) => {
-                    window.location.href = `/order/success?method=online&status=paid&amount=${amount}`;
+                    window.location.href = `/order/success?method=online&status=paid&amount=${amount}&product_id=${productId}&qty=${qty}&address=${encodeURIComponent(address)}`;
                 },
                 onPending: (result) => {
-                    window.location.href = `/order/success?method=online&status=pending&amount=${amount}`;
+                    window.location.href = `/order/success?method=online&status=pending&amount=${amount}&product_id=${productId}&qty=${qty}&address=${encodeURIComponent(address)}`;
                 },
                 onError: () => {
-                    alert('Pembayaran gagal, silahkan coba lagi.');
+                    alert('Pembayaran gagal.');
                     location.reload();
                 },
                 onClose: () => {

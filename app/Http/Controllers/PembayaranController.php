@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Midtrans\Config;
 use Midtrans\Snap;
-use App\Models\Pembayaran;
-use Illuminate\Support\Facades\Auth;
 
 class PembayaranController extends Controller
 {
@@ -32,51 +31,56 @@ class PembayaranController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Validasi input dari form
+
         $request->validate([
-            'nama_pembayar' => 'required|string|max:255',
-            'bukti_pembayaran' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'kategori' => 'required|string',
+            'keterangan' => 'nullable|string',
+            'telepon' => 'nullable|string',
+            'bank' => 'nullable|string',
+            'norek' => 'nullable|string',
         ]);
 
-        // 2. Inisialisasi Model
-        $pembayaran = new Pembayaran();
-        $pembayaran->user_id = Auth::id(); // Mengambil ID user yang sedang login
-        $pembayaran->nama_pembayar = $request->nama_pembayar;
+        Pembayaran::create([
+            'user_id' => auth()->id(),
+            'kategori' => $request->kategori,
+            'keterangan' => $request->keterangan,
+            'telepon' => $request->telepon,
+            'bank' => $request->bank,
+            'norek' => $request->norek,
+            'aktif' => true,
+        ]);
 
-        // 3. Proses upload gambar ke folder public/pembayaran_assets
-        if ($request->hasFile('bukti_pembayaran')) {
-            $file = $request->file('bukti_pembayaran');
-            $nama_file = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('pembayaran_assets'), $nama_file);
-            $pembayaran->bukti_pembayaran = $nama_file;
-        }
-
-        $pembayaran->save();
-
-        // 4. Redirect kembali ke halaman index dengan pesan sukses
-        return redirect()->route('pembayaran.index')->with('success', 'Konfirmasi pembayaran berhasil dikirim!');
+        return back()->with('success', 'Metode pembayaran berhasil ditambahkan');
     }
 
-    /**
-     * Method eksisting Anda untuk integrasi Midtrans Snap
-     */
+    public function destroy($id)
+    {
+        $pembayaran = Pembayaran::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $pembayaran->delete();
+
+        return back()->with('success', 'Metode pembayaran berhasil dihapus');
+    }
+
     public function getSnapToken(Request $request)
     {
-        Config::$serverKey    = config('services.midtrans.serverKey');
+        Config::$serverKey = config('services.midtrans.serverKey');
         Config::$isProduction = config('services.midtrans.isProduction');
-        Config::$isSanitized  = true;
-        Config::$is3ds        = true;
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
 
-        $orderId = 'TM-' . uniqid();
+        $orderId = 'TM-'.uniqid();
 
         $params = [
             'transaction_details' => [
-                'order_id'     => $orderId,
+                'order_id' => $orderId,
                 'gross_amount' => (int) $request->total_amount,
             ],
             'customer_details' => [
                 'first_name' => auth()->user()->name ?? 'Guest',
-                'email'      => auth()->user()->email ?? 'guest@mail.com',
+                'email' => auth()->user()->email ?? 'guest@mail.com',
             ],
         ];
 
@@ -85,11 +89,11 @@ class PembayaranController extends Controller
 
             return response()->json([
                 'snap_token' => $snapToken,
-                'order_id'   => $orderId
+                'order_id' => $orderId,
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

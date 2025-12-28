@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Midtrans\Config;
 use Midtrans\Snap;
-use App\Models\RiwayatPembelian; // Pastikan Model ini diimport
+use App\Models\RiwayatPembelian;
 use Exception;
 
 class PaymentController extends Controller
@@ -19,8 +19,12 @@ class PaymentController extends Controller
         Config::$is3ds = true;
 
         // 2. Generate Order ID Unik
-        $orderId = 'TM-' . uniqid();
+        $orderId = 'TM-' . strtoupper(uniqid());
         $totalAmount = (int) $request->total_amount;
+
+        // Ambil data produk (Jika Checkout Langsung)
+        $productId = $request->product_id;
+        $qty = $request->qty;
 
         $params = [
             'transaction_details' => [
@@ -35,27 +39,17 @@ class PaymentController extends Controller
         ];
 
         try {
-            // 3. Ambil Snap Token dari Midtrans
+            // 3. Ambil Snap Token
             $snapToken = Snap::getSnapToken($params);
-
-            // 4. LOGIKA PENGGABUNGAN: Simpan ke RiwayatPembelian
-            // Kita simpan dulu dengan status 'pending' atau 'menunggu pembayaran'
-            RiwayatPembelian::create([
-                'user_id' => auth()->id(),
-                'id_transaksi' => $orderId,
-                'total_harga' => $request->total_amount,
-                'status' => 'pending',
-            ]);
-
             return response()->json([
                 'snap_token' => $snapToken,
-                'order_id' => $orderId
+                'order_id' => $orderId,
+                'product_id' => $productId, // Kirim balik ke JS
+                'qty' => $qty               // Kirim balik ke JS
             ]);
 
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

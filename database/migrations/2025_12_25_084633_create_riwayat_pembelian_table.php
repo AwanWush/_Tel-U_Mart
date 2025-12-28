@@ -11,13 +11,13 @@ return new class extends Migration
      */
 public function up()
 {
-    Schema::create('riwayat_pembelian', function (Table $table) {
+Schema::create('riwayat_pembelian', function (Blueprint $table) { // Ganti Blueprint
         $table->id();
         $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-        $table->string('id_transaksi')->unique(); // Contoh: TM-ABC123456789
+        $table->string('id_transaksi')->unique(); 
         $table->integer('total_harga');
-        $table->string('status'); // Sukses, Pending, Gagal
-        $table->string('metode_pembayaran'); // COD, Transfer VA
+        $table->string('status'); 
+        $table->string('metode_pembayaran'); 
         $table->timestamps();
     });
 }

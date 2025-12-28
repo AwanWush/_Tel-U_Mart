@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Scopes\ActiveMartScope;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class Produk extends Model
 {
@@ -24,19 +22,15 @@ class Produk extends Model
     ];
 
     public function kategori()
-{
-    // Di SQL nama tabelnya 'kategori_produk'
-    return $this->belongsTo(KategoriProduk::class, 'kategori_id');
-}
+    {
+        // Di SQL nama tabelnya 'kategori_produk'
+        return $this->belongsTo(KategoriProduk::class, 'kategori_id');
+    }
 
     public function marts()
     {
-        return $this->belongsToMany(
-            Mart::class,
-            'produk_mart',
-            'produk_id',
-            'mart_id'
-        );
+        // Menggunakan belongsToMany karena relasi melalui tabel produk_mart
+        return $this->belongsToMany(Mart::class, 'produk_mart', 'produk_id', 'mart_id');
     }
 
     public function variants()
@@ -58,7 +52,7 @@ class Produk extends Model
     // {
     //     static::addGlobalScope(new ActiveMartScope);
     // }
-    
+
     public function highlightedMarts()
     {
         $activeMart = activeMart();

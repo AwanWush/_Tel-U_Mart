@@ -17,6 +17,13 @@ use App\Http\Controllers\Admin\PesananController;
 use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
 use App\Http\Controllers\MartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\RiwayatController;
+use App\Http\Controllers\MetodePembayaranController;
+
+Route::post('/pembayaran', [MetodePembayaranController::class, 'store'])
+    ->name('pembayaran.store')
+    ->middleware('auth');
 
 
 Route::patch('/cart/update/{id}', [App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
@@ -227,7 +234,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])
         ->name('notifications.index');
 
-    Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])
+    Route::get('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])
         ->name('notifications.read');
 
     Route::post('/notifications/read-selected', [NotificationController::class, 'readSelected'])
@@ -238,8 +245,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])
         ->name('notifications.destroy');
+
+        Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+Route::delete('/notifications/delete-all', [NotificationController::class, 'deleteAll'])->name('notifications.deleteAll');
 });
 
+Route::get('/riwayat-pembelian', [RiwayatController::class, 'index'])->name('riwayat.pembelian');
 
 // Route::resource('pembayaran', PembayaranController::class)->except(['show', 'edit', 'update']);
 // Route::post('/pembayaran', [PembayaranController::class, 'store'])->name('pembayaran.store');
@@ -277,6 +288,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin/pesanan', [PesananController::class, 'index'])
         ->name('admin.pesanan.index');
+    Route::post('/admin/orders/{id}/update-status', [AdminOrderController::class, 'updateStatus'])
+        ->name('admin.orders.update');
 });
     Route::get('/admin/penjualan-bulan-ini', [DashboardController::class, 'admin'])->name('penjualan.bulanini');
     Route::get('/admin/produk-laris', [DashboardController::class, 'admin'])->name('produk.laris');
@@ -284,6 +297,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'selected'])->name('checkout.selected');
 });
+
+
 
 // ==================== SUPER ADMIN (WAJIB LOGIN) ==================== //
 Route::middleware(['auth', 'verified'])->group(function () {

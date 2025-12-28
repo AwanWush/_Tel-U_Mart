@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\Produk;
-use App\Models\Pesanan;
-use App\Models\Penjualan;
+use App\Models\RiwayatPembelian; // Ganti Pesanan menjadi RiwayatPembelian
 use App\Models\Banner;
 use App\Models\KategoriProduk;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -16,7 +16,7 @@ class DashboardController extends Controller
         $banners = Banner::where('is_active', true)
             ->orderBy('order')
             ->get();
-        $produk = Produk::latest()->take(8)->get(); // ambil 8 produk terbaru
+        $produk = Produk::latest()->take(8)->get();
 
         if (!Auth::check() || Auth::user()->role_id > 2) {
             return $this->user();
@@ -36,11 +36,16 @@ class DashboardController extends Controller
 
     public function admin()
     {
+        // Berdasarkan struktur database Anda:
+        // 'Belum Bayar' biasanya adalah status menunggu pembayaran
+        // 'Lunas' adalah transaksi yang sudah berhasil
         return view('dashboard.admin', [
             'totalProduk' => Produk::count(),
-            'pesananMasuk' => Pesanan::where('status', 'Menunggu')->count(),
-            'stokHabis' => Produk::where('status_ketersediaan', 'Habis')->count(),
-            'penjualanBulanIni' => Penjualan::whereMonth('tanggal_penjualan', now()->month)->sum('total'),
+            'pesananMasuk' => RiwayatPembelian::where('status', 'Belum Bayar')->count(), 
+            'stokHabis' => Produk::where('stok', '<=', 0)->count(),
+            'penjualanBulanIni' => RiwayatPembelian::where('status', 'Lunas')
+                ->whereMonth('created_at', now()->month)
+                ->sum('total_harga'),
         ]);
     }
 
@@ -69,11 +74,5 @@ class DashboardController extends Controller
         ])->get();
 
         return view('dashboard.user', compact('banners', 'produk', 'latestProducts', 'kategoriProduk'));
-        // return view('dashboard.user', [
-        //     'banners' => $banners,
-        //     'produk' => $produk,
-        //     'latestProducts' => $latestProducts,
-        //     'kategoriProduk' => $kategoriProduk
-        // ]);
     }
 }

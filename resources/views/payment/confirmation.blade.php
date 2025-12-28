@@ -166,16 +166,24 @@
                 // JIKA PILIH DIGITAL (VA/QR)
                 const snapToken = "{{ $snapToken ?? '' }}";
 
-                if (snapToken && snapToken !== "") {
-                    window.snap.pay(snapToken, {
-                        onSuccess: function (result) {
-                            window.location.href = "/order/status/{{ $orderId }}";
-                        },
-                        onPending: function (result) {
-                            window.location.href = "/order/status/{{ $orderId }}";
-                        },
-                        // ... dst
-                    });
+if (snapToken && snapToken !== "") {
+window.snap.pay(snapToken, {
+    onSuccess: function (result) {
+        // Ganti URL agar mengarah ke route success dengan parameter lengkap
+        window.location.href = "{{ route('order.success') }}?status=paid" + 
+                               "&order_id=" + result.order_id + 
+                               "&amount=" + result.gross_amount +
+                               "&product_id={{ $productId ?? '' }}" + 
+                               "&qty={{ $qty ?? 1 }}";
+    },
+    onPending: function (result) {
+        window.location.href = "{{ route('order.success') }}?status=pending" + 
+                               "&order_id=" + result.order_id + 
+                               "&amount=" + result.gross_amount +
+                               "&product_id={{ $productId ?? '' }}" + 
+                               "&qty={{ $qty ?? 1 }}";
+    }
+});
                 } else {
                     alert("Snap Token tidak tersedia. Silakan muat ulang halaman.");
                 }

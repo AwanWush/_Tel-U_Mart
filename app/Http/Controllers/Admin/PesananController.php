@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pesanan;
+use App\Models\RiwayatPembelian;
 
 class PesananController extends Controller
 {
     public function index()
     {
-        $pesanan = Pesanan::with('user')
-            ->orderBy('tanggal_pesan', 'desc')
+        // Narik data pesanan + user + barang yang dibeli
+        $pesanan = RiwayatPembelian::with(['user', 'details'])
+            ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('pesanan.admin.index', compact('pesanan'));
+        return view('admin.produk.pesanan.index', compact('pesanan'));
     }
 }
