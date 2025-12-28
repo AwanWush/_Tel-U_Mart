@@ -57,7 +57,7 @@
                                 
                                 <p class="text-red-600 font-black text-sm">
                                     Rp {{ number_format($item->produk->harga, 0, ',', '.') }}
-                                </p>
+                                </p> 
                             </div>
 
                             <div class="mt-3 pt-2 border-t border-gray-50 flex flex-col gap-1.5">

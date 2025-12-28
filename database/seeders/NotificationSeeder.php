@@ -48,7 +48,7 @@ class NotificationSeeder extends Seeder
                 'message' => 'Produk galon hampir habis.',
                 'type' => 'warning',
                 'is_read' => false,
-                'created_at' => now(),
+                'created_at' => now(), 
                 'updated_at' => now(),
             ],
             [

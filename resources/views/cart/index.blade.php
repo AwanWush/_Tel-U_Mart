@@ -72,7 +72,7 @@
                     <div class="bg-white py-12 text-center rounded-xl shadow-sm border border-gray-100">
                         <h3 class="text-lg font-semibold text-gray-800">Keranjang kosong 🛒</h3>
                         <a href="{{ route('dashboard') }}" class="text-red-600 text-sm font-bold hover:underline">
-                            Mulai Belanja Sekarang
+                            Mulai Belanja Sekarang 
                         </a>
                     </div>
                 @else

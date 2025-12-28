@@ -5,16 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Produk;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; 
 use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
 public function index()
 {
-    // Mengambil semua data keranjang milik user yang sedang login
     $cartItems = Cart::where('user_id', auth()->id())
-        ->with('produk') // Load data produk agar tidak query berulang (Eager Loading)
+        ->with('produk') 
         ->get();
 
     return view('cart.index', compact('cartItems'));
@@ -51,7 +50,7 @@ public function index()
     public function store(Request $request)
     {
         $request->validate([
-            'produk_id' => 'required|exists:produk,id', // Pastikan namanya produk_id sesuai database
+            'produk_id' => 'required|exists:produk,id', 
             'qty' => 'nullable|integer|min:1',
         ]);
 
@@ -59,16 +58,13 @@ public function index()
         $userId = Auth::id();
         $produkId = $request->produk_id;
 
-        // Cari apakah produk ini sudah ada di keranjang user tersebut
         $cartItem = Cart::where('user_id', $userId)
             ->where('produk_id', $produkId)
             ->first();
 
         if ($cartItem) {
-            // Jika sudah ada, tambahkan jumlahnya
             $cartItem->increment('quantity', $qty);
         } else {
-            // Jika belum ada, buat baris baru
             Cart::create([
                 'user_id' => $userId,
                 'produk_id' => $produkId,

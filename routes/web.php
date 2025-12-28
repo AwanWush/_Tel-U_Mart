@@ -12,7 +12,7 @@ use App\Http\Controllers\UserTokenController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\WishlistController;
-use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\NotificationController; 
 use App\Http\Controllers\Admin\PesananController;
 use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
 use App\Http\Controllers\MartController;
@@ -55,7 +55,7 @@ Route::get('/order/success', [CheckoutController::class, 'showSuccess'])->name('
 Route::get('/order/success', [OrderController::class, 'success'])
     ->name('order.success');
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('login'); 
     
 });
 

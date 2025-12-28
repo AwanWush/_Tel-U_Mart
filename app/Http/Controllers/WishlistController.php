@@ -91,5 +91,6 @@ class WishlistController extends Controller
             ->delete();
 
         return back()->with('success','Produk dihapus dari wishlist');
-    }
+    } 
 }
+ 
