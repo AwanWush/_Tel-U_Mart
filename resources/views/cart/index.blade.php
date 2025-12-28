@@ -66,8 +66,8 @@
                             {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
                         </p>
                     </div>
-                </div>
-
+                </div> 
+ 
                 @if ($cartItems->isEmpty())
                     <div class="bg-white py-12 text-center rounded-xl shadow-sm border border-gray-100">
                         <h3 class="text-lg font-semibold text-gray-800">Keranjang kosong 🛒</h3>
