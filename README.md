@@ -173,10 +173,15 @@ Website ini dikembangkan menggunakan **Laravel Framework** sebagai bagian dari p
 | Nama | Tanggung Jawab |
 
 | **AwanWush** | Integrasi & kontribusi utama |
+
 | **Rhafhy** | Home Page & Product Detail |
+
 | **Damar** | Cart, Wishlist, Notifikasi |
+
 | **Fadhil** | Profile & Order Success |
+
 | **Raffif** | Token Listrik & Galon Asrama |
+
 | **Anri** | Checkout & Pembayaran |
 
 
