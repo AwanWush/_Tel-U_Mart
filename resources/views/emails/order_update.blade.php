@@ -17,7 +17,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 style="margin:0; font-size: 24px;">T-Mart Point</h1>
+            <h1 style="margin:0; font-size: 24px;">TJ&T Mart </h1>
             <p style="margin:5px 0 0; opacity: 0.8;">Update Transaksi Anda</p>
         </div>
         
