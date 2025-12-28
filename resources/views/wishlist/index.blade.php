@@ -1,6 +1,5 @@
 <x-app-layout>
     <x-slot name="header">
-        {{-- Header dibuat ramping agar tidak memakan banyak ruang vertikal --}}
         <div class="flex items-center justify-between">
             <h2 class="font-bold text-xl text-gray-800 leading-tight tracking-tight">
                 Wishlist Kamu <span class="text-red-600">❤️</span>
@@ -11,13 +10,9 @@
         </div>
     </x-slot>
 
-    {{-- 
-        PERBAIKAN POSISI:
-        1. -mt-8 (atau sesuaikan angkanya) untuk menarik konten ke atas agar rapat dengan navigasi.
-        2. pt-0 agar tidak ada jarak antara header slot dan konten utama.
-    --}}
+   
     <div class="pt-0 pb-10 bg-[#f9fafb] min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-1">
 
             @if ($items->isEmpty())
                 <div class="bg-white overflow-hidden shadow-sm rounded-2xl p-12 text-center border border-gray-100">
@@ -32,7 +27,6 @@
                     </a>
                 </div>
             @else
-                {{-- Grid Modern yang ramping --}}
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     
                     @foreach ($items as $item)
@@ -49,7 +43,6 @@
                                     : asset('images/no-image.png');
                             @endphp
 
-                            {{-- Wadah Gambar --}}
                             <div class="relative aspect-square bg-gray-50 rounded-xl overflow-hidden mb-3 border border-gray-50">
                                 <img src="{{ $imagePath }}" 
                                      alt="{{ $item->produk->nama_produk }}"
@@ -57,7 +50,6 @@
                                      onerror="this.src='{{ asset('images/no-image.png') }}'">
                             </div>
 
-                            {{-- Informasi Produk --}}
                             <div class="space-y-1">
                                 <h3 class="font-bold text-gray-800 text-[11px] line-clamp-2 h-8 leading-tight group-hover:text-red-600 transition-colors">
                                     {{ $item->produk->nama_produk ?? $item->produk->nama }}
@@ -68,7 +60,6 @@
                                 </p>
                             </div>
 
-                            {{-- Tombol Aksi --}}
                             <div class="mt-3 pt-2 border-t border-gray-50 flex flex-col gap-1.5">
                                 <a href="{{ route('produk.show', $item->produk->id) }}" 
                                    class="text-center w-full py-1.5 text-[10px] font-bold bg-gray-50 text-gray-700 rounded-lg uppercase tracking-tight">

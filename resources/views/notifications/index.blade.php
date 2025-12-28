@@ -4,7 +4,6 @@
             <h2 class="font-black text-2xl text-white tracking-widest uppercase">Notifikasi 🔔</h2>
 
             <div class="flex gap-2">
-                {{-- Tombol Tandai Semua (Warna Emas Krem #E7BD8A) --}}
                 <form action="{{ route('notifications.markAllRead') }}" method="POST">
                     @csrf
                     <button type="submit"
@@ -13,7 +12,6 @@
                     </button>
                 </form>
 
-                {{-- Tombol Hapus Semua (Warna Merah Tua #930014) --}}
                 <form action="{{ route('notifications.deleteAll') }}" method="POST"
                     onsubmit="return confirm('Hapus permanen semua notifikasi Anda?')">
                     @csrf
@@ -39,18 +37,27 @@
             </div>
         @endif
 
-        {{-- FILTER TAB (Tema Merah Oriental) --}}
-        <div class="flex flex-wrap gap-4 mb-8 items-center">
-            <div class="flex bg-[#5B000B] p-1.5 rounded-2xl border border-white/5 shadow-2xl">
-                <a href="{{ route('notifications.index') }}"
-                    class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition {{ request('tab') == null ? 'bg-[#DB4B3A] text-white shadow-xl' : 'text-[#E7BD8A]/60 hover:text-[#E7BD8A]' }}">Semua</a>
-                <a href="{{ route('notifications.index', ['tab' => 'unread']) }}"
-                    class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition {{ request('tab') == 'unread' ? 'bg-[#DB4B3A] text-white shadow-xl' : 'text-[#E7BD8A]/60 hover:text-[#E7BD8A]' }}">Belum
-                    Dibaca</a>
-                <a href="{{ route('notifications.index', ['tab' => 'read']) }}"
-                    class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition {{ request('tab') == 'read' ? 'bg-[#DB4B3A] text-white shadow-xl' : 'text-[#E7BD8A]/60 hover:text-[#E7BD8A]' }}">Sudah
-                    Dibaca</a>
-            </div>
+            <div class="flex flex-wrap gap-4 mb-8 items-center">
+                <div class="flex bg-[#5B000B] p-1.5 rounded-2xl border border-white/5 shadow-2xl">
+        <a href="{{ route('notifications.index') }}"
+            class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition
+            {{ request('tab') == null ? 'bg-[#DB4B3A] text-white shadow-xl' : 'text-white/80 hover:text-white' }}">
+            Semua
+        </a>
+
+        <a href="{{ route('notifications.index', ['tab' => 'unread']) }}"
+            class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition
+            {{ request('tab') == 'unread' ? 'bg-[#DB4B3A] text-white shadow-xl' : 'text-white/80 hover:text-white' }}">
+            Belum Dibaca
+        </a>
+
+        <a href="{{ route('notifications.index', ['tab' => 'read']) }}"
+            class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition
+            {{ request('tab') == 'read' ? 'bg-[#DB4B3A] text-white shadow-xl' : 'text-white/80 hover:text-white' }}">
+            Sudah Dibaca
+        </a>
+    </div>
+
 
             <form class="ml-auto">
                 <select name="sort" onchange="this.form.submit()"
@@ -71,8 +78,8 @@
         <div class="space-y-4">
             @foreach ($notifications as $notif)
                 @php
-                    $borderColor = !$notif->is_read ? 'border-[#DB4B3A]' : 'border-white/5';
-                    $bgColor = !$notif->is_read ? 'bg-[#5B000B]' : 'bg-[#5B000B]/40';
+                    $borderColor = !$notif->is_read ? 'border-[#DB4B3A]' : 'border-[#930014]';
+                    $bgColor = 'bg-[#5B000B]';
                 @endphp
 
                 <div
@@ -108,7 +115,7 @@
                     <div class="flex gap-2 w-full md:w-auto">
                         @if (!$notif->is_read)
                             <a href="{{ route('notifications.read', $notif->id) }}"
-                                class="flex-1 md:flex-none text-center px-6 py-2 bg-[#E7BD8A] hover:bg-white text-[#5B000B] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md">
+                                class="flex-1 md:flex-none text-center px-6 py-2 bg-[#E7BD8A] hover:bg-white text-[#FFFFFF] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md">
                                 BACA
                             </a>
                         @endif

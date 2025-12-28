@@ -5,8 +5,7 @@
         </h2>
     </x-slot>
 
-    {{-- Container Utama dengan Alpine.js --}}
-    <div class="py-0 -mt-10 bg-gray-100 min-h-screen" x-data="{
+    <div class="py-0 bg-gray-100 min-h-screen" x-data="{
         items: [
             @foreach ($cartItems as $item)
             {
@@ -18,7 +17,6 @@
         ],
         selectAll: true,
 
-        {{-- Fungsi untuk update quantity ke Database secara Real-time --}}
         updateQty(id, newQty) {
             fetch(`/cart/update/${id}`, {
                 method: 'PATCH',
@@ -54,10 +52,8 @@
     }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
 
-            {{-- Kolom Kiri: Daftar Produk --}}
             <div class="lg:col-span-2 space-y-3">
 
-                {{-- Box Pilih Semua --}}
                 <div class="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center">
                     <label class="flex items-center gap-3 cursor-pointer group">
                         <input type="checkbox" @click="toggleAll()" :checked="selectAll"
@@ -82,18 +78,15 @@
                 @else
                     @foreach ($cartItems as $item)
                         <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 transition-all hover:border-red-100">
-                            {{-- Checkbox Item --}}
                             <input type="checkbox" x-model="items.find(i => i.id === {{ $item->id }}).selected"
                                 class="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer">
 
-                            {{-- Gambar Produk --}}
                             <div class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
                                 <img src="{{ asset('produk_assets/' . basename($item->produk->gambar)) }}"
                                     class="w-full h-full object-contain p-1"
                                     onerror="this.src='{{ asset('images/no-image.png') }}'">
                             </div>
 
-                            {{-- Info Produk --}}
                             <div class="flex-1 min-w-0">
                                 <h4 class="font-bold text-gray-800 text-sm truncate">{{ $item->produk->nama_produk }}</h4>
                                 <p class="text-[10px] text-gray-400 font-medium">Stok: {{ $item->produk->stok }}</p>
@@ -102,10 +95,8 @@
                                 </p>
                             </div>
 
-                            {{-- Input Qty & Subtotal --}}
                             <div class="flex items-center gap-3">
                                 <div class="flex flex-col items-center">
-                                    {{-- INPUT NUMBER DENGAN EVENT CHANGE --}}
                                     <input type="number" min="1" max="{{ $item->produk->stok }}"
                                         x-model.number="items.find(i => i.id === {{ $item->id }}).qty"
                                         @change="updateQty({{ $item->id }}, $event.target.value)"
@@ -120,7 +111,6 @@
                                     </strong>
                                 </div>
 
-                                {{-- Tombol Hapus --}}
                                 <form method="POST" action="{{ route('cart.remove', $item->id) }}" onsubmit="return confirm('Hapus item ini?')">
                                     @csrf
                                     @method('DELETE')
@@ -136,7 +126,6 @@
                 @endif
             </div>
 
-            {{-- Kolom Kanan: Ringkasan Belanja --}}
             <div class="lg:col-span-1">
                 <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100 sticky top-[5.5rem] z-10 self-start">
                     <h3 class="font-bold text-sm text-gray-800 mb-4 border-b pb-2 uppercase tracking-tight">Ringkasan Belanja</h3>
@@ -159,7 +148,6 @@
                         </div>
                     </div>
 
-                    {{-- Form Checkout --}}
                     <form method="POST" action="{{ route('checkout.selected') }}">
                         @csrf
                         <template x-for="item in items.filter(i => i.selected)" :key="item.id">
