@@ -24,15 +24,68 @@
 
             {{-- CATEGORY --}}
             <div class="hidden md:flex items-center">
-                <a href="/category"
-                class="px-4 py-2 rounded-full text-sm font-medium
-                       text-black
-                       hover:bg-[#E7BD8A]/40
-                       hover:text-[#DB4B3A]
-                       transition">
-                    Kategori
-                </a>
+                <div class="relative group">
+
+                    {{-- BUTTON --}}
+                    <button
+                        type="button"
+                        class="px-4 py-2 rounded-full text-sm font-medium
+                            text-black
+                            hover:bg-[#E7BD8A]/40
+                            hover:text-[#DB4B3A]
+                            transition flex items-center gap-1"
+                    >
+                        Kategori
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </button>
+
+                    {{-- DROPDOWN --}}
+                    <div
+                        class="absolute left-0 mt-2 w-60
+                            bg-white border border-gray-200
+                            rounded-xl shadow-lg
+                            opacity-0 invisible
+                            group-hover:opacity-100 group-hover:visible
+                            transition-all duration-200
+                            z-50"
+                    >
+                        <ul class="py-2 text-sm text-gray-700 max-h-80 overflow-y-auto">
+
+                            @forelse ($kategoriList as $kategori)
+                                <li>
+                                    <a
+                                        href="{{ route('produk.index', ['kategori' => $kategori->id]) }}"
+                                        class="block px-4 py-2
+                                            hover:bg-[#E7BD8A]/30
+                                            hover:text-[#DB4B3A]
+                                            transition"
+                                    >
+                                        {{ $kategori->nama_kategori }}
+                                    </a>
+                                </li>
+                            @empty
+                                <li class="px-4 py-2 text-gray-400">
+                                    Tidak ada kategori
+                                </li>
+                            @endforelse
+
+                            <li class="border-t mt-2">
+                                <a
+                                    href="/category"
+                                    class="block px-4 py-2 font-semibold
+                                        text-[#930014]
+                                        hover:bg-[#E7BD8A]/30"
+                                >
+                                    Lihat Semua Kategori
+                                </a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                </div>
             </div>
+
 
             {{-- SEARCH --}}
             <div x-data="{ focused: false }" class="relative flex-1 mx-4 max-w-xl">

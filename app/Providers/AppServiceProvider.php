@@ -10,6 +10,8 @@ use App\Models\Wishlist;
 use App\Models\Notification;
 use App\Models\Mart;
 use Midtrans\Config;
+use App\Models\KategoriProduk;
+
 
 
 class AppServiceProvider extends ServiceProvider
@@ -65,7 +67,11 @@ class AppServiceProvider extends ServiceProvider
                 ])
                 ->get();
 
-            $view->with(compact('activeMart', 'marts'));
+            // ✅ TAMBAHAN AMAN (INI SAJA)
+            $kategoriList = KategoriProduk::orderBy('nama_kategori')->get();
+
+            // ⬇️ tinggal tambahin ke compact
+            $view->with(compact('activeMart', 'marts', 'kategoriList'));
         });
     }
 }
