@@ -22,7 +22,7 @@
 
             </div>
 
-            {{-- CATEGORY --}}
+            <!-- {{-- CATEGORY --}}
             <div class="hidden md:flex items-center">
                 <div class="relative group">
 
@@ -84,7 +84,7 @@
                     </div>
 
                 </div>
-            </div>
+            </div> -->
 
 
             {{-- SEARCH --}}
@@ -243,9 +243,9 @@
          @click.outside="open = false"
          class="md:hidden border-t border-[#E7BD8A] bg-white px-4 py-4 space-y-3">
 
-        <a href="/category" class="flex items-center gap-3 p-2 rounded hover:bg-[#E7BD8A]/30">
+        <!-- <a href="/category" class="flex items-center gap-3 p-2 rounded hover:bg-[#E7BD8A]/30">
             @include('icons.category-icon') Kategori
-        </a>
+        </a> -->
 
         <a href="/wishlist" class="flex items-center gap-3 p-2 rounded hover:bg-[#E7BD8A]/30">
             @include('icons.heart') Wishlist

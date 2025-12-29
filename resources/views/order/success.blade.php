@@ -49,6 +49,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>TMart - Detail Transaksi</title>
+
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
@@ -56,12 +58,33 @@
         <style>
             body {
                 font-family: 'Plus Jakarta Sans', sans-serif;
+                background: #FFFFFF;
             }
-    
+
+            .card-modern {
+                background: #fff;
+                border-radius: 2rem;
+                border: 1px solid #f1f1f1;
+                box-shadow: 0 12px 30px rgba(0,0,0,.04);
+            }
+
+            .btn-primary {
+                background: #dc2626;
+                color: white;
+                transition: all .25s ease;
+            }
+            .btn-primary:hover {
+                background: #b91c1c;
+                transform: translateY(-2px);
+            }
+
+            .badge-success {
+                background: linear-gradient(135deg, #dc2626, #930014);
+            }
+
             @media print {
-                .no-print {
-                    display: none !important;
-                }
+                .no-print { display: none !important; }
+                body { background: white !important; }
             }
         </style>
     </head>
@@ -117,14 +140,14 @@
     
         <main class="p-6 lg:p-10 max-w-[1200px] mx-auto">
     
-            {{-- Header: Invoice ID & Action Buttons --}}
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+            {{-- Header: Invoice ID & Action Buttons OLD --}}
+            <!-- <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
                 <div>
                     <nav class="flex text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-2">
                         <ol class="list-none p-0 inline-flex">
-                            <li class="flex items-center">Dashboard <i class="fas fa-chevron-right mx-2 text-[8px]"></i>
+                            <li class="flex items-center">Beranda <i class="fas fa-chevron-right mx-2 text-[8px]"></i>
                             </li>
-                            <li class="text-indigo-600">Transaction Detail</li>
+                            <li class="text-indigo-600">Detail Transaksi</li>
                         </ol>
                     </nav>
                     <h2 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
@@ -142,9 +165,117 @@
                         <i class="fas fa-plus text-xs mr-2"></i> Pesanan Baru
                     </a>
                 </div>
+            </div> -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+                {{-- Title & Breadcrumb --}}
+                <div>
+                    <nav class="flex text-red-300 text-[10px] font-black uppercase tracking-widest mb-2">
+                        <ol class="list-none p-0 inline-flex items-center">
+                            <li class="flex items-center">
+                                <a href="/dashboard" class="hover:text-[#dc2626] transition">
+                                    Beranda
+                                </a>
+                                <i class="fas fa-chevron-right mx-2 text-[8px] opacity-60"></i>
+                            </li>
+                            <li class="text-[#dc2626]">
+                                Detail Transaksi
+                            </li>
+                        </ol>
+                    </nav>
+
+                    <h2 class="text-3xl font-black tracking-tight flex items-center gap-3 text-[#5B000B]">
+                        Invoice
+                        <span class="text-[#dc2626] font-mono tracking-widest">
+                            #{{ $order_id }}
+                        </span>
+                    </h2>
+                </div>
+
+                {{-- Action Buttons --}}
+                <div class="no-print flex items-center gap-3">
+
+                    {{-- Print --}}
+                    <button onclick="window.print()"
+                        class="px-6 py-3
+                            bg-white border border-red-100
+                            text-[#930014]
+                            rounded-xl
+                            font-black text-sm
+                            hover:bg-red-50
+                            transition-all
+                            flex items-center gap-2">
+                        <i class="fas fa-print text-xs"></i>
+                        Cetak Struk
+                    </button>
+
+                    {{-- New Order --}}
+                    <a href="/"
+                        class="px-6 py-3
+                            bg-[#dc2626]
+                            text-white
+                            rounded-xl
+                            font-black text-sm
+                            shadow-lg shadow-red-200
+                            hover:bg-[#b91c1c]
+                            transition-all">
+                        <i class="fas fa-plus text-xs mr-2"></i>
+                        Pesanan Baru
+                    </a>
+                </div>
             </div>
+
+            {{-- Header: Invoice ID & Action Buttons NEW --}}
+            <div 
+            x-data="{ show:true }"
+            x-show="show"
+            x-transition.opacity.duration.700ms
+            class="relative overflow-hidden rounded-[2.5rem] mb-10
+                bg-gradient-to-br from-[#dc2626] via-[#DB4B3A] to-[#930014]
+                text-white shadow-2xl">
+
+                <div class="p-10 relative z-10">
+
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <p class="text-[11px] uppercase tracking-[0.3em] text-red-100 font-black mb-2">
+                                Transaksi Berhasil
+                            </p>
+                            <h1 class="text-4xl font-black tracking-tight leading-tight">
+                                Pesanan Anda Sedang Diproses
+                            </h1>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-4 text-xs font-bold mt-6">
+                        <div class="px-4 py-2 bg-white/15 rounded-full">
+                            Invoice #{{ $order_id }}
+                        </div>
+                        <div class="px-4 py-2 bg-white/15 rounded-full">
+                            Lokasi: 
+                            @if ($is_delivery)
+                                {{ $delivery_address ?? 'Alamat tidak terdeteksi' }}
+                            @else
+                                T-Mart
+                            @endif
+                        </div>
+                        <div class="px-4 py-2 bg-white/15 rounded-full">
+                            {{ $display_payment_method }}
+                        </div>
+                    </div>
+
+                </div>
+
+                {{-- Decorative Blur --}}
+                <div class="absolute -right-24 -bottom-24 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+            </div>
+
     
-            <div class="grid grid-cols-12 gap-8">
+            <!-- <div class="grid grid-cols-12 gap-8"> -->
+            <div x-data="{ loaded:false }"
+                 x-init="setTimeout(()=>loaded=true,300)"
+                 :class="loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'"
+                 class="grid grid-cols-12 gap-8 transition-all duration-700">
+    
     
                 {{-- Kolom Kiri: Items & Address --}}
                 <div class="col-span-12 lg:col-span-8 space-y-8">
@@ -177,7 +308,7 @@
                                             <td class="px-8 py-5">
                                                 <div class="flex items-center gap-4">
                                                     <div
-                                                        class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center shrink-0">
+                                                        class="w-10 h-10 bg-[#fee2e2] text-[#dc2626] rounded-lg flex items-center justify-center shrink-0">
                                                         <i class="fas fa-box text-xs"></i>
                                                     </div>
                                                     <div>
@@ -205,8 +336,11 @@
                     <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
                         <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Detail Lokasi</h4>
                         <div class="flex gap-4">
+
                             <div
-                                class="w-12 h-12 rounded-2xl {{ $is_delivery ? 'bg-red-50 text-red-500' : 'bg-indigo-50 text-indigo-600' }} flex items-center justify-center shrink-0">
+                                class="w-12 h-12 rounded-2xl
+                                    {{ $is_delivery ? 'bg-[#fee2e2] text-[#dc2626]' : 'bg-[#fee2e2] text-[#dc2626]' }}
+                                    flex items-center justify-center shrink-0">
                                 <i class="fas {{ $is_delivery ? 'fa-map-marker-alt' : 'fa-store-alt' }} text-xl"></i>
                             </div>
                             <div>
@@ -230,12 +364,23 @@
                 <div class="col-span-12 lg:col-span-4 space-y-8">
                     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                         {{-- Badge Status --}}
-                        <div class="p-8 {{ $curr['bg'] }} text-white text-center">
+                        <!-- <div class="p-8 {{ $curr['bg'] }} text-white text-center">
                             <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">Status Pembayaran
                             </p>
                             <div class="flex items-center justify-center gap-3">
                                 <i class="fas {{ $curr['icon'] }} text-2xl"></i>
                                 <h3 class="text-xl font-black italic tracking-tight">{{ $curr['label'] }}</h3>
+                            </div>
+                        </div> -->
+                        <div class="p-8 badge-success text-center text-white">
+                            <p class="text-[10px] font-black uppercase tracking-[0.3em] opacity-80 mb-2">
+                                Status Pembayaran
+                            </p>
+                            <div class="flex items-center justify-center gap-3">
+                                <i class="fas {{ $curr['icon'] }} text-3xl"></i>
+                                <h3 class="text-2xl font-black tracking-tight">
+                                    {{ $curr['label'] }}
+                                </h3>
                             </div>
                         </div>
     
@@ -247,7 +392,7 @@
                                 </div>
                                 <div class="flex justify-between items-center text-xs">
                                     <span class="font-bold text-gray-400 uppercase">Metode</span>
-                                    <span class="font-black text-indigo-600">{{ $display_payment_method }}</span>
+                                    <span class="font-black text-[#dc2626]">{{ $display_payment_method }}</span>
                                 </div>
                             </div>
     
@@ -270,20 +415,33 @@
                                     <span class="text-gray-400 font-medium">Biaya Layanan</span>
                                     <span class="font-bold text-slate-800">{{ currency($service_fee ?? 2000) }}</span>
                                 </div>
-    
+                                
                                 {{-- Total Akhir --}}
                                 <div class="flex justify-between pt-4 border-t-2 border-dashed border-gray-100 mt-4">
                                     <span class="text-lg font-black text-slate-900">TOTAL AKHIR</span>
-                                    <span class="text-2xl font-black text-red-600 tracking-tighter">
+                                    <!-- <span class="text-2xl font-black text-red-600 tracking-tighter">
+                                        {{ currency($total_payment) }}
+                                    </span> -->
+                                    <span class="text-3xl font-black tracking-tight text-[#dc2626]">
                                         {{ currency($total_payment) }}
                                     </span>
                                 </div>
                             </div>
     
-                            <a href="/dashboard"
+                            <!-- <a href="/dashboard"
                                 class="no-print w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest text-center block hover:bg-black hover:shadow-lg transition-all">
                                 Kembali ke Beranda
+                            </a> -->
+                            <a href="/dashboard"
+                               class="no-print block w-full text-center py-4
+                                    btn-primary rounded-2xl font-black uppercase tracking-widest
+                                    shadow-lg shadow-red-200">
+                                Kembali ke Beranda
                             </a>
+
+                            <p class="text-[10px] text-gray-400 text-center mt-3">
+                                *Total sudah termasuk biaya layanan & pajak yang berlaku
+                            </p>
                         </div>
                     </div>
                 </div>
