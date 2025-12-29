@@ -12,6 +12,7 @@ use App\Models\Mart;
 use App\Models\Produk;
 use Midtrans\Config;
 use App\Models\KategoriProduk;
+// use Illuminate\Support\Facades\URL;
 
 
 
@@ -30,6 +31,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // if (env('APP_ENV') === 'local') { 
+        //     URL::forceScheme('https'); 
+        // } 
         /**
          * GLOBAL DATA (cart, wishlist, notif)
          */

@@ -26,11 +26,27 @@ Route::post('/pembayaran', [MetodePembayaranController::class, 'store'])
     ->middleware('auth');
 
 
+Route::middleware(['auth'])->group(function () {
+    // Checkout page (GET)
+    Route::get('/checkout', [CheckoutController::class, 'checkoutPage'])
+        ->middleware(['auth'])
+        ->name('checkout.index');
+
+    // Handle selected cart (POST)
+    Route::post('/checkout/selected', [CheckoutController::class, 'storeSelected'])
+        ->middleware(['auth'])
+        ->name('checkout.selected');
+
+    // Payment Method
+    Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])
+        ->middleware(['auth'])
+        ->name('payment.method');
+});
 Route::patch('/cart/update/{id}', [App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [App\Http\Controllers\CartController::class, 'destroy'])->name('cart.remove');
 Route::post('/checkout/selected', [CheckoutController::class, 'index'])->name('checkout.selected');
-Route::get('/order/success/{order_id}', [App\Http\Controllers\CheckoutController::class, 'showSuccess'])->name('order.success');
-Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('checkout.process');
+// Route::get('/order/success/{order_id}', [App\Http\Controllers\CheckoutController::class, 'showSuccess'])->name('order.success');
+// Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('checkout.process');
 Route::post('/checkout/process', [CheckoutController::class, 'processCheckout'])->name('checkout.process');
 Route::post('/checkout/process', [CheckoutController::class, 'processSuccess'])->name('checkout.process');
 Route::get('/order/success/{order_id}', [CheckoutController::class, 'showSuccess'])->name('order.success');
@@ -48,9 +64,10 @@ Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])
     ->name('payment.method');
 Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])
     ->name('payment.snap-token');
-Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])->name('payment.snap-token');
+// Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])
+//     ->name('payment.snap-token');
 Route::post('/checkout/direct', [CheckoutController::class, 'directCheckout'])->name('checkout.direct');
-Route::get('/order/success', [CheckoutController::class, 'showSuccess'])->name('order.success');
+// Route::get('/order/success', [CheckoutController::class, 'showSuccess'])->name('order.success');
 
 Route::get('/order/success', [OrderController::class, 'success'])
     ->name('order.success');

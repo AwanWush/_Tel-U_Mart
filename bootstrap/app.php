@@ -10,9 +10,12 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
-    })
+    ->withMiddleware(function (Middleware $middleware): void { 
+        // 
+         $middleware->validateCsrfTokens(except: [ 
+            'payment/midtrans-callback', 
+        ]); 
+    }) 
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
