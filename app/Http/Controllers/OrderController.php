@@ -86,7 +86,11 @@ class OrderController extends Controller
                     $produk->decrement('stok', $directQty);
                 } else {
                     // --- KASUS: DARI KERANJANG ---
-                    $cartItems = Cart::where('user_id', Auth::id())->with('produk')->get();
+                    $selectedIds = session('checkout_cart_items', []);
+                    $cartItems = Cart::whereIn('id', $selectedIds)
+                        ->where('user_id', Auth::id())
+                        ->with('produk')
+                        ->get();
                     foreach ($cartItems as $item) {
                         DB::table('detail_pembelian')->insert([
                             'riwayat_pembelian_id' => $pesanan->id,
@@ -98,7 +102,7 @@ class OrderController extends Controller
                         ]);
                         $item->produk->decrement('stok', $item->quantity);
                     }
-                    Cart::where('user_id', Auth::id())->delete();
+                    Cart::whereIn('id', $selectedIds)->delete();
                 }
 
                 // 4. KIRIM NOTIFIKASI & EMAIL (Hanya dikirim jika detail baru saja dibuat)
@@ -129,6 +133,8 @@ class OrderController extends Controller
                 ->where('riwayat_pembelian_id', $pesanan->id)
                 ->get()
                 ->map(fn ($d) => ['name' => $d->nama_produk, 'qty' => $d->jumlah, 'price' => $d->harga_satuan, 'store' => 'T-Mart Point']);
+
+            session()->forget('checkout_cart_items');
 
             return view('order.success', [
                 'serviceType' => $serviceType,

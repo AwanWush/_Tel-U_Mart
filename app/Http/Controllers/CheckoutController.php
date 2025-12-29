@@ -20,6 +20,8 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Pilih produk terlebih dahulu!');
         }
 
+        session(['checkout_cart_items' => $selectedIds]);
+
         // 2. Ambil data dari database lengkap dengan relasi produk
         $cartItems = \App\Models\Cart::whereIn('id', $selectedIds)
             ->where('user_id', auth()->id())
