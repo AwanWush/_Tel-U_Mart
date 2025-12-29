@@ -30,7 +30,8 @@
         },
         "files": [
             "app/Helpers/NavHelper.php",
-            "app/Helpers/ProductMartHighlightHelper.php"
+            "app/Helpers/ProductMartHighlightHelper.php",
+            "app/Helpers/NotificationHelper.php"
         ]
     },
     "autoload-dev": {

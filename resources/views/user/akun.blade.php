@@ -1,303 +1,442 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Akun Saya
         </h2>
     </x-slot>
 
     <div class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
-        <div class="bg-white shadow sm:rounded-lg overflow-hidden">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {{-- SIDEBAR --}}
-                <div class="p-6 border-r flex flex-col items-center bg-gray-50">
-                    {{-- FOTO PROFIL --}}
-                    @php
-                        $imagePath = $user->gambar && file_exists(public_path('storage/'.$user->gambar))
-                            ? asset('storage/'.$user->gambar)
-                            : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-                    @endphp
+        {{-- Container Utama dengan flex atau grid --}}
+        <div class="flex flex-col md:flex-row gap-4 items-start">
 
-                    <img src="{{ $imagePath }}"
-                            alt="Foto Profil"
-                            class="w-20 h-20 object-cover rounded-full border border-gray-300 shadow-sm mb-3">
+            {{-- SIDEBAR (FIXED/STICKY) --}}
+            {{-- h-fit memastikan sidebar hanya setinggi isinya, sticky membuatnya tetap di atas saat scroll --}}
+            <div class="w-full md:w-64 flex-shrink-0 sticky top-24">
+                <div class="bg-white shadow sm:rounded-2xl overflow-hidden border border-gray-100">
+                    <div class="p-6 flex flex-col items-center bg-white">
+                        {{-- FOTO PROFIL --}}
+                        @php
+                            $imagePath =
+                                $user->gambar && file_exists(public_path('storage/' . $user->gambar))
+                                    ? asset('storage/' . $user->gambar)
+                                    : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                        @endphp
 
-                    <h3 class="text-sm font-semibold text-gray-800">{{ $user->name }}</h3>
-                    <p class="text-xs text-gray-500 mb-4">{{ $user->email }}</p>
+                        <img src="{{ $imagePath }}" alt="Foto Profil"
+                            class="w-24 h-24 object-cover rounded-full border-4 border-gray-50 shadow-md mb-4">
 
-                    {{-- NAVIGASI --}}
-                    <div class="flex flex-col w-full space-y-2">
-                        <button data-tab="pesanan"
-                                class="tab-btn bg-gray-800 text-white px-3 py-1.5 rounded text-sm hover:bg-gray-700 transition">
-                            Riwayat Pesanan Saya
-                        </button>
-                        
-                        <button data-tab="pembayaran"
-                                class="tab-btn bg-gray-800 text-white px-3 py-1.5 rounded text-sm hover:bg-gray-700 transition">
-                            Metode Pembayaran
-                        </button>
-                        
-                        <button data-tab="profil"
-                                class="tab-btn bg-gray-800 text-white px-3 py-1.5 rounded text-sm hover:bg-gray-700 transition">
-                            Profil
-                        </button>
+                        <h3 class="text-base font-black text-slate-800 tracking-tight text-center">{{ $user->name }}
+                        </h3>
+                        <p class="text-xs text-slate-500 mb-6 text-center break-all">{{ $user->email }}</p>
 
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit"
-                                    class="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-500 transition w-full">
-                                Keluar
+                        {{-- NAVIGASI --}}
+                        <div class="flex flex-col w-full space-y-2">
+                            {{-- Riwayat Pesanan - Sekarang menggunakan style yang sama dengan Profil Saya --}}
+                            <button data-tab="pesanan"
+                                class="tab-btn bg-white text-slate-600 border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all flex items-center gap-3">
+                                <i class="fas fa-shopping-bag w-4"></i> Riwayat Pesanan
                             </button>
-                        </form>
+
+                            {{-- Metode Pembayaran --}}
+                            <button data-tab="pembayaran"
+                                class="tab-btn bg-white text-slate-600 border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all flex items-center gap-3">
+                                <i class="fas fa-credit-card w-4"></i> Metode Pembayaran
+                            </button>
+
+                            {{-- Profil Saya --}}
+                            <button data-tab="profil"
+                                class="tab-btn bg-white text-slate-600 border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all flex items-center gap-3">
+                                <i class="fas fa-user w-4"></i> Profil Saya
+                            </button>
+
+                            {{-- Tombol Keluar tetap Merah sesuai referensi --}}
+                            <form method="POST" action="{{ route('logout') }}" class="pt-2">
+                                @csrf
+                                <button type="submit"
+                                    class="bg-red-600 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all w-full shadow-lg shadow-red-200">
+                                    Keluar
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-                
+            </div>
 
-                {{-- KONTEN KANAN --}}
-                <div class="md:col-span-3 p-6">
+            {{-- KONTEN KANAN (SCROLLABLE) --}}
+            <div class="w-full md:w-3/4">
+                <div class="bg-white shadow sm:rounded-lg p-6">
+
                     {{-- TAB PESANAN --}}
-                    <div id="tab-pesanan" class="tab-content">
-                        <div class="border border-gray-200 rounded-lg p-5 bg-white">
-                            <h3 class="text-lg font-semibold mb-4">Riwayat Pesanan Saya</h3>
-
-                            <table class="min-w-full text-sm text-gray-700 border">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-4 py-2 border">No Order</th>
-                                        <th class="px-4 py-2 border">Tanggal Order</th>
-                                        <th class="px-4 py-2 border">Total Harga</th>
-                                        <th class="px-4 py-2 border text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($pesanan as $order)
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="px-4 py-2 border">{{ $order->nomor_order }}</td>
-                                            <td class="px-4 py-2 border">{{ $order->tanggal_order }}</td>
-                                            <td class="px-4 py-2 border">Rp{{ number_format($order->total_harga, 0, ',', '.') }}</td>
-                                            <td class="px-4 py-2 border text-center space-x-2">
-                                                <button onclick="showDetail({{ $order->id }})"
-                                                        class="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-500">
-                                                    Lihat Detail
-                                                </button>
-                                                <button onclick="ajukanKomplain({{ $order->id }})"
-                                                        class="bg-yellow-500 text-white px-3 py-1 rounded text-xs hover:bg-yellow-400">
-                                                    Ajukan Komplain
-                                                </button>
-                                                <button onclick="beliKembali({{ $order->id }})"
-                                                        class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-500">
-                                                    Beli Kembali
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="4" class="text-center py-4 text-gray-500">
-                                                Belum ada pesanan.
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-
-                            {{-- Modal Detail Pesanan --}}
-                            <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                                <div class="bg-white rounded-lg shadow-lg w-96 p-5">
-                                    <h4 class="text-lg font-semibold mb-3">Detail Pesanan</h4>
-                                    <div id="detailContent" class="text-sm text-gray-700 space-y-2"></div>
-                                    <button onclick="closeDetail()"
-                                            class="mt-4 bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-700 transition">
-                                        Tutup
-                                    </button>
+                    <div class="flex-1 w-full">
+                        <div class="bg-white shadow sm:rounded-2xl border border-gray-100 p-6">
+                            {{-- Isi Tab Pesanan/Profil tetap di sini --}}
+                            <div id="tab-pesanan" class="tab-content">
+                                <h3 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+                                    <span class="w-1 h-6 bg-red-600 rounded-full"></span> Riwayat Pesanan Saya
+                                </h3>
+                                {{-- Wrapper overflow-x agar tabel tidak merusak layout di mobile --}}
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-sm text-gray-700 border">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th class="px-4 py-2 border">No Order</th>
+                                                <th class="px-4 py-2 border">Tanggal Order</th>
+                                                <th class="px-4 py-2 border">Total Harga</th>
+                                                <th class="px-4 py-2 border">Status</th>
+                                                <th class="px-4 py-2 border text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($riwayat as $item)
+                                                <tr class="border-b hover:bg-gray-50">
+                                                    <td class="px-4 py-2 border font-mono">{{ $item->id_transaksi }}
+                                                    </td>
+                                                    <td class="px-4 py-2 border">
+                                                        {{ $item->created_at->format('d/m/Y H:i') }}</td>
+                                                    <td class="px-4 py-2 border font-semibold">
+                                                        Rp{{ number_format($item->total_harga, 0, ',', '.') }}</td>
+                                                    <td class="px-4 py-2 border">
+                                                        <span
+                                                            class="px-2 py-1 rounded text-xs font-bold {{ $item->status == 'Lunas' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                            {{ $item->status }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-2 border text-center">
+                                                        <button
+                                                            onclick="showDetailOrder({
+                                                    no_order: '{{ $item->id_transaksi }}',
+                                                    tanggal: '{{ $item->created_at->format('d/m/Y, H.i') }}',
+                                                    total: {{ $item->total_harga }},
+                                                    tipe: '{{ $item->tipe_layanan ?? 'delivery' }}',
+                                                    alamat_tujuan: '{{ $item->metode_pembayaran }}', 
+                                                    items: [
+                                                        @foreach ($item->details as $detail)
+                                                        {
+                                                            nama_produk: '{{ $detail->nama_produk }}',
+                                                            nama_mart: 'T-Mart Point', 
+                                                            qty: {{ $detail->jumlah }}, 
+                                                            harga_satuan: {{ $detail->harga_satuan }}
+                                                        }@if (!$loop->last),@endif @endforeach
+                                                    ]
+                                                })"
+                                                            class="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition">
+                                                            Lihat Detail
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-4">Belum ada riwayat
+                                                        pembelian.</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    {{-- TAB PROFIL --}}
-                    <div id="tab-profil" class="tab-content hidden">
-                        <div class="border border-gray-200 rounded-lg p-5 bg-white">
-                            <h3 class="text-lg font-semibold mb-4">Profil Saya</h3>
+                            {{-- Modal Detail Pesanan --}}
+                            <div id="detailModal"
+                                class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] overflow-y-auto px-4 py-10">
+                                <div class="flex min-h-full items-start justify-center pt-20 pb-10">
+                                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col relative animate-in fade-in zoom-in duration-200"
+                                        style="max-height: 80vh;">
 
-                            {{-- VIEW PROFIL --}}
-                            <div id="profil-view" class="space-y-3">
-                                <p><strong>Nama:</strong> {{ $user->name }}</p>
-                                <p><strong>Email:</strong> {{ $user->email }}</p>
-                                <p><strong>Nomor HP:</strong> {{ $user->no_telp ?? '-' }}</p>
-                                @if($user->penghuni_asrama === 'ya')
-                                    <p><strong>Gedung:</strong> {{ $user->lokasi->nama_lokasi ?? $user->alamat_gedung ?? '-' }}</p>
-                                    <p><strong>Nomor Kamar:</strong> {{ $user->nomor_kamar ?? '-' }}</p>
-                                @endif
-                                <p><strong>Tanggal Registrasi:</strong> {{ $user->created_at->format('d-m-Y') }}</p>
-                                <button id="editProfilBtn"
-                                        class="mt-4 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-500 transition">
-                                    Edit Profil
-                                </button>
+                                        <div
+                                            class="p-5 border-b flex justify-between items-center bg-gray-50/80 sticky top-0 z-10 backdrop-blur-md">
+                                            <h4 class="text-lg font-bold text-slate-800">Detail Pesanan</h4>
+                                            <button onclick="closeDetail()"
+                                                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors">
+                                                <i class="fas fa-times text-gray-500"></i>
+                                            </button>
+                                        </div>
+
+                                        <div class="p-6 overflow-y-auto flex-1 custom-scrollbar bg-white">
+                                            <div id="detailContent" class="text-sm text-gray-700"></div>
+                                        </div>
+
+                                        <div class="p-5 border-t bg-gray-50/50 sticky bottom-0 z-10 backdrop-blur-md">
+                                            <button onclick="closeDetail()"
+                                                class="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold hover:bg-black transition-all shadow-lg active:scale-[0.98]">
+                                                Tutup Rincian
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            {{-- FORM EDIT PROFIL --}}
-                            <div id="profil-form" class="hidden space-y-3">
-                                <form action="{{ route('user.akun.update', ['tab' => 'profil']) }}" method="POST" enctype="multipart/form-data">
-                                    @csrf
-                                    @method('PATCH')
+                            {{-- TAB PROFIL --}}
+                            <div id="tab-profil" class="tab-content hidden">
+                                <div class="border border-gray-200 rounded-lg p-5 bg-white">
+                                    <h3 class="text-lg font-semibold mb-4">Profil Saya</h3>
 
-                                    {{-- NAMA --}}
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Nama</label>
-                                        <input type="text" name="name" value="{{ $user->name }}" 
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                    </div>
-
-                                    {{-- EMAIL --}}
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Email</label>
-                                        <input type="email" name="email" value="{{ $user->email }}" 
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                    </div>
-
-                                    {{-- NOMOR HP --}}
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Nomor HP</label>
-                                        <input type="text" name="no_telp" value="{{ $user->no_telp}}" 
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                    </div>
-
-                                    {{-- PENGHUNI ASRAMA --}}
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Apakah Penghuni Asrama?</label>
-                                        <select name="penghuni_asrama" id="penghuni_asrama" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                            <option value="tidak" {{ $user->penghuni_asrama === 'tidak' ? 'selected' : '' }}>Tidak</option>
-                                            <option value="ya" {{ $user->penghuni_asrama === 'ya' ? 'selected' : '' }}>Ya</option>
-                                        </select>
-                                    </div>
-
-                                    {{-- ALAMAT GEDUNG --}}
-                                    <div id="alamatGedungField" style="display: {{ $user->penghuni_asrama === 'ya' ? 'block' : 'none' }}" class="space-y-3">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">Alamat Gedung</label>
-                                            <select name="lokasi_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                                <option value="">-- Pilih Gedung --</option>
-                                                @foreach($gedungs as $gedung)
-                                                    <option value="{{ $gedung->id }}" {{ $user->lokasi_id == $gedung->id ? 'selected' : '' }}>
-                                                        {{ $gedung->nama_lokasi }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">Nomor Kamar</label>
-                                            <select name="nomor_kamar" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                                <option value="">-- Pilih Nomor Kamar --</option>
-                                                @php
-                                                    $listKamar = \App\Models\MasterKamar::orderBy('nomor_kamar', 'asc')->get();
-                                                @endphp
-                                                @foreach($listKamar as $kamar)
-                                                    <option value="{{ $kamar->nomor_kamar }}" {{ $user->nomor_kamar == $kamar->nomor_kamar ? 'selected' : '' }}>
-                                                        {{ $kamar->nomor_kamar }} (Lantai {{ $kamar->lantai }})
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    {{-- FOTO --}}
-                                    <div class="mt-4">
-                                        <label class="block text-sm font-medium text-gray-700">Foto Profil</label>
-                                        <input type="file" name="gambar" class="mt-1 block w-full">
-                                        @if($user->gambar)
-                                            <img src="{{ asset('storage/' . $user->gambar) }}" alt="Foto Profil" class="mt-2 w-24 h-24 object-cover rounded-full">
+                                    {{-- VIEW PROFIL --}}
+                                    <div id="profil-view" class="space-y-3">
+                                        <p><strong>Nama:</strong> {{ $user->name }}</p>
+                                        <p><strong>Email:</strong> {{ $user->email }}</p>
+                                        <p><strong>Nomor HP:</strong> {{ $user->no_telp ?? '-' }}</p>
+                                        @if ($user->penghuni_asrama === 'ya')
+                                            <p><strong>Gedung:</strong>
+                                                {{ $user->lokasi->nama_lokasi ?? ($user->alamat_gedung ?? '-') }}</p>
+                                            <p><strong>Nomor Kamar:</strong> {{ $user->nomor_kamar ?? '-' }}</p>
                                         @endif
-                                    </div>
-
-                                    {{-- PASSWORD (optional) --}}
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Password Baru (optional)</label>
-                                        <input type="password" name="password" 
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" 
-                                                placeholder="Kosongkan jika tidak ingin diganti">
-                                    </div>
-
-                                    {{-- KONFIRMASI PASSWORD --}}
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Konfirmasi Password</label>
-                                        <input type="password" name="password_confirmation" 
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" 
-                                                placeholder="Konfirmasi password baru">
-                                    </div>
-                                    
-                                    <div class="flex space-x-2 mt-4">
-                                        <button type="submit"
-                                                class="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-500 transition">
-                                            Simpan Perubahan
-                                        </button>
-                                        <button type="button" id="batalEditBtn"
-                                                class="bg-gray-600 text-white px-4 py-2 rounded text-sm hover:bg-gray-500 transition">
-                                            Batal
+                                        <p><strong>Tanggal Registrasi:</strong>
+                                            {{ $user->created_at->format('d-m-Y') }}</p>
+                                        <button id="editProfilBtn"
+                                            class="mt-4 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-500 transition">
+                                            Edit Profil
                                         </button>
                                     </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
 
-                    {{-- TAB METODE PEMBAYARAN --}}
-                    <div id="tab-pembayaran" class="tab-content hidden">
-                        <div class="border border-gray-200 rounded-lg p-5 bg-white">
-                            <h3 class="text-lg font-semibold mb-4">Metode Pembayaran</h3>
+                                    {{-- FORM EDIT PROFIL --}}
+                                    <div id="profil-form" class="hidden space-y-3">
+                                        <form action="{{ route('user.akun.update', ['tab' => 'profil']) }}"
+                                            method="POST" enctype="multipart/form-data">
+                                            @csrf
+                                            @method('PATCH')
 
-                            {{-- List Metode Pembayaran --}}
-                            @if($pembayaran->isEmpty())
-                                <p class="text-gray-600 text-sm mb-4">Belum ada metode pembayaran yang ditambahkan.</p>
-                            @else
-                                <ul class="space-y-2 text-gray-800 text-sm">
-                                    @foreach($pembayaran as $pay)
-                                        @php
-                                            $showPay = true;
-                                            if($pay->kategori === 'COD') {
-                                                $showPay = $pay->aktif ?? false;
-                                            }
-                                        @endphp
+                                            {{-- NAMA --}}
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Nama</label>
+                                                <input type="text" name="name" value="{{ $user->name }}"
+                                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                            </div>
 
-                                        @if($showPay)
-                                            <li class="flex justify-between items-center bg-gray-50 border rounded p-3">
+                                            {{-- EMAIL --}}
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Email</label>
+                                                <input type="email" name="email" value="{{ $user->email }}"
+                                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                            </div>
+
+                                            {{-- NOMOR HP --}}
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Nomor HP</label>
+                                                <input type="text" name="no_telp" value="{{ $user->no_telp }}"
+                                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                            </div>
+
+                                            {{-- PENGHUNI ASRAMA --}}
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Apakah Penghuni
+                                                    Asrama?</label>
+                                                <select name="penghuni_asrama" id="penghuni_asrama"
+                                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                                    <option value="tidak"
+                                                        {{ $user->penghuni_asrama === 'tidak' ? 'selected' : '' }}>
+                                                        Tidak
+                                                    </option>
+                                                    <option value="ya"
+                                                        {{ $user->penghuni_asrama === 'ya' ? 'selected' : '' }}>Ya
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            {{-- ALAMAT GEDUNG --}}
+                                            <div id="alamatGedungField"
+                                                style="display: {{ $user->penghuni_asrama === 'ya' ? 'block' : 'none' }}"
+                                                class="space-y-3">
                                                 <div>
-                                                    <div class="font-semibold">{{ $pay->kategori }}</div>
-                                                    @if($pay->keterangan)
-                                                        <div class="text-gray-700">{{ $pay->keterangan }}</div>
-                                                    @endif
-                                                    @if($pay->telepon)
-                                                        <div class="text-gray-700">No: {{ $pay->telepon }}</div>
-                                                    @endif
-                                                    @if($pay->bank)
-                                                        <div class="text-gray-700">{{ $pay->bank }} - {{ $pay->norek }}</div>
-                                                    @endif
+                                                    <label class="block text-sm font-medium text-gray-700">Alamat
+                                                        Gedung</label>
+                                                    <select name="lokasi_id"
+                                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                                        <option value="">-- Pilih Gedung --</option>
+                                                        @foreach ($gedungs as $gedung)
+                                                            <option value="{{ $gedung->id }}"
+                                                                {{ $user->lokasi_id == $gedung->id ? 'selected' : '' }}>
+                                                                {{ $gedung->nama_lokasi }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
                                                 </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700">Nomor
+                                                        Kamar</label>
+                                                    <select name="nomor_kamar"
+                                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                                        <option value="">-- Pilih Nomor Kamar --</option>
+                                                        @php
+                                                            $listKamar = \App\Models\MasterKamar::orderBy(
+                                                                'nomor_kamar',
+                                                                'asc',
+                                                            )->get();
+                                                        @endphp
+                                                        @foreach ($listKamar as $kamar)
+                                                            <option value="{{ $kamar->nomor_kamar }}"
+                                                                {{ $user->nomor_kamar == $kamar->nomor_kamar ? 'selected' : '' }}>
+                                                                {{ $kamar->nomor_kamar }} (Lantai
+                                                                {{ $kamar->lantai }})
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
 
-                                                <form method="POST" action="{{ route('pembayaran.destroy', $pay->id) }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="text-red-600 hover:text-white hover:bg-red-600 px-3 py-1 text-xs rounded transition">
-                                                        Hapus
-                                                    </button>
-                                                </form>
-                                            </li>
+                                            {{-- FOTO --}}
+                                            <div class="mt-4">
+                                                <label class="block text-sm font-medium text-gray-700">Foto
+                                                    Profil</label>
+                                                <input type="file" name="gambar" class="mt-1 block w-full">
+                                                @if ($user->gambar)
+                                                    <img src="{{ asset('storage/' . $user->gambar) }}"
+                                                        alt="Foto Profil"
+                                                        class="mt-2 w-24 h-24 object-cover rounded-full">
+                                                @endif
+                                            </div>
+
+                                            {{-- PASSWORD (optional) --}}
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Password Baru
+                                                    (optional)</label>
+                                                <input type="password" name="password"
+                                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                                                    placeholder="Kosongkan jika tidak ingin diganti">
+                                            </div>
+
+                                            {{-- KONFIRMASI PASSWORD --}}
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Konfirmasi
+                                                    Password</label>
+                                                <input type="password" name="password_confirmation"
+                                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                                                    placeholder="Konfirmasi password baru">
+                                            </div>
+
+                                            <div class="flex space-x-2 mt-4">
+                                                <button type="submit"
+                                                    class="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-500 transition">
+                                                    Simpan Perubahan
+                                                </button>
+                                                <button type="button" id="batalEditBtn"
+                                                    class="bg-gray-600 text-white px-4 py-2 rounded text-sm hover:bg-gray-500 transition">
+                                                    Batal
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- TAB METODE PEMBAYARAN --}}
+                            {{-- TAB METODE PEMBAYARAN --}}
+                            <div id="tab-pembayaran" class="tab-content hidden">
+                                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                    {{-- Header Tab --}}
+                                    <div
+                                        class="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+                                        <div>
+                                            <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">
+                                                Dompet & Pembayaran</h3>
+                                            <p class="text-xs text-slate-500">Kelola rincian pembayaran untuk transaksi
+                                                Anda</p>
+                                        </div>
+                                        {{-- Tombol ini yang tetap dipertahankan (Warna Oriental Red) --}}
+                                        <button id="addPaymentBtn"
+                                            class="bg-[#DB4B3A] hover:bg-[#930014] text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md flex items-center gap-2">
+                                            <i class="fas fa-plus"></i> Tambah
+                                        </button>
+                                    </div>
+
+                                    <div class="p-6">
+                                        @if ($pembayaran->isEmpty())
+                                            <div class="py-12 text-center">
+                                                <div
+                                                    class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                                                    <i class="fas fa-credit-card text-gray-400 text-2xl"></i>
+                                                </div>
+                                                <p class="text-gray-500 font-bold text-sm">Belum ada metode pembayaran
+                                                    yang disimpan.</p>
+                                            </div>
+                                        @else
+                                            <div class="grid grid-cols-1 gap-4">
+                                                @foreach ($pembayaran as $pay)
+                                                    @php
+                                                        $showPay = true;
+                                                        if ($pay->kategori === 'COD') {
+                                                            $showPay = true;
+                                                        }
+                                                    @endphp
+
+                                                    @if ($showPay)
+                                                        <div
+                                                            class="group flex items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-[#DB4B3A]/30 hover:bg-gray-50 transition-all duration-300">
+                                                            <div class="flex items-center gap-4">
+                                                                {{-- Icon Berdasarkan Kategori --}}
+                                                                <div
+                                                                    class="w-12 h-12 rounded-xl bg-[#5B000B]/5 flex items-center justify-center text-[#930014]">
+                                                                    @if ($pay->kategori == 'E-Wallet')
+                                                                        <i class="fas fa-mobile-alt text-xl"></i>
+                                                                    @elseif($pay->kategori == 'Virtual Account')
+                                                                        <i class="fas fa-university text-xl"></i>
+                                                                    @elseif($pay->kategori == 'COD')
+                                                                        <i class="fas fa-hand-holding-usd text-xl"></i>
+                                                                    @else
+                                                                        <i class="fas fa-wallet text-xl"></i>
+                                                                    @endif
+                                                                </div>
+
+                                                                <div>
+                                                                    <div class="flex items-center gap-2">
+                                                                        <span
+                                                                            class="font-black text-slate-800 uppercase text-sm tracking-tight">{{ $pay->kategori }}</span>
+                                                                        @if ($pay->bank)
+                                                                            <span
+                                                                                class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-black rounded uppercase">{{ $pay->bank }}</span>
+                                                                        @endif
+                                                                    </div>
+
+                                                                    <div class="mt-1 space-y-0.5">
+                                                                        {{-- @if ($pay->keterangan)
+                                                                            <p
+                                                                                class="text-xs text-slate-600 font-bold">
+                                                                                {{ $pay->keterangan }}</p>
+                                                                        @endif --}}
+                                                                        @if ($pay->telepon)
+                                                                            <p
+                                                                                class="text-xs text-slate-500 font-mono">
+                                                                                ID: {{ $pay->telepon }}</p>
+                                                                        @endif
+                                                                        @if ($pay->norek)
+                                                                            <p
+                                                                                class="text-xs text-slate-500 font-mono tracking-wider">
+                                                                                No: {{ $pay->norek }}</p>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {{-- Aksi Hapus --}}
+                                                            <form method="POST"
+                                                                action="{{ route('pembayaran.destroy', $pay->id) }}"
+                                                                onsubmit="return confirm('Hapus metode ini?')">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit"
+                                                                    class="opacity-0 group-hover:opacity-100 w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-red-600 transition-all duration-200">
+                                                                    <i class="fas fa-trash-alt text-sm"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    @endif
+                                                @endforeach
+                                            </div>
                                         @endif
-                                    @endforeach
-                                </ul>
-                            @endif
+                                    </div>
+                                </div>
+                            </div>
 
                             <div id="tab-transaksi" class="tab-content hidden">
                                 <div class="border border-gray-200 rounded-lg p-5 bg-white">
                                     <h3 class="text-lg font-semibold mb-4">Transaksi Saya</h3>
 
                                     {{-- Tabel transaksi dari kode kamu --}}
-                                    <x-transaksi-table :transaksi="$transaksi" :filter="($statusFilter ?? null)"/>
+                                    <x-transaksi-table :transaksi="$transaksi" :filter="$statusFilter ?? null" />
 
                                     {{-- Tombol Bayar Midtrans --}}
-                                    @foreach($transaksi as $item)
-                                        @if($item->status == 'Menunggu Pembayaran')
-                                            <button 
-                                                class="px-3 py-2 bg-indigo-600 text-white rounded mt-2 pay-button"
+                                    @foreach ($transaksi as $item)
+                                        @if ($item->status == 'Menunggu Pembayaran')
+                                            <button class="px-3 py-2 bg-indigo-600 text-white rounded mt-2 pay-button"
                                                 data-id="{{ $item->id }}"
                                                 data-amount="{{ $item->total_harga }}">
                                                 Bayar Sekarang
@@ -308,13 +447,11 @@
                                 </div>
                             </div>
 
-                            {{-- Tombol Tambah --}}
-                            <button id="addPaymentBtn" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-500 transition">
-                                Metode Pembayaran Baru
-                            </button>
+
 
                             {{-- Modal Tambah Metode Pembayaran --}}
-                            <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                            <div id="paymentModal"
+                                class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                                 <div class="bg-white rounded-lg shadow-lg w-96 p-5">
                                     <h4 class="text-lg font-semibold mb-3">Tambah Metode Pembayaran</h4>
 
@@ -322,7 +459,8 @@
                                         @csrf
                                         <div class="mb-3">
                                             <label class="block text-sm font-medium text-gray-700">Kategori</label>
-                                            <select name="kategori" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                            <select name="kategori" required
+                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                                                 <option value="E-Wallet">E-Wallet</option>
                                                 <option value="QRIS">QRIS</option>
                                                 <option value="Virtual Account">Virtual Account</option>
@@ -340,7 +478,8 @@
 
                                         {{-- NOMOR TELEPON UNTUK E-WALLET --}}
                                         <div id="teleponField" class="mb-3 hidden">
-                                            <label class="block text-sm font-medium text-gray-700">Nomor Telepon</label>
+                                            <label class="block text-sm font-medium text-gray-700">Nomor
+                                                Telepon</label>
                                             <input type="text" name="telepon"
                                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                                                 placeholder="08xxxxxxxxxx">
@@ -349,22 +488,26 @@
                                         {{-- PILIH BANK UNTUK VIRTUAL ACCOUNT --}}
                                         <div id="bankField" class="mb-3 hidden">
                                             <label class="block text-sm font-medium text-gray-700">Bank</label>
-                                            <select name="bank" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                            <select name="bank"
+                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                                                 <option value="BCA">BCA</option>
                                                 <option value="Mandiri">Mandiri</option>
                                                 <option value="BRI">BRI</option>
                                                 <option value="BNI">BNI</option>
                                             </select>
-                                        
-                                            <label class="block text-sm font-medium text-gray-700 mt-3">Nomor Rekening</label>
+
+                                            <label class="block text-sm font-medium text-gray-700 mt-3">Nomor
+                                                Rekening</label>
                                             <input type="text" name="norek"
                                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                                                 placeholder="Masukkan nomor rekening">
-                                        </div>                                        
+                                        </div>
 
                                         <div class="flex justify-end space-x-2">
-                                            <button type="button" id="cancelPaymentBtn" class="bg-gray-600 text-white px-4 py-2 rounded text-sm hover:bg-gray-500 transition">Batal</button>
-                                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-500 transition">Simpan</button>
+                                            <button type="button" id="cancelPaymentBtn"
+                                                class="bg-gray-600 text-white px-4 py-2 rounded text-sm hover:bg-gray-500 transition">Batal</button>
+                                            <button type="submit"
+                                                class="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-500 transition">Simpan</button>
                                         </div>
                                     </form>
                                 </div>
@@ -372,170 +515,245 @@
                         </div>
                     </div>
 
-    {{-- SCRIPT --}}
-<script>
-    // ================= TAB =================
-    const buttons = document.querySelectorAll('.tab-btn');
-    const contents = document.querySelectorAll('.tab-content');
+                    {{-- SCRIPT --}}
+                    <script>
+                        // ================= TAB =================
+                        const buttons = document.querySelectorAll('.tab-btn');
+                        const contents = document.querySelectorAll('.tab-content');
 
-    function showTab(name) {
-        contents.forEach(c => c.classList.add('hidden'));
-        document.getElementById('tab-' + name).classList.remove('hidden');
-    }
+                        function showTab(name) {
+                            contents.forEach(c => c.classList.add('hidden'));
+                            document.getElementById('tab-' + name).classList.remove('hidden');
+                        }
 
-    buttons.forEach(b => {
-        b.addEventListener('click', () => showTab(b.dataset.tab));
-    });
+                        buttons.forEach(b => {
+                            b.addEventListener('click', () => showTab(b.dataset.tab));
+                        });
 
-    showTab("{{ $activeTab }}"); // default tab
+                        showTab("{{ $activeTab }}"); // default tab
 
 
-    // ================= TOGGLE GEDUNG =================
-    const asramaSelect = document.getElementById('penghuni_asrama');
-    const alamatField = document.getElementById('alamatGedungField');
-    const alamatSelect = alamatField ? alamatField.querySelector('select[name="alamat_gedung"]') : null;
+                        // ================= TOGGLE GEDUNG =================
+                        const asramaSelect = document.getElementById('penghuni_asrama');
+                        const alamatField = document.getElementById('alamatGedungField');
+                        const alamatSelect = alamatField ? alamatField.querySelector('select[name="alamat_gedung"]') : null;
 
-    function toggleGedung() {
-        if (!asramaSelect || !alamatField) return;
+                        function toggleGedung() {
+                            if (!asramaSelect || !alamatField) return;
 
-        if (asramaSelect.value === 'ya') {
-            alamatField.style.display = 'block';
-        } else {
-            alamatField.style.display = 'none';
-            // if (alamatSelect) alamatSelect.value = '';
-            alamatField.querySelectorAll('select').forEach(select => select.value = '');
-        }
-    }
+                            if (asramaSelect.value === 'ya') {
+                                alamatField.style.display = 'block';
+                            } else {
+                                alamatField.style.display = 'none';
+                                // if (alamatSelect) alamatSelect.value = '';
+                                alamatField.querySelectorAll('select').forEach(select => select.value = '');
+                            }
+                        }
 
-    if (asramaSelect) {
-        asramaSelect.addEventListener('change', toggleGedung);
-        toggleGedung(); // panggil saat halaman load
-    }
+                        if (asramaSelect) {
+                            asramaSelect.addEventListener('change', toggleGedung);
+                            toggleGedung(); // panggil saat halaman load
+                        }
 
-    // ================= EDIT PROFIL =================
-    const editBtn = document.getElementById('editProfilBtn');
-    const cancelBtn = document.getElementById('batalEditBtn');
-    const profilView = document.getElementById('profil-view');
-    const profilForm = document.getElementById('profil-form');
+                        // ================= EDIT PROFIL =================
+                        const editBtn = document.getElementById('editProfilBtn');
+                        const cancelBtn = document.getElementById('batalEditBtn');
+                        const profilView = document.getElementById('profil-view');
+                        const profilForm = document.getElementById('profil-form');
 
-    if (editBtn) {
-        editBtn.addEventListener('click', () => {
-            profilView.classList.add('hidden');
-            profilForm.classList.remove('hidden');
-        });
-    }
+                        if (editBtn) {
+                            editBtn.addEventListener('click', () => {
+                                profilView.classList.add('hidden');
+                                profilForm.classList.remove('hidden');
+                            });
+                        }
 
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-            profilForm.classList.add('hidden');
-            profilView.classList.remove('hidden');
-        });
-    }
+                        if (cancelBtn) {
+                            cancelBtn.addEventListener('click', () => {
+                                profilForm.classList.add('hidden');
+                                profilView.classList.remove('hidden');
+                            });
+                        }
 
-        // ================= MODAL PEMBAYARAN =================
-        const addPaymentBtn = document.getElementById('addPaymentBtn');
-        const paymentModal = document.getElementById('paymentModal');
-        const cancelPaymentBtn = document.getElementById('cancelPaymentBtn');
-    
-        if(addPaymentBtn){
-            addPaymentBtn.addEventListener('click', () => {
-                paymentModal.classList.remove('hidden');
-            });
-        }
-    
-        if(cancelPaymentBtn){
-            cancelPaymentBtn.addEventListener('click', () => {
-                paymentModal.classList.add('hidden');
-            });
-        }
-    
-        // ================= DETAIL PESANAN =================
-        function showDetail(orderId) {
-            const modal = document.getElementById('detailModal');
-            const content = document.getElementById('detailContent');
-    
-            content.innerHTML = `
-                <p><strong>No Order:</strong> #${orderId}</p>
-                <p>Produk 1 - 2x - Rp40.000</p>
-                <p>Produk 2 - 1x - Rp25.000</p>
-                <p class='font-semibold'>Subtotal: Rp65.000</p>
-            `;
-            modal.classList.remove('hidden');
-        }
-    
-        function closeDetail() {
-            document.getElementById('detailModal').classList.add('hidden');
-        }
-    
-        function ajukanKomplain(id) {
-            alert('Fitur komplain untuk pesanan #' + id + ' akan ditambahkan.');
-        }
-    
-        function beliKembali(id) {
-            alert('Menambahkan pesanan #' + id + ' ke keranjang ulang.');
-        }
-    
-        // ================= LOGIC KATEGORI PEMBAYARAN =================
-        const kategoriSelect = document.querySelector('select[name="kategori"]');
-        const ketField = document.getElementById('keteranganField');
-        const teleponField = document.getElementById('teleponField');
-        const bankField = document.getElementById('bankField');
-    
-        function updateKategoriFields() {
-            if(!kategoriSelect) return;
-    
-            const v = kategoriSelect.value;
-    
-            // reset semua ke hidden
-            ketField.classList.add('hidden');
-            teleponField.classList.add('hidden');
-            bankField.classList.add('hidden');
-    
-            // E-Wallet
-            if (v === 'E-Wallet') {
-                ketField.classList.remove('hidden');
-                teleponField.classList.remove('hidden');
-            }
-    
-            // QRIS → tetap hidden semua
-            if (v === 'QRIS') {}
-    
-            // Virtual Account
-            if (v === 'Virtual Account') {
-                bankField.classList.remove('hidden');
-            }
-    
-            // COD → tetap hidden semua
-            if (v === 'COD') {}
-        }
-    
-        if(kategoriSelect){
-            kategoriSelect.addEventListener('change', updateKategoriFields);
-            updateKategoriFields(); // trigger default
-        }
-    </script>  
+                        // ================= MODAL PEMBAYARAN =================
+                        const addPaymentBtn = document.getElementById('addPaymentBtn');
+                        const paymentModal = document.getElementById('paymentModal');
+                        const cancelPaymentBtn = document.getElementById('cancelPaymentBtn');
 
-    <script>
-        // === SCRIPT MIDTRANS ===
-        document.getElementById('pay-button').addEventListener('click', function () {
+                        if (addPaymentBtn) {
+                            addPaymentBtn.addEventListener('click', () => {
+                                paymentModal.classList.remove('hidden');
+                            });
+                        }
 
-            fetch("{{ route('payment.create') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({
-                    amount: 20000,
-                    transaction_id: 123
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                snap.pay(data.snap_token);
-            });
+                        if (cancelPaymentBtn) {
+                            cancelPaymentBtn.addEventListener('click', () => {
+                                paymentModal.classList.add('hidden');
+                            });
+                        }
 
-        });
-    </script>
-    
+                        // ================= DETAIL PESANAN =================
+                        // ================= DETAIL PESANAN (VERSI FIX) =================
+                        function showDetailOrder(data) {
+                            const modal = document.getElementById('detailModal');
+                            const content = document.getElementById('detailContent');
+
+                            // 1. Bangun rincian produk
+                            let itemsHtml = '';
+                            if (data.items && data.items.length > 0) {
+                                data.items.forEach(item => {
+                                    let totalPerItem = item.qty * item.harga_satuan;
+                                    itemsHtml += `
+                <div class="py-3 border-b border-gray-100 last:border-0">
+                    <div class="flex justify-between items-start">
+                        <div class="pr-3">
+                            <p class="font-bold text-slate-800 leading-tight">${item.nama_produk}</p>
+                            <p class="text-[10px] text-indigo-600 font-bold uppercase italic mt-1">Mart: ${item.nama_mart}</p>
+                            <p class="text-xs text-gray-500 mt-1">${item.qty} x Rp ${item.harga_satuan.toLocaleString('id-ID')}</p>
+                        </div>
+                        <p class="font-bold text-slate-900 whitespace-nowrap">Rp ${totalPerItem.toLocaleString('id-ID')}</p>
+                    </div>
+                </div>`;
+                                });
+                            } else {
+                                itemsHtml = '<p class="text-xs text-gray-400 italic py-4 text-center">Rincian belanja tidak ditemukan.</p>';
+                            }
+
+                            // 2. Logika Lokasi (Hanya satu isDelivery agar tidak error)
+                            const isDelivery = data.tipe.toLowerCase() === 'delivery';
+                            // PERBAIKAN: Ganti data.gedung menjadi data.alamat_tujuan
+                            const lokasiTujuan = isDelivery ?
+                                `<div class="flex items-center gap-2 font-bold text-slate-700">
+        <i class="fas fa-map-marker-alt text-red-500"></i> ${data.alamat_tujuan}
+       </div>` :
+                                `Ambil di Toko`;
+
+                            // 3. Render HTML
+                            content.innerHTML = `
+        <div class="space-y-6">
+            <div class="grid grid-cols-2 gap-4 bg-slate-100 p-4 rounded-xl border border-slate-200">
+                <div>
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">No Order</p>
+                    <p class="font-mono font-bold text-slate-900 break-all">${data.no_order}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Metode</p>
+                    <span class="inline-block px-2 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-black italic uppercase">${data.tipe}</span>
+                </div>
+            </div>
+
+            <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                <button onclick="toggleProductList()" class="w-full p-4 flex justify-between items-center bg-white hover:bg-gray-50 transition-colors">
+                    <span class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-receipt text-indigo-500"></i> Rincian Belanja
+                    </span>
+                    <span id="toggleIcon" class="text-xs text-gray-400"><i class="fas fa-chevron-down transition-transform duration-300"></i></span>
+                </button>
+                <div id="productList" class="hidden px-4 bg-white border-t divide-y divide-gray-50">
+                    ${itemsHtml}
+                </div>
+            </div>
+
+            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-inner">
+                <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Tujuan / Lokasi</p>
+                ${lokasiTujuan}
+            </div>
+
+            <div class="flex justify-between items-center px-2 py-1 border-t-2 border-dashed border-gray-100 pt-4">
+                <span class="font-black text-slate-400 uppercase text-[10px] tracking-[0.2em]">Total Tagihan</span>
+                <span class="text-2xl font-black text-red-600 tracking-tighter">Rp ${data.total.toLocaleString('id-ID')}</span>
+            </div>
+        </div>
+    `;
+
+                            modal.classList.remove('hidden');
+                            document.body.style.overflow = 'hidden';
+                        }
+
+                        // Fungsi bantu untuk buka/tutup rincian produk
+                        function toggleProductList() {
+                            const list = document.getElementById('productList');
+                            const icon = document.querySelector('#toggleIcon i');
+
+                            if (list.classList.contains('hidden')) {
+                                list.classList.remove('hidden');
+                                icon.style.transform = 'rotate(180deg)';
+                            } else {
+                                list.classList.add('hidden');
+                                icon.style.transform = 'rotate(0deg)';
+                            }
+                        }
+
+                        function closeDetail() {
+                            document.getElementById('detailModal').classList.add('hidden');
+                        }
+
+                        function ajukanKomplain(id) {
+                            alert('Fitur komplain untuk pesanan #' + id + ' akan ditambahkan.');
+                        }
+
+                        function beliKembali(id) {
+                            alert('Menambahkan pesanan #' + id + ' ke keranjang ulang.');
+                        }
+
+                        // ================= LOGIC KATEGORI PEMBAYARAN =================
+                        const kategoriSelect = document.querySelector('select[name="kategori"]');
+                        const ketField = document.getElementById('keteranganField');
+                        const teleponField = document.getElementById('teleponField');
+                        const bankField = document.getElementById('bankField');
+
+                        function updateKategoriFields() {
+                            if (!kategoriSelect) return;
+
+                            const v = kategoriSelect.value;
+
+                            // reset semua ke hidden
+                            ketField.classList.add('hidden');
+                            teleponField.classList.add('hidden');
+                            bankField.classList.add('hidden');
+
+                            // E-Wallet
+                            if (v === 'E-Wallet') {
+                                ketField.classList.remove('hidden');
+                                teleponField.classList.remove('hidden');
+                            }
+
+                            // QRIS → tetap hidden semua
+                            if (v === 'QRIS') {}
+
+                            // Virtual Account
+                            if (v === 'Virtual Account') {
+                                bankField.classList.remove('hidden');
+                            }
+
+                            // COD → tetap hidden semua
+                            if (v === 'COD') {}
+                        }
+
+                        if (kategoriSelect) {
+                            kategoriSelect.addEventListener('change', updateKategoriFields);
+                            updateKategoriFields(); // trigger default
+                        }
+                    </script>
+
+                    <script>
+                        document.querySelectorAll('.pay-button').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                fetch("{{ route('payment.create') }}", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                                        },
+                                        body: JSON.stringify({
+                                            amount: this.dataset.amount,
+                                            transaction_id: this.dataset.id
+                                        })
+                                    })
+                                    .then(res => res.json())
+                                    .then(data => snap.pay(data.snap_token));
+                            });
+                        });
+                    </script>
+
 </x-app-layout>

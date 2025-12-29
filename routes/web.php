@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -12,35 +12,73 @@ use App\Http\Controllers\UserTokenController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\WishlistController;
-use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\NotificationController; 
 use App\Http\Controllers\Admin\PesananController;
 use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
 use App\Http\Controllers\MartController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\RiwayatController;
+use App\Http\Controllers\MetodePembayaranController;
 
+Route::post('/pembayaran', [MetodePembayaranController::class, 'store'])
+    ->name('pembayaran.store')
+    ->middleware('auth');
+
+
+Route::patch('/cart/update/{id}', [App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/remove/{id}', [App\Http\Controllers\CartController::class, 'destroy'])->name('cart.remove');
+Route::post('/checkout/selected', [CheckoutController::class, 'index'])->name('checkout.selected');
+Route::get('/order/success/{order_id}', [App\Http\Controllers\CheckoutController::class, 'showSuccess'])->name('order.success');
+Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('checkout.process');
+Route::post('/checkout/process', [CheckoutController::class, 'processCheckout'])->name('checkout.process');
+Route::post('/checkout/process', [CheckoutController::class, 'processSuccess'])->name('checkout.process');
+Route::get('/order/success/{order_id}', [CheckoutController::class, 'showSuccess'])->name('order.success');
+Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile');
+Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
+Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
+Route::post('/cart/add', [CartController::class, 'store'])->name('cart.add');
+Route::post('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
+Route::get('/order/success', [CheckoutController::class, 'showSuccess'])
+    ->name('order.success');
+Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])
+    ->name('payment.method');
+Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])
+    ->name('payment.snap-token');
+Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])->name('payment.snap-token');
+Route::post('/checkout/direct', [CheckoutController::class, 'directCheckout'])->name('checkout.direct');
+Route::get('/order/success', [CheckoutController::class, 'showSuccess'])->name('order.success');
+
+Route::get('/order/success', [OrderController::class, 'success'])
+    ->name('order.success');
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('login'); 
+    
 });
 
 //==================== DASHBOARD SESUAI ROLE ==================== //
-Route::get('/dashboard', function () {
-    $user = Auth::user();
+// Route::get('/dashboard', function () {
+//     $user = Auth::user();
 
-    // Jika belum login → langsung tampilkan dashboard user umum (tanpa auth)
-    if (!$user) {
-        return view('dashboard.user');
-    }
+//     // Jika belum login → langsung tampilkan dashboard user umum (tanpa auth)
+//     if (!$user) {
+//         return view('dashboard.user');
+//     }
 
-    // Jika login → arahkan sesuai role
-    switch ($user->role_id) {
-        case 1:
-            return view('dashboard.superadmin'); // Super Admin wajib login
-        case 2:
-            return view('dashboard.admin');      // Admin wajib login
-        case 3:
-        default:
-            return view('dashboard.user');       // User login pun ke dashboard user
-    }
-})->name('dashboard');
+//     // Jika login → arahkan sesuai role
+//     switch ($user->role_id) {
+//         case 1:
+//             return view('dashboard.superadmin'); // Super Admin wajib login
+//         case 2:
+//             return view('dashboard.admin');      // Admin wajib login
+//         case 3:
+//         default:
+//             return view('dashboard.user');       // User login pun ke dashboard user
+//     }
+// })->name('dashboard');
 
 // satu pintu dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -70,7 +108,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
 
 
 // ==================== USER (TIDAK WAJIB LOGIN) ==================== //
@@ -88,7 +125,14 @@ Route::get('/produk', [ProdukController::class, 'index'])
 
 Route::get('/produk/{produk}', [ProdukController::class, 'show'])
     ->name('produk.show');
+// ==================== USER KATEGORI PRODUK ====================
+Route::get('/kategori/{kategori}', [ProdukController::class, 'byKategori'])
+    ->name('produk.by-kategori');
+// // routes/web.php
+// Route::get('/produk', [App\Http\Controllers\ProdukController::class, 'index'])->name('produk.index');
+// Route::get('/produk/{produk}', [App\Http\Controllers\ProdukController::class, 'show'])->name('produk.show');
 
+require __DIR__.'/auth.php';
 // ==================== CHECKOUT (WAJIB LOGIN) ==================== //
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('/checkout', 'checkout.index')->name('checkout.index');
@@ -101,7 +145,8 @@ Route::get('/profil/transaksi', [ProfileController::class, 'transaksi'])
 
 // ==================== FITUR TAMBAHAN: GALON & TOKEN LISTRIK ==================== //
 Route::middleware(['auth'])->group(function () {
-    
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])->name('payment.method');
     // Token
     Route::get('/token-listrik', [UserTokenController::class, 'index'])->name('token.index');
     Route::post('/token-listrik/beli', [UserTokenController::class, 'store'])->name('token.store');
@@ -170,27 +215,47 @@ Route::middleware(['auth'])->group(function () {
     ->name('wishlist.destroy');
 });
 
+// Hapus atau keluarkan dari Route::prefix('bantuan')
+Route::get('/kontak', function () {
+    return view('fitur-user.kontak');
+})->name('kontak.index');
 
+Route::get('/tentang-kami', function () {
+    return view('fitur-user.tentang');
+})->name('tentang.index');
+
+Route::get('/faq', function () {
+    return view('fitur-user.faq');
+})->name('faq.index');
+
+Route::get('/search', [ProdukController::class, 'search'])->name('produk.search');
 
 Route::middleware(['auth'])->group(function () {
-    
     Route::get('/notifications', [NotificationController::class, 'index'])
-    ->name('notifications.index');
-    
-    Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])
-    ->name('notifications.read');
-    
+        ->name('notifications.index');
+
+    Route::get('/notifications/read/{id}', [NotificationController::class, 'markAsRead'])
+        ->name('notifications.read');
+
     Route::post('/notifications/read-selected', [NotificationController::class, 'readSelected'])
-    ->name('notifications.readSelected');
-    
+        ->name('notifications.readSelected');
+
     Route::post('/notifications/delete-selected', [NotificationController::class, 'deleteSelected'])
-    ->name('notifications.deleteSelected');
+        ->name('notifications.deleteSelected');
+
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])
+        ->name('notifications.destroy');
+
+        Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+Route::delete('/notifications/delete-all', [NotificationController::class, 'deleteAll'])->name('notifications.deleteAll');
 });
 
+Route::get('/riwayat-pembelian', [RiwayatController::class, 'index'])->name('riwayat.pembelian');
 
-Route::resource('pembayaran', PembayaranController::class)->except(['show', 'edit', 'update']);
-Route::post('/pembayaran', [PembayaranController::class, 'store'])->name('pembayaran.store');
-Route::delete('/pembayaran/{id}', [PembayaranController::class, 'destroy'])->name('pembayaran.destroy');
+// Route::resource('pembayaran', PembayaranController::class)->except(['show', 'edit', 'update']);
+// Route::post('/pembayaran', [PembayaranController::class, 'store'])->name('pembayaran.store');
+// Route::delete('/pembayaran/{id}', [PembayaranController::class, 'destroy'])->name('pembayaran.destroy');
+Route::resource('pembayaran', PembayaranController::class)->only(['index', 'create', 'store', 'destroy']);
 Route::post('/payment/create', [PembayaranController::class, 'createPayment'])
 ->name('payment.create');
 
@@ -223,6 +288,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin/pesanan', [PesananController::class, 'index'])
         ->name('admin.pesanan.index');
+    Route::post('/admin/orders/{id}/update-status', [AdminOrderController::class, 'updateStatus'])
+        ->name('admin.orders.update');
 });
     Route::get('/admin/penjualan-bulan-ini', [DashboardController::class, 'admin'])->name('penjualan.bulanini');
     Route::get('/admin/produk-laris', [DashboardController::class, 'admin'])->name('produk.laris');
@@ -230,6 +297,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'selected'])->name('checkout.selected');
 });
+
+
 
 // ==================== SUPER ADMIN (WAJIB LOGIN) ==================== //
 Route::middleware(['auth', 'verified'])->group(function () {

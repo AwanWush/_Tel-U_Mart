@@ -2,110 +2,99 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pembayaran;
 use Illuminate\Http\Request;
-use App\Models\MetodePembayaran;
-use Illuminate\Support\Facades\Auth;
-use Midtrans\Snap;
 use Midtrans\Config;
+use Midtrans\Snap;
 
 class PembayaranController extends Controller
 {
+    /**
+     * Menampilkan daftar atau status pembayaran
+     */
+    public function index()
+    {
+        return view('pembayaran.index');
+    }
+
+    /**
+     * Menampilkan form untuk membuat pembayaran baru
+     */
+    public function create()
+    {
+        return view('pembayaran.create');
+    }
+
+    /**
+     * METHOD YANG DIPERLUKAN: store
+     * Untuk menangani request POST ke /pembayaran
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+
+        $request->validate([
             'kategori' => 'required|string',
             'keterangan' => 'nullable|string',
             'telepon' => 'nullable|string',
             'bank' => 'nullable|string',
             'norek' => 'nullable|string',
-            'aktif' => 'nullable|boolean',
         ]);
 
-        $saveKeterangan = null;
-
-        switch ($validated['kategori']) {
-            case 'E-Wallet':
-                $saveKeterangan = ($validated['keterangan'] ?? '-') . 
-                                  ' | No: ' . ($validated['telepon'] ?? '-');
-                break;
-
-            case 'QRIS':
-                $saveKeterangan = 'QRIS';
-                break;
-
-            case 'Virtual Account':
-                $saveKeterangan = ($validated['bank'] ?? '-') . 
-                                  ' | Rek: ' . ($validated['norek'] ?? '-');
-                break;
-
-            case 'COD':
-                $saveKeterangan = 'COD';
-                break;
-        }
-
-        MetodePembayaran::create([
-            'user_id' => Auth::id(),
-            'jenis'   => $validated['kategori'],
-            'keterangan' => $saveKeterangan
+        Pembayaran::create([
+            'user_id' => auth()->id(),
+            'kategori' => $request->kategori,
+            'keterangan' => $request->keterangan,
+            'telepon' => $request->telepon,
+            'bank' => $request->bank,
+            'norek' => $request->norek,
+            'aktif' => true,
         ]);
 
-        return redirect()->route('profile.edit', ['tab' => 'pembayaran'])
-                 ->with('success', 'Metode pembayaran berhasil ditambahkan.');
-    }
-
-    /**
-     * Satu method createPayment (gabungan)
-     */
-    public function createPayment(Request $request)
-    {
-        // Konfigurasi Midtrans
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = config('midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
-
-        // Buat Order ID aman
-        $orderId = 'ORDER-' . ($request->transaction_id ?? time()) . '-' . time();
-
-        $params = [
-            'transaction_details' => [
-                'order_id' => $orderId,
-                'gross_amount' => (int) $request->amount,
-            ],
-            'customer_details' => [
-                'first_name' => Auth::user()->name,
-                'email' => Auth::user()->email,
-            ]
-        ];
-
-        // Snap Token
-        $snapToken = Snap::getSnapToken($params);
-
-        return response()->json(['snap_token' => $snapToken]);
-    }
-
-    public function callback(Request $request)
-    {
-        $notif = new \Midtrans\Notification();
-
-        $orderId = $notif->order_id;
-        $status  = $notif->transaction_status;
-        $fraud   = $notif->fraud_status;
-
-        // Update database (contoh)
-        // Transaksi::where('order_id', $orderId)->update([
-        //     'status' => $status
-        // ]);
-
-        return response()->json(['message' => 'Callback received']);
+        return back()->with('success', 'Metode pembayaran berhasil ditambahkan');
     }
 
     public function destroy($id)
     {
-        $pay = MetodePembayaran::findOrFail($id);
-        $pay->delete();
+        $pembayaran = Pembayaran::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
 
-        return redirect()->route('profile.edit', ['tab' => 'pembayaran'])
-                 ->with('success', 'Metode pembayaran berhasil dihapus.');
+        $pembayaran->delete();
+
+        return back()->with('success', 'Metode pembayaran berhasil dihapus');
+    }
+
+    public function getSnapToken(Request $request)
+    {
+        Config::$serverKey = config('services.midtrans.serverKey');
+        Config::$isProduction = config('services.midtrans.isProduction');
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        $orderId = 'TM-'.uniqid();
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => (int) $request->total_amount,
+            ],
+            'customer_details' => [
+                'first_name' => auth()->user()->name ?? 'Guest',
+                'email' => auth()->user()->email ?? 'guest@mail.com',
+            ],
+        ];
+
+        try {
+            $snapToken = Snap::getSnapToken($params);
+
+            return response()->json([
+                'snap_token' => $snapToken,
+                'order_id' => $orderId,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

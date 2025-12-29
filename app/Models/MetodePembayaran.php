@@ -12,9 +12,12 @@ class MetodePembayaran extends Model
     protected $table = 'metode_pembayaran'; // pastikan sesuai nama tabel di DB
 
     protected $fillable = [
-        'user_id',
-        'jenis',
-        'keterangan',
+    'user_id',
+    'kategori',
+    'keterangan',
+    'telepon',
+    'bank',
+    'norek',
     ];
 
     // Relasi ke user

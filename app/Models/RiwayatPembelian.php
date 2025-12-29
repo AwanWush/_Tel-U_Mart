@@ -9,25 +9,40 @@ class RiwayatPembelian extends Model
 {
     use HasFactory;
 
-    protected $table = 'riwayat_pembelian';
+    protected $table = 'riwayat_pembelian'; // Paksa nama tabel sesuai database
+
     protected $fillable = [
         'user_id',
-        'produk_id',
-        'jumlah',
+        'id_transaksi',
         'total_harga',
+        'status',          // Status Bayar (Lunas/Belum Bayar)
+        'status_antar',    // WAJIB: Untuk alur pengiriman (dikonfirmasi, siap_antar, selesai)
         'metode_pembayaran',
-        'jenis_pemesanan',
-        'lokasi_pengantaran',
-        'status',
+        'tipe_layanan',
     ];
 
-    public function user()
+    /**
+     * Relasi ke User (Pelanggan)
+     */
+    public function user() 
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function produk()
+    /**
+     * Relasi ke Detail Pembelian (Daftar barang yang dibeli)
+     * Digunakan agar admin bisa melihat rincian produk di tabel pesanan
+     */
+    public function details()
     {
-        return $this->belongsTo(Produk::class);
+        return $this->hasMany(DetailPembelian::class, 'riwayat_pembelian_id');
+    }
+
+    /**
+     * Relasi ke Transaksi (Opsional jika Anda memiliki tabel transaksi terpisah)
+     */
+    public function transaksi()
+    {
+        return $this->belongsTo(Transaksi::class, 'id_transaksi', 'id');
     }
 }

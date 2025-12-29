@@ -8,10 +8,14 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up(): void
     {
+        // PERBAIKAN: Tambahkan pengecekan agar tidak mencoba membuat kolom yang sudah ada
         Schema::table('users', function (Blueprint $table) {
-            $table->string('nomor_kamar', 10)->nullable()->after('alamat_gedung');
+            if (!Schema::hasColumn('users', 'nomor_kamar')) {
+                $table->string('nomor_kamar', 10)->nullable()->after('alamat_gedung');
+            }
         });
 
+        // Tetap buat tabel master_kamars
         Schema::create('master_kamars', function (Blueprint $table) {
             $table->id();
             $table->integer('lantai');
@@ -36,7 +40,9 @@ return new class extends Migration {
     {
         Schema::dropIfExists('master_kamars');
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('nomor_kamar');
+            if (Schema::hasColumn('users', 'nomor_kamar')) {
+                $table->dropColumn('nomor_kamar');
+            }
         });
     }
 };

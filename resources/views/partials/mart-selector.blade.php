@@ -1,5 +1,6 @@
 <div
     x-show="openMart"
+    x-cloak
     x-transition.opacity
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
 >
@@ -23,6 +24,26 @@
 
         {{-- MART LIST --}}
         <div class="space-y-3">
+
+            {{-- SEMUA MART --}}
+            <form method="POST" action="{{ route('mart.select') }}">
+                @csrf
+                <input type="hidden" name="mart_id" value="">
+
+                <button
+                    class="w-full flex justify-between items-center
+                           px-4 py-3 rounded-xl border
+                           text-black hover:text-[#930014]
+                           hover:bg-[#E7BD8A]/20 transition
+                           {{ is_null($activeMart) ? 'border-[#930014] bg-[#E7BD8A]/30 font-bold' : '' }}"
+                >
+                    <span>Semua Mart</span>
+                    <span class="text-xs text-gray-500">
+                        {{ $totalProdukSemuaMart }} produk (total)
+                    </span>
+                </button>
+            </form>
+
             @foreach($marts as $mart)
                 <form method="POST" action="{{ route('mart.select') }}">
                     @csrf
@@ -42,6 +63,7 @@
                     </button>
                 </form>
             @endforeach
+
         </div>
     </div>
 </div>

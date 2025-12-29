@@ -1,5 +1,5 @@
 <nav x-data="{ open: false }"
-     class="sticky top-0 z-50 bg-white border-b border-[#E7BD8A]/40 backdrop-blur">
+     class="fixed top-0 z-50 w-full bg-white border-b border-[#E7BD8A]/40">
 
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex h-20 items-center justify-between">
@@ -259,7 +259,7 @@
 {{-- SUB HEADER NAVIGATION --}}
 <div 
     x-data="{ openMart: false }"
-    class="sticky top-[80px] z-50 w-full bg-gradient-to-r from-[#5B000B] via-[#930014] to-[#DB4B3A] text-white"
+    class="fixed top-[80px] z-40 w-full bg-gradient-to-r from-[#5B000B] via-[#930014] to-[#DB4B3A] text-white"
 >
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center justify-between h-10 text-sm">
@@ -281,7 +281,7 @@
                 <li class="h-4 w-px bg-white/40"></li>
 
                 <li>
-                    <a href="/produk" class="relative transition hover:text-[#E7BD8A]
+                    <a href="{{ route('produk.index') }}" class="relative transition hover:text-[#E7BD8A]
                                              after:absolute after:left-0 after:-bottom-1
                                              after:w-0 after:h-[2px]
                                              after:bg-[#E7BD8A]
@@ -329,7 +329,7 @@
                 <span class="text-xs opacity-80">Prioritas Toko</span>
                 @include('icons.map-pin-icon')
                 <span class="font-bold text-[#E7BD8A]">
-                    {{ $activeMart->nama_mart ?? 'TJMart Putra' }}
+                    {{ $activeMart->nama_mart ?? 'Semua Mart' }}
                 </span>
             </button>
         </div>

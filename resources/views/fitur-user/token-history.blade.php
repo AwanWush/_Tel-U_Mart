@@ -21,8 +21,8 @@
                     <button @click="filterStatus = 'semua'" 
                             :class="filterStatus === 'semua' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'"
                             class="px-6 py-2 rounded-xl text-xs font-black uppercase transition-all duration-300">Semua</button>
-                    <button @click="filterStatus = 'Berhasil'" 
-                            :class="filterStatus === 'Berhasil' ? 'bg-green-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'"
+                    <button @click="filterStatus = 'Lunas'" 
+                            :class="filterStatus === 'Lunas' ? 'bg-green-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'"
                             class="px-6 py-2 rounded-xl text-xs font-black uppercase transition-all duration-300">Berhasil</button>
                 </div>
             </div>
@@ -40,7 +40,7 @@
                 @else
                     <div class="space-y-6">
                         @foreach ($riwayat as $r)
-                            {{-- Card Transaksi dengan Glassmorphism & Hover Effect --}}
+                            {{-- Card Transaksi --}}
                             <div class="group relative overflow-hidden bg-gray-900/60 p-6 rounded-3xl border border-white/5 hover:border-blue-500/50 transition-all duration-500 shadow-xl"
                                  x-show="filterStatus === 'semua' || filterStatus === '{{ $r->status }}'"
                                  x-transition:enter="transition transform duration-500"
@@ -56,28 +56,44 @@
                                         </div>
 
                                         <div>
-                                            {{-- Perbaikan: Menggunakan created_at agar tidak error --}}
                                             <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-1">
                                                 {{ $r->created_at ? $r->created_at->format('d M Y • H:i') : '-' }}
                                             </p>
                                             <h4 class="text-2xl font-black text-white group-hover:text-blue-400 transition-colors tracking-tighter">
-                                                Rp{{ number_format($r->nominal, 0, ',', '.') }}
+                                                Rp{{ number_format($r->total_harga, 0, ',', '.') }}
                                             </h4>
+                                            
+                                            {{-- LOGIKA PENGAMBILAN KODE TOKEN --}}
+                                            @php 
+                                                // Mengambil kode dari tabel detail_pembelian tubes_pbw2
+                                                $detail = DB::table('detail_pembelian')->where('riwayat_pembelian_id', $r->id)->first();
+                                                $kodeToken = null;
+                                                if ($detail && str_contains($detail->nama_produk, 'Token:')) {
+                                                    $kodeToken = Str::before(Str::after($detail->nama_produk, 'Token: '), ' ('); 
+                                                }
+                                            @endphp
+
+                                            @if($kodeToken && $r->status == 'Lunas')
+                                                <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-black/40 rounded-lg border border-white/5">
+                                                    <span class="font-mono text-xs text-blue-400 font-bold tracking-[0.2em]">{{ $kodeToken }}</span>
+                                                </div>
+                                            @endif
+
                                             <div class="flex items-center gap-3 mt-2">
                                                 <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Status:</span>
                                                 <span class="px-3 py-0.5 rounded-lg text-[10px] font-black uppercase border
-                                                    @if($r->status == 'Berhasil') border-green-500/50 text-green-500 bg-green-500/5 
+                                                    @if($r->status == 'Lunas') border-green-500/50 text-green-500 bg-green-500/5 
                                                     @else border-yellow-500/50 text-yellow-500 bg-yellow-500/5 @endif">
-                                                    {{ $r->status }}
+                                                    {{ $r->status == 'Lunas' ? 'Berhasil' : $r->status }}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="w-full md:w-auto">
-                                        <a href="{{ route('token.detail', $r->id) }}"
+                                        <a href="{{ route('order.success', ['order_id' => $r->id_transaksi, 'status' => 'paid', 'type' => 'token', 'amount' => $r->total_harga]) }}"
                                             class="flex items-center justify-center gap-2 w-full md:w-auto px-8 py-3 bg-white text-black font-black rounded-2xl hover:bg-blue-600 hover:text-white transition-all duration-300 shadow-xl shadow-white/5">
-                                            LIHAT KODE
+                                            STRUK DIGITAL
                                             <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                                             </svg>

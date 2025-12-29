@@ -1,61 +1,190 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🛒 TJ&T Mart – Website E-Commerce Asrama
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+TJ&T Mart adalah website **e-commerce berbasis web** yang dikembangkan untuk memenuhi kebutuhan harian **penghuni asrama mahasiswa**. Sistem ini menyediakan layanan pembelian produk kebutuhan sehari-hari, token listrik, dan galon asrama dengan alur pemesanan yang terintegrasi, aman, dan mudah digunakan.
 
-## About Laravel
+Website ini dikembangkan menggunakan **Laravel Framework** sebagai bagian dari proyek pengembangan aplikasi web.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+ 🎯 Tujuan Pengembangan
 
-## Learning Laravel
+- Menyediakan platform belanja khusus lingkungan asrama
+- Mempermudah pemesanan kebutuhan harian mahasiswa
+- Mengintegrasikan layanan **token listrik** dan **galon asrama**
+- Menyediakan sistem transaksi dan notifikasi yang terstruktur
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+⚠️ Asumsi & Batasan Sistem
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Saat **login pertama**, pengguna diminta memilih:
+  - **Penghuni asrama**
+  - **Non-penghuni asrama**
+- Jika pengguna adalah **penghuni asrama**, maka:
+  - Wajib mengisi **Gedung Asrama & Nomor Kamar**
+  - Data ini digunakan untuk fitur **Galon Asrama** dan **Token Listrik**
+- Jika pengguna **bukan penghuni asrama**:
+  - Tidak diwajibkan mengisi alamat
+  - Pengiriman **dibatasi hanya untuk penghuni asrama**
+  - Beberapa fitur akan dinonaktifkan (token & galon)
+- Website ini **dibatasi untuk area asrama** (bukan layanan publik umum)
 
-## Laravel Sponsors
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+👥 Role Pengguna
 
-### Premium Partners
+🔑 Super Admin
+- Pengelolaan sistem secara keseluruhan (konseptual)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+🛠️ Admin
+- Dashboard admin
+- Manajemen produk & transaksi
 
-## Contributing
+👤 User
+- Pengguna akhir (penghuni asrama / non-asrama)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+🌐 Fitur & Halaman Website
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+🏠 Beranda / Home Page
+- Dapat diakses tanpa login
+- Banner promo & pengumuman
+- Product grid dengan informasi stok
+- Produk habis ditampilkan abu-abu
+- Header dengan:
+  - Search & filter kategori
+  - Wishlist (dengan counter)
+  - Cart (dengan counter)
+  - Notifikasi
+  - Login / Register / Profile dropdown
 
-## Security Vulnerabilities
+ 📦 Product Detail Page
+- Dapat diakses tanpa login
+- Breadcrumb (Home > Kategori > Produk)
+- Informasi lengkap produk:
+  - Harga, stok, lokasi
+  - Rating & ulasan
+  - Variasi produk
+- Tombol:
+  - Add to Cart
+  - Wishlist
+- Rekomendasi produk serupa
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+ 🛒 Cart Page
+- Hanya bisa diakses setelah login
+- Redirect ke login jika belum login
+- Informasi:
+  - Daftar produk
+  - Kuantitas (plus/minus)
+  - Subtotal per produk
+- Ringkasan pesanan:
+  - Subtotal
+  - Diskon
+  - Ongkir
+  - Total
+- Tombol lanjut ke checkout
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+ ❤️ Wishlist Page
+- Hanya untuk user login
+- Menampilkan produk favorit
+- Aksi:
+  - Add to Cart
+  - Remove
+  - Select multiple item
+- Notifikasi jika wishlist kosong
+
+👤 Profile Page
+- Sidebar navigasi akun:
+  - Profil Saya (CRUD)
+  - Alamat Pengiriman
+  - Riwayat Pesanan
+  - Metode Pembayaran
+  - Ubah Password
+  - Logout
+
+
+🔔 Notifikasi Page
+- Hanya untuk user login
+- Filter:
+  - Semua
+  - Belum Dibaca
+  - Sudah Dibaca
+- Aksi:
+  - Tandai dibaca
+  - Hapus
+  - Detail transaksi
+- Notifikasi muncul untuk:
+  - Status pesanan
+  - Perubahan akun
+  - Promo
+  - Maintenance sistem
+
+
+⚡ Token Listrik Page
+- Khusus penghuni asrama
+- Nominal tetap (20k – 1jt)
+- Metode pembayaran
+- Menampilkan hasil token
+- Riwayat transaksi token
+
+
+🚰 Galon Asrama Page
+- Penghuni dapat:
+  - Membeli galon baru
+  - Isi ulang galon
+  - Galon sekali pakai
+- Opsi:
+  - Antar ke kamar
+  - Ambil sendiri
+- Riwayat pembelian galon
+- Status kepemilikan galon
+
+
+💳 Checkout & Pembayaran
+- Checkout hanya untuk user login
+- Opsi:
+  - Delivery
+  - Takeaway
+- Metode pembayaran:
+  - QRIS
+  - E-Wallet
+  - M-Banking
+  - COD
+- Ringkasan pembayaran & konfirmasi
+
+
+✅ Order Success / Bukti Transaksi
+- Bukti transaksi untuk kasir (takeaway)
+- Estimasi pengiriman
+- Detail pesanan lengkap
+- Tombol kembali ke beranda
+
+
+🛠️ Teknologi yang Digunakan
+
+- **Framework** : Laravel
+- **Frontend** : Blade Template, Tailwind CSS
+- **Backend** : PHP
+- **Database** : MySQL
+- **Version Control** : Git & GitHub
+
+
+👥 Tim Tubes Pbw
+
+| Nama | Tanggung Jawab |
+
+| **AwanWush** | Integrasi & kontribusi utama |
+
+| **Rhafhy** | Home Page & Product Detail |
+
+| **Damar** | Cart, Wishlist, Notifikasi |
+
+| **Fadhil** | Profile & Order Success |
+
+| **Raffif** | Token Listrik & Galon Asrama |
+
+| **Anri** | Checkout & Pembayaran |
+
+
+
+
+✨ **TJ&T Mart – Solusi kebutuhan asramamu.**
