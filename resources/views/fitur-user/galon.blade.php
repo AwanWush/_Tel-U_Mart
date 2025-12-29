@@ -153,8 +153,18 @@
                         <input type="number" x-model="jumlah" min="1"
                                class="form-input-custom focus:ring-[#930014] focus:border-[#930014]">
                     </div>
-                </div>
 
+                    <div class="space-y-3 md:col-span-2">
+                        <label class="text-[10px] font-black text-[#E68757] uppercase tracking-[0.2em]">
+                            Catatan Tambahan
+                        </label>
+                        <textarea id="catatanInput"
+                            class="form-input-custom"
+                            rows="3"
+                            placeholder="Contoh: titip di depan kamar"></textarea>
+                    </div>
+
+                </div>
                 <button type="button" @click="if(pilihanGalon) step = 2"
                         :disabled="!pilihanGalon"
                         class="btn-solid-custom w-full py-5 rounded-2xl font-bold uppercase tracking-[0.2em] shadow-lg disabled:opacity-30">
@@ -195,8 +205,8 @@
                 </div>
 
                 <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100 flex justify-between items-center">
-                    <span class="font-bold text-[#5B000B] uppercase tracking-widest text-sm">Total Pembayaran</span>
-                    <span class="font-black text-[#930014] text-3xl" x-text="'Rp ' + totalHarga.toLocaleString('id-ID')"></span>
+                        <span class="font-bold text-[#5B000B] uppercase tracking-widest text-sm">Total Pembayaran (<span x-text="jumlah"></span>x)</span>
+                        <span class="font-black text-[#930014] text-3xl" x-text="'Rp ' + totalHarga.toLocaleString('id-ID')"></span>
                 </div>
 
                 <button id="btnFinalOrder" @click="handleOrder($data)"
@@ -207,5 +217,73 @@
         </div>
     </div>
 </div>
+
+{{-- Hidden Form untuk COD --}}
+<form id="realForm" action="{{ route('galon.store') }}" method="POST" class="hidden">
+    @csrf
+    <input type="hidden" name="nama_galon">
+    <input type="hidden" name="jumlah">
+    <input type="hidden" name="catatan">
+    <input type="hidden" name="harga_satuan">
+    <input type="hidden" name="metode_pembayaran" value="COD">
+</form>
+
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.clientKey') }}"></script>
+<script>
+    const galons = @json($galons);
+
+    async function handleOrder(alpineData) {
+        const btn = document.getElementById('btnFinalOrder');
+        const catatanValue = document.getElementById('catatanInput').value;
+
+        if (alpineData.metode === 'cod') {
+            // LOGIKA COD
+            const form = document.getElementById('realForm');
+            form.querySelector('[name=nama_galon]').value = alpineData.pilihanGalon;
+            form.querySelector('[name=jumlah]').value = alpineData.jumlah;
+            form.querySelector('[name=catatan]').value = catatanValue;
+            form.querySelector('[name=harga_satuan]').value = alpineData.hargaSatuan;
+            form.submit();
+        } else {
+            // LOGIKA MIDTRANS
+            btn.disabled = true;
+            btn.innerText = 'MEMPROSES...';
+            
+            try {
+                const response = await fetch("{{ route('payment.snap-token') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ 
+                        total_amount: alpineData.totalHarga,
+                        type: 'galon',
+                        product_name: alpineData.pilihanGalon
+                    })
+                });
+
+                const midData = await response.json();
+
+                window.snap.pay(midData.snap_token, {
+                    onSuccess: function(result) {
+                        window.location.href = `/order/success?status=paid&amount=${alpineData.totalHarga}&type=galon&order_id=${midData.order_id}&nama_galon=${alpineData.pilihanGalon}&jumlah=${alpineData.jumlah}`;
+                    },
+                    onPending: function(result) {
+                        window.location.href = `/order/success?status=pending&amount=${alpineData.totalHarga}&type=galon&order_id=${midData.order_id}`;
+                    },
+                    onClose: function() {
+                        btn.disabled = false;
+                        btn.innerText = 'Buat Pesanan Sekarang';
+                    }
+                });
+            } catch (e) {
+                alert('Gagal memproses pembayaran online.');
+                btn.disabled = false;
+                btn.innerText = 'Buat Pesanan Sekarang';
+            }
+        }
+    }
+</script>
 
 </x-app-layout>
