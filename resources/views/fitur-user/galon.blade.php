@@ -1,27 +1,61 @@
 <x-app-layout>
 
 <style>
-    .form-field { color: #000 !important; }
-    .transition-all { transition: all 0.3s ease; }
-    .method-card {
-        border: 2px solid #e5e7eb;
-        transition: all 0.2s;
+    /* Tombol Solid (Lanjut & Konfirmasi) */
+    .btn-solid-custom {
+        background-color: #930014 !important;
+        color: #ffffff !important;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    .method-active {
-        border-color: #2563eb !important;
-        background-color: #eff6ff !important;
+    .btn-solid-custom:hover {
+        background-color: #5B000B !important;
+        color: #ffffff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
-    [x-cloak] { display: none !important; }
+
+    /* Tombol Outline (Riwayat) */
+    .btn-outline-custom {
+        background-color: white !important;
+        color: #930014 !important;
+        border: 1px solid #E7BD8A !important;
+        transition: all 0.3s ease;
+    }
+    .btn-outline-custom:hover {
+        background-color: #930014 !important;
+        color: white !important;
+        border-color: #930014 !important;
+    }
+
+    /* Animasi Hover untuk Kartu Metode Pembayaran */
+    .payment-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .payment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+    .form-input-custom {
+        border: 1px solid #E7BD8A !important;
+        border-radius: 0.75rem !important;
+        padding: 1rem !important;
+        width: 100%;
+        background-color: white !important;
+    }
 </style>
 
 <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+    <h2 class="font-light text-2xl text-[#5B000B] leading-tight">
         {{ __('Beli Galon') }}
     </h2>
 </x-slot>
 
-<div class="py-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8" 
+<div class="py-12 bg-[#F9F9F9] min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" 
          x-data="{ 
             hasGalon: false, 
             pilihanGalon: '',
@@ -35,69 +69,73 @@
         {{-- Tombol Riwayat --}}
         <div class="flex justify-end mb-6">
             <a href="{{ route('galon.history') }}"
-               class="inline-flex items-center px-5 py-2.5 bg-blue-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+               class="btn-outline-custom inline-flex items-center px-6 py-2.5 rounded-full font-semibold text-xs uppercase tracking-widest shadow-sm">
+                <i class="far fa-clock mr-2"></i>
                 Riwayat Pembelian
             </a>
         </div>
 
-        {{-- Informasi Pengguna --}}
-        <div class="bg-gradient-to-r from-gray-800 to-gray-700 p-6 rounded-2xl mb-8 text-white shadow-xl border border-gray-600">
-            <div class="flex items-center mb-4">
-                <div class="p-2 bg-blue-500/20 rounded-lg mr-3">
-                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                </div>
-                <h3 class="text-xl font-extrabold tracking-tight">Informasi Penghuni</h3>
+        {{-- BOX INFORMASI PENGHUNI --}}
+        <div class="bg-white p-8 rounded-[2rem] mb-10 border border-[#E7BD8A]/30 shadow-sm text-[#5B000B]">
+            <div class="flex items-center mb-8 border-b border-gray-100 pb-4">
+                <i class="fas fa-user-circle mr-3 text-[#930014] text-xl"></i>
+                <h3 class="text-sm font-black uppercase tracking-widest">Informasi Penghuni</h3>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-gray-900/30 p-3 rounded-xl border border-white/5">
-                    <p class="text-blue-300 text-xs uppercase font-black mb-1">Nama Lengkap</p>
-                    <p class="font-bold text-lg">{{ Auth::user()->name }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div>
+                    <p class="text-[#E68757] text-[10px] uppercase font-black mb-1 tracking-widest">Nama Lengkap</p>
+                    <p class="text-base font-semibold">{{ Auth::user()->name }}</p>
                 </div>
-                <div class="bg-gray-900/30 p-3 rounded-xl border border-white/5">
-                    <p class="text-blue-300 text-xs uppercase font-black mb-1">Gedung Asrama</p>
-                    <p class="font-bold text-lg">{{ Auth::user()->lokasi->nama_lokasi ?? Auth::user()->alamat_gedung ?? '-' }}</p>
+                <div>
+                    <p class="text-[#E68757] text-[10px] uppercase font-black mb-1 tracking-widest">Gedung Asrama</p>
+                    <p class="text-base font-semibold">{{ Auth::user()->lokasi->nama_lokasi ?? Auth::user()->alamat_gedung ?? '-' }}</p>
                 </div>
-                <div class="bg-gray-900/30 p-3 rounded-xl border border-white/5">
-                    <p class="text-blue-300 text-xs uppercase font-black mb-1">Nomor Kamar</p>
-                    <p class="font-bold text-lg">{{ Auth::user()->nomor_kamar ?? '-' }}</p>
+                <div>
+                    <p class="text-[#E68757] text-[10px] uppercase font-black mb-1 tracking-widest">Nomor Kamar</p>
+                    <p class="text-base font-semibold">{{ Auth::user()->nomor_kamar ?? '-' }}</p>
                 </div>
             </div>
         </div>
 
-        {{-- Form Pemesanan --}}
-        <div class="bg-white dark:bg-gray-800 shadow-2xl sm:rounded-3xl p-8 border border-gray-100 dark:border-gray-700">
+        {{-- CARD UTAMA PEMESANAN --}}
+        <div class="bg-white shadow-xl rounded-[2.5rem] p-10 md:p-14 border border-[#E7BD8A]/20">
             
-            {{-- STEP 1: FORM DATA --}}
-            <div x-show="step === 1">
-                <div class="flex items-center mb-8">
-                    <div class="w-2 h-8 bg-blue-600 rounded-full mr-4"></div>
-                    <h3 class="text-3xl font-black text-gray-900 dark:text-white">Pesan Galon</h3>
+            {{-- STEP 1 --}}
+            <div x-show="step === 1" class="space-y-12">
+                <div>
+                    <h3 class="text-3xl font-light text-[#5B000B]">Pemesanan Galon</h3>
+                    <div class="h-1 w-12 bg-[#E7BD8A] mt-4 rounded-full"></div>
                 </div>
 
                 <div class="space-y-6">
-                    <div class="p-5 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-500/30 rounded-2xl">
-                        <label class="block text-blue-900 dark:text-blue-200 mb-4 font-black text-lg">
-                            Apakah Anda sudah memiliki botol galon kosong di kamar?
+                    <label class="block text-[#5B000B] font-bold text-lg">
+                        Apakah Anda sudah memiliki botol galon kosong di kamar?
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label @click="hasGalon = true" class="payment-card flex items-center p-6 rounded-2xl cursor-pointer border-2 transition-all shadow-sm"
+                               :class="hasGalon ? 'border-[#930014] bg-[#930014]/5' : 'border-gray-100 bg-white hover:border-[#E7BD8A]'">
+                            <div class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 mr-4">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <span class="font-bold text-gray-700">Ya, Sudah Ada</span>
                         </label>
-                        <div class="flex flex-col sm:flex-row gap-6">
-                            <label class="flex items-center p-4 bg-white dark:bg-gray-700 rounded-xl cursor-pointer hover:border-blue-500 transition-all flex-1 shadow-sm border border-gray-200">
-                                <input type="radio" name="check_galon" @click="hasGalon = true" class="w-5 h-5 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-3 font-bold text-gray-700 dark:text-gray-200">Ya, Sudah Ada</span>
-                            </label>
-                            <label class="flex items-center p-4 bg-white dark:bg-gray-700 rounded-xl cursor-pointer hover:border-blue-500 transition-all flex-1 shadow-sm border border-gray-200">
-                                <input type="radio" name="check_galon" @click="hasGalon = false; pilihanGalon = ''" class="w-5 h-5 text-blue-600 focus:ring-blue-500 border-gray-300" checked>
-                                <span class="ml-3 font-bold text-gray-700 dark:text-gray-200">Belum Ada</span>
-                            </label>
-                        </div>
+                        <label @click="hasGalon = false; pilihanGalon = ''" class="payment-card flex items-center p-6 rounded-2xl cursor-pointer border-2 transition-all shadow-sm"
+                               :class="!hasGalon ? 'border-[#930014] bg-[#930014]/5' : 'border-gray-100 bg-white hover:border-[#E7BD8A]'">
+                            <div class="w-10 h-10 flex items-center justify-center rounded-full bg-red-50 text-red-600 mr-4">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <span class="font-bold text-gray-700">Belum Ada</span>
+                        </label>
                     </div>
+                </div>
 
-                    <div class="space-y-2">
-                        <label class="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">Jenis Galon</label>
-                        <select id="galonSelect" x-model="pilihanGalon"
-                            @change="const g = galons.find(x => x.nama === $el.value); hargaSatuan = g ? g.harga : 0"
-                            class="form-field w-full rounded-xl bg-gray-50 border-gray-300 focus:ring-4 focus:ring-blue-500/20 p-3.5 font-bold shadow-sm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black text-[#E68757] uppercase tracking-[0.2em]">Jenis Galon</label>
+                        <select x-model="pilihanGalon"
+                                @change="const g = galons.find(x => x.nama === $el.value); hargaSatuan = g ? g.harga : 0"
+                                class="form-input-custom focus:ring-[#930014] focus:border-[#930014]">
                             <option value="" disabled selected>-- Pilih Paket Galon --</option>
                             @foreach($galons as $g)
                                 @php $isIsiUlang = str_contains(strtolower($g['nama']), 'isi ulang'); @endphp
@@ -110,161 +148,64 @@
                         </select>
                     </div>
 
-                    <div class="space-y-2">
-                        <label class="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">Jumlah Pesanan</label>
-                        <input type="number" id="jumlahInput" x-model="jumlah" min="1"
-                               class="form-field w-full rounded-xl bg-gray-50 border-gray-300 p-3.5 font-bold shadow-sm">
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black text-[#E68757] uppercase tracking-[0.2em]">Jumlah Pesanan</label>
+                        <input type="number" x-model="jumlah" min="1"
+                               class="form-input-custom focus:ring-[#930014] focus:border-[#930014]">
                     </div>
-
-                    <div class="space-y-2">
-                        <label class="block text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-wider">Catatan Tambahan</label>
-                        <textarea id="catatanInput" rows="3" placeholder="Contoh: Titip di depan pintu kamar..."
-                                  class="form-field w-full rounded-xl bg-gray-50 border-gray-300 p-3.5 font-bold shadow-sm"></textarea>
-                    </div>
-
-                    <button type="button" @click="if(pilihanGalon) step = 2"
-                            :disabled="!pilihanGalon"
-                            class="w-full py-4 bg-blue-600 rounded-2xl font-black text-lg text-white uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl disabled:opacity-50">
-                        Lanjut ke Pembayaran
-                    </button>
                 </div>
+
+                <button type="button" @click="if(pilihanGalon) step = 2"
+                        :disabled="!pilihanGalon"
+                        class="btn-solid-custom w-full py-5 rounded-2xl font-bold uppercase tracking-[0.2em] shadow-lg disabled:opacity-30">
+                    Lanjut ke Pembayaran
+                </button>
             </div>
 
-            {{-- STEP 2: METODE PEMBAYARAN --}}
-            <div x-show="step === 2" x-cloak>
-                <button @click="step = 1" class="text-blue-600 font-bold flex items-center mb-6 hover:underline">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                    Kembali ke Form
+            {{-- STEP 2 (Metode Pembayaran) --}}
+            <div x-show="step === 2" x-cloak class="space-y-10">
+                {{-- Tombol Kembali (Warna merah solid, Tanpa Hover) --}}
+                <button @click="step = 1" class="text-[#930014] text-xs font-black flex items-center cursor-pointer">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    KEMBALI KE PEMILIHAN
                 </button>
 
-                <h3 class="text-2xl font-black text-gray-900 mb-8 uppercase tracking-tighter dark:text-white">Pilih Metode Pembayaran</h3>
+                <h3 class="text-xl font-bold text-[#5B000B] uppercase tracking-widest">Metode Pembayaran</h3>
 
-                <div class="space-y-4 mb-8">
-                    <div class="method-card p-5 rounded-2xl cursor-pointer" 
-                         :class="metode === 'cod' ? 'method-active' : ''"
-                         @click="metode = 'cod'">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center mr-4">
-                                    <i class="fas fa-money-bill-wave text-xl"></i>
-                                </div>
-                                <div>
-                                    <p class="font-bold text-gray-800">Bayar di Tempat (COD)</p>
-                                    <p class="text-xs text-gray-500">Bayar tunai saat galon diantar</p>
-                                </div>
-                            </div>
-                            <div x-show="metode === 'cod'" class="text-blue-600">
-                                <i class="fas fa-check-circle text-xl"></i>
-                            </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div @click="metode = 'cod'" 
+                         class="payment-card p-8 rounded-3xl cursor-pointer border-2 transition-all bg-white text-center flex flex-col items-center justify-center group"
+                         :class="metode === 'cod' ? 'border-[#930014] bg-[#930014]/5' : 'border-gray-100'">
+                        <div class="mb-4 w-16 h-16 flex items-center justify-center rounded-2xl bg-[#930014]/10 text-[#930014] group-hover:scale-110 transition-transform">
+                            <i class="fas fa-hand-holding-usd text-3xl"></i>
                         </div>
+                        <p class="font-black text-[#5B000B] text-lg">COD</p>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Bayar di Tempat</p>
                     </div>
 
-                    <div class="method-card p-5 rounded-2xl cursor-pointer" 
-                         :class="metode === 'midtrans' ? 'method-active' : ''"
-                         @click="metode = 'midtrans'">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mr-4">
-                                    <i class="fas fa-university text-xl"></i>
-                                </div>
-                                <div>
-                                    <p class="font-bold text-gray-800">Pembayaran Online</p>
-                                    <p class="text-xs text-gray-500">Transfer Bank, QRIS, GoPay (via Midtrans)</p>
-                                </div>
-                            </div>
-                            <div x-show="metode === 'midtrans'" class="text-blue-600">
-                                <i class="fas fa-check-circle text-xl"></i>
-                            </div>
+                    <div @click="metode = 'midtrans'" 
+                         class="payment-card p-8 rounded-3xl cursor-pointer border-2 transition-all bg-white text-center flex flex-col items-center justify-center group"
+                         :class="metode === 'midtrans' ? 'border-[#930014] bg-[#930014]/5' : 'border-gray-100'">
+                        <div class="mb-4 w-16 h-16 flex items-center justify-center rounded-2xl bg-[#930014]/10 text-[#930014] group-hover:scale-110 transition-transform">
+                            <i class="fas fa-credit-card text-3xl"></i>
                         </div>
+                        <p class="font-black text-[#5B000B] text-lg">Online</p>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">QRIS / Transfer</p>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100 mb-8">
-                    <div class="flex justify-between mb-2">
-                        <span class="text-gray-500">Total Harga (<span x-text="jumlah"></span>x)</span>
-                        <span class="font-bold text-gray-900" x-text="'Rp ' + totalHarga.toLocaleString('id-ID')"></span>
-                    </div>
-                    <div class="flex justify-between pt-4 border-t border-gray-200">
-                        <span class="font-black text-gray-900 text-lg uppercase">Total Tagihan</span>
-                        <span class="font-black text-blue-600 text-2xl" x-text="'Rp ' + totalHarga.toLocaleString('id-ID')"></span>
-                    </div>
+                <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100 flex justify-between items-center">
+                    <span class="font-bold text-[#5B000B] uppercase tracking-widest text-sm">Total Pembayaran</span>
+                    <span class="font-black text-[#930014] text-3xl" x-text="'Rp ' + totalHarga.toLocaleString('id-ID')"></span>
                 </div>
 
                 <button id="btnFinalOrder" @click="handleOrder($data)"
-                        class="w-full py-4 bg-blue-600 rounded-2xl font-black text-lg text-white uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl">
-                    Buat Pesanan Sekarang
+                        class="btn-solid-custom w-full py-5 rounded-2xl font-bold uppercase tracking-[0.2em] shadow-xl text-lg">
+                    Konfirmasi & Pesan
                 </button>
             </div>
         </div>
     </div>
 </div>
-
-{{-- Hidden Form untuk COD --}}
-<form id="realForm" action="{{ route('galon.store') }}" method="POST" class="hidden">
-    @csrf
-    <input type="hidden" name="nama_galon">
-    <input type="hidden" name="jumlah">
-    <input type="hidden" name="catatan">
-    <input type="hidden" name="harga_satuan">
-    <input type="hidden" name="metode_pembayaran" value="COD">
-</form>
-
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.clientKey') }}"></script>
-<script>
-    const galons = @json($galons);
-
-    async function handleOrder(alpineData) {
-        const btn = document.getElementById('btnFinalOrder');
-        const catatanValue = document.getElementById('catatanInput').value;
-
-        if (alpineData.metode === 'cod') {
-            // LOGIKA COD
-            const form = document.getElementById('realForm');
-            form.querySelector('[name=nama_galon]').value = alpineData.pilihanGalon;
-            form.querySelector('[name=jumlah]').value = alpineData.jumlah;
-            form.querySelector('[name=catatan]').value = catatanValue;
-            form.querySelector('[name=harga_satuan]').value = alpineData.hargaSatuan;
-            form.submit();
-        } else {
-            // LOGIKA MIDTRANS
-            btn.disabled = true;
-            btn.innerText = 'MEMPROSES...';
-            
-            try {
-                const response = await fetch("{{ route('payment.snap-token') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ 
-                        total_amount: alpineData.totalHarga,
-                        type: 'galon',
-                        product_name: alpineData.pilihanGalon
-                    })
-                });
-
-                const midData = await response.json();
-
-                window.snap.pay(midData.snap_token, {
-                    onSuccess: function(result) {
-                        window.location.href = `/order/success?status=paid&amount=${alpineData.totalHarga}&type=galon&order_id=${midData.order_id}&nama_galon=${alpineData.pilihanGalon}&jumlah=${alpineData.jumlah}`;
-                    },
-                    onPending: function(result) {
-                        window.location.href = `/order/success?status=pending&amount=${alpineData.totalHarga}&type=galon&order_id=${midData.order_id}`;
-                    },
-                    onClose: function() {
-                        btn.disabled = false;
-                        btn.innerText = 'Buat Pesanan Sekarang';
-                    }
-                });
-            } catch (e) {
-                alert('Gagal memproses pembayaran online.');
-                btn.disabled = false;
-                btn.innerText = 'Buat Pesanan Sekarang';
-            }
-        }
-    }
-</script>
 
 </x-app-layout>

@@ -1,102 +1,43 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-white leading-tight">
-            Pesanan Galon Berhasil Dibuat
+        <h2 class="font-light text-xl text-[#5B000B] leading-tight">
+            Pesanan Berhasil
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-
-            <div class="bg-gray-800 shadow-sm sm:rounded-lg p-6">
-
-                <h3 class="text-2xl font-bold text-white mb-6">
-                    Detail Pemesanan Galon
-                </h3>
-
-                <div class="space-y-4">
-
-                    {{-- Nama Galon --}}
-                    <div class="p-4 rounded-lg bg-gray-700">
-                        <p class="text-gray-300 text-sm">Nama Galon</p>
-                        <p class="text-lg font-semibold text-white">
-                            {{ $transaksi->nama_galon }}
-                        </p>
+    <div class="py-12 bg-white min-h-screen">
+        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-xl rounded-[2rem] p-10 border border-[#E7BD8A]/20">
+                <div class="text-center mb-10">
+                    <div class="w-20 h-20 bg-[#930014]/5 text-[#930014] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check text-3xl"></i>
                     </div>
-
-                    {{-- Jumlah --}}
-                    <div class="p-4 rounded-lg bg-gray-700">
-                        <p class="text-gray-300 text-sm">Jumlah</p>
-                        <p class="text-lg font-semibold text-white">
-                            {{ $transaksi->jumlah }} Galon
-                        </p>
-                    </div>
-
-                    {{-- Harga Satuan --}}
-                    <div class="p-4 rounded-lg bg-gray-700">
-                        <p class="text-gray-300 text-sm">Harga Satuan</p>
-                        <p class="text-lg font-semibold text-white">
-                            Rp{{ number_format($transaksi->harga_satuan, 0, ',', '.') }}
-                        </p>
-                    </div>
-
-                    {{-- Total Harga --}}
-                    <div class="p-4 rounded-lg bg-gray-700">
-                        <p class="text-gray-300 text-sm">Total Harga</p>
-                        <p class="text-xl font-bold" style="color: white !important;">
-                            Rp{{ number_format($transaksi->total_harga, 0, ',', '.') }}
-                        </p>
-                    </div>
-
-
-
-
-                    {{-- Catatan --}}
-                    @if ($transaksi->catatan)
-                    <div class="p-4 rounded-lg bg-gray-700">
-                        <p class="text-gray-300 text-sm">Catatan</p>
-                        <p class="text-lg text-white">
-                            {{ $transaksi->catatan }}
-                        </p>
-                    </div>
-                    @endif
-
-                    {{-- Waktu --}}
-                    <div class="p-4 rounded-lg bg-gray-700">
-                        <p class="text-gray-300 text-sm">Waktu Transaksi</p>
-                        <p class="text-lg font-semibold text-white">
-                            {{ $transaksi->waktu_transaksi }}
-                        </p>
-                    </div>
-
-                    {{-- Status --}}
-                    <div class="p-4 rounded-lg bg-gray-700">
-                        <p class="text-gray-300 text-sm">Status</p>
-                        <span class="px-3 py-1 text-sm rounded-full text-white
-                            @if($transaksi->status == 'pending') bg-yellow-500
-                            @elseif($transaksi->status == 'diproses') bg-blue-500
-                            @elseif($transaksi->status == 'selesai') bg-green-600
-                            @else bg-gray-500 @endif">
-                            {{ ucfirst($transaksi->status) }}
-                        </span>
-                    </div>
-
+                    <h3 class="text-2xl font-light text-[#5B000B]">Terima <span class="font-bold">Kasih!</span></h3>
+                    <p class="text-gray-400 text-sm mt-1">Pesanan Anda sedang diproses oleh tim kami.</p>
                 </div>
 
-                <div class="mt-8 flex justify-end gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-[9px] font-bold text-[#E68757] uppercase tracking-widest mb-1">Item</p>
+                        <p class="text-sm font-bold text-[#5B000B]">{{ $transaksi->nama_galon }}</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                        <p class="text-[9px] font-bold text-[#E68757] uppercase tracking-widest mb-1">Total</p>
+                        <p class="text-sm font-bold text-[#930014]">Rp{{ number_format($transaksi->total_harga, 0, ',', '.') }}</p>
+                    </div>
+                </div>
+
+                <div class="mt-10 flex flex-col sm:flex-row gap-3">
                     <a href="{{ route('galon.index') }}"
-                        class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                        class="flex-1 px-4 py-3 border border-[#E7BD8A] text-[#930014] rounded-xl text-center text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition-all">
                         Pesan Lagi
                     </a>
-
                     <a href="{{ route('dashboard') }}"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        Kembali ke Dashboard
+                        class="flex-1 px-4 py-3 bg-[#930014] text-white rounded-xl text-center text-xs font-bold uppercase tracking-widest hover:bg-[#5B000B] transition-all shadow-lg">
+                        Dashboard
                     </a>
                 </div>
-
             </div>
-
         </div>
     </div>
 </x-app-layout>
