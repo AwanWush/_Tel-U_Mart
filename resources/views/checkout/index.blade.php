@@ -74,6 +74,7 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
             @apply bg-white rounded-3xl border border-gray-100 shadow-sm p-6;
         }
     </style>
+    <x-slot name="header"></x-slot>
 
 
 
