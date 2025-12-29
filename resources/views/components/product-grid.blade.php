@@ -116,8 +116,8 @@
 
                                 <button type="submit"
                                     class="w-9 h-9 rounded-full bg-[#DB4B3A] hover:bg-[#930014]
-        border border-[#930014] flex items-center justify-center
-        text-white transition">
+                                            border border-[#930014] flex items-center justify-center
+                                            text-white transition">
                                     @include('icons.cart')
                                 </button>
                             </form>
