@@ -8,11 +8,11 @@ class Wishlist extends Model
 {
     protected $fillable = [
         'user_id',
-        'product_id'
+        'produk_id'
     ];
 
     public function produk()
     { 
-        return $this->belongsTo(Produk::class, 'product_id');
+        return $this->belongsTo(Produk::class, 'produk_id');
     }
 }

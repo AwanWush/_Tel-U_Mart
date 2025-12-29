@@ -88,7 +88,7 @@
                 </form>
 
                 {{-- Cart --}}
-                <form action="{{ route('cart.add') }}" method="POST">
+                <form action="{{ route('cart.store') }}" method="POST">
                     @csrf
                     <input type="hidden" name="produk_id" value="{{ $item->id }}">
                     <button type="submit"
