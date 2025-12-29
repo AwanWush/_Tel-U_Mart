@@ -149,7 +149,7 @@
                                     </div>
 
                                     <div class="absolute bottom-3 left-3 right-3"> 
-                                        <div class="bg-[#DB4B3A]/80 text-white text-sm px-3 py-1 rounded-md"> 
+                                        <div class="bg-gradient-to-r from-[#DB4B3A]/80 to-[#930014]/80 text-white text-sm px-3 py-1 rounded-md"> 
                                             {{ $product->nama_produk }} 
                                         </div> 
                                     </div>
