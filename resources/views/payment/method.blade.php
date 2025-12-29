@@ -59,6 +59,7 @@
 
         <body x-data="{ selected: 'va_online' }">
 
+        <x-slot name="header"></x-slot>
         <div class="max-w-3xl mx-auto py-8 px-4 pb-40">
 
             {{-- Breadcrumb --}}

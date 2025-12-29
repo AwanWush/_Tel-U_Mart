@@ -88,6 +88,8 @@
             }
         </style>
     </head>
+
+    <x-slot name="header"></x-slot>
     
     {{-- Letakkan kode ini di bagian atas halaman success sebelum rincian tabel --}}
     @if(isset($is_token) && $is_token && $status === 'Lunas')

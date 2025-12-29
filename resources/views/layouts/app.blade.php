@@ -53,7 +53,7 @@
             
             {{-- HEADER --}}
             @isset($header)
-            <header class="bg-white shadow relative z-30">
+            <header class="pt-[120px] bg-white shadow relative z-30">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                     {{ $header }}
                 </div>
@@ -61,7 +61,7 @@
             @endisset
 
             {{-- CONTENT --}}
-            <main class="pt-[120px] pb-20">
+            <main class="pb-20">
                 {{ $slot }}
             </main>
 

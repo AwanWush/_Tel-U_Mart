@@ -79,7 +79,7 @@
         <div class="bg-white p-8 rounded-[2rem] mb-10 border border-[#E7BD8A]/30 shadow-sm text-[#5B000B]">
             <div class="flex items-center mb-8 border-b border-gray-100 pb-4">
                 <i class="fas fa-user-circle mr-3 text-[#930014] text-xl"></i>
-                <h3 class="text-sm font-black uppercase tracking-widest">Informasi Penghuni</h3>
+                <h3 class="text-sm font-black uppercase tracking-widest">Informasi Penghuni Asrama</h3>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10">

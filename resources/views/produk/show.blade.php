@@ -1,4 +1,6 @@
 <x-app-layout>
+    <x-slot name="header"></x-slot>
+
     <div class="max-w-7xl mx-auto px-4 mt-6">
         <x-breadcrumb>
             <a href="/" class="hover:text-blue-600">Home</a>
