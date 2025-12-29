@@ -83,51 +83,68 @@ class CheckoutController extends Controller
      * LANGKAH 3: Proses Simpan ke Database (Tabel riwayat_pembelian)
      */
     public function processCheckout(Request $request)
-    {
-        $metodePilihan = $request->payment_method;
-        $unique_order_id = 'TM-'.strtoupper(Str::random(12));
+{
+    $metodePilihan = $request->payment_method;
+    $unique_order_id = 'TM-' . strtoupper(Str::random(12));
 
-        $statusFinal = ($metodePilihan == 'cash_cod') ? 'unpaid' : ($request->payment_status ?? 'pending');
-        $labelMetode = ($metodePilihan == 'cash_cod') ? 'cash_cod' : 'va_online';
+    $statusFinal = ($metodePilihan == 'cash_cod') ? 'unpaid' : 'pending';
+    $labelMetode = ($metodePilihan == 'cash_cod') ? 'cash_cod' : 'va_online';
 
-        // 1️⃣ SIMPAN RIWAYAT
-        $riwayat = RiwayatPembelian::create([
-            'user_id' => Auth::id(),
-            'id_transaksi' => $unique_order_id,
-            'total_harga' => $request->total_price,
-            'status' => $statusFinal,
-            'metode_pembayaran' => $labelMetode,
+    // 1️⃣ Ambil item cart yang dipilih
+    $selectedIds = $request->input('cart_items', []);
+
+    $cartItems = \App\Models\Cart::whereIn('id', $selectedIds)
+        ->where('user_id', Auth::id())
+        ->with('produk')
+        ->get();
+
+    if ($cartItems->isEmpty()) {
+        return redirect()->route('cart.index')
+            ->with('error', 'Cart kosong');
+    }
+
+    // 2️⃣ HITUNG TOTAL HARGA DI BACKEND (WAJIB)
+    $subtotal = $cartItems->sum(function ($item) {
+        return $item->produk->harga * $item->quantity;
+    });
+
+    $service_fee = 2000;
+    $delivery_fee = 0;
+
+    $total_harga = $subtotal + $service_fee + $delivery_fee;
+
+    // 3️⃣ SIMPAN RIWAYAT PEMBELIAN
+    $riwayat = RiwayatPembelian::create([
+        'user_id' => Auth::id(),
+        'id_transaksi' => $unique_order_id,
+        'total_harga' => $total_harga, // ✅ SUDAH AMAN
+        'status' => $statusFinal,
+        'metode_pembayaran' => $labelMetode,
+    ]);
+
+    // 4️⃣ SIMPAN DETAIL PEMBELIAN
+    foreach ($cartItems as $item) {
+        DB::table('detail_pembelian')->insert([
+            'riwayat_pembelian_id' => $riwayat->id,
+            'nama_produk' => $item->produk->nama_produk,
+            'harga_satuan' => $item->produk->harga,
+            'jumlah' => $item->quantity,
+            'subtotal' => $item->produk->harga * $item->quantity,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        // 2️⃣ AMBIL ITEM CART (HARUS DI ATAS!)
-        $selectedIds = $request->input('cart_items', []);
-
-        $cartItems = \App\Models\Cart::whereIn('id', $selectedIds)
-            ->where('user_id', Auth::id())
-            ->with('produk')
-            ->get();
-
-        // 3️⃣ SIMPAN DETAIL (INI BARU BENAR)
-        foreach ($cartItems as $item) {
-            DB::table('detail_pembelian')->insert([
-                'riwayat_pembelian_id' => $riwayat->id,
-                'nama_produk' => $item->produk->nama_produk,
-                'harga_satuan' => (int) $item->produk->harga,
-                'jumlah' => $item->quantity,
-                'subtotal' => $item->quantity * $item->produk->harga,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            // kurangi stok
-            $item->produk->decrement('stok', $item->quantity);
-        }
-
-        // 4️⃣ HAPUS CART YANG DICHECKOUT
-        \App\Models\Cart::whereIn('id', $selectedIds)->delete();
-
-        return redirect()->route('order.success', ['order_id' => $unique_order_id]);
+        // Kurangi stok
+        $item->produk->decrement('stok', $item->quantity);
     }
+
+    // 5️⃣ HAPUS CART
+    \App\Models\Cart::whereIn('id', $selectedIds)->delete();
+
+    return redirect()->route('order.success', [
+        'order_id' => $unique_order_id
+    ]);
+}
 
     /**
      * LANGKAH 4: Struk Akhir
@@ -153,23 +170,40 @@ class CheckoutController extends Controller
         ]);
     }
 
-   public function directCheckout(Request $request)
+public function directCheckout(Request $request)
 {
-    $productId = $request->input('product_id');
-    $qty = (int) $request->input('qty', 1);
+    $productId = $request->product_id;
+    $qty = $request->qty ?? 1;
 
-    if (!$productId) {
-        return back()->with('error', 'Produk tidak ditemukan');
-    }
+    $produk = \App\Models\Produk::findOrFail($productId);
 
-    \App\Models\Cart::create([
-        'user_id' => auth()->id(),
-        'produk_id' => $productId,
-        'quantity' => $qty
-    ]);
+    // ===== STRUKTUR SESUAI BLADE =====
+    $order_data = [
+        [
+            'store' => $produk->mart->nama_mart ?? 'TJ Mart',
+            'items' => [
+                [
+                    'name' => $produk->nama_produk,
+                    'qty' => $qty,
+                    'price' => $produk->harga,
+                ]
+            ]
+        ]
+    ];
 
-    return redirect()->route('cart.index');
+    // ===== PERHITUNGAN =====
+    $subtotal_order = $produk->harga * $qty;
+    $delivery_fee   = 0;        // default, JS yang toggle
+    $service_fee    = 2000;     // sesuai blade
+    $total_payment  = $subtotal_order + $service_fee + $delivery_fee;
+
+    return view('checkout.index', compact(
+        'order_data',
+        'subtotal_order',
+        'delivery_fee',
+        'service_fee',
+        'total_payment'
+    ));
 }
 
     }
-

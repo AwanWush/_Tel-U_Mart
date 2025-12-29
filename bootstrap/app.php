@@ -10,12 +10,28 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void { 
-        // 
-         $middleware->validateCsrfTokens(except: [ 
-            'payment/midtrans-callback', 
-        ]); 
-    }) 
-    ->withExceptions(function (Exceptions $exceptions): void {
+
+    ->withMiddleware(function (Middleware $middleware) {
+        // 1. Agar Laravel percaya IP dari Ngrok (PENTING untuk Session)
+        $middleware->trustProxies(at: '*'); 
+
+        // 2. Tambahkan Middleware Ngrok kamu
+        $middleware->append(\App\Http\Middleware\NgrokSkipWarning::class);
+        
+        // 3. Bypass CSRF agar tidak 419 Page Expired
+        $middleware->validateCsrfTokens(except: [
+            'register', 
+            'login', 
+            'logout', 
+            'beranda*', 
+            'galon*', 
+            'token*', 
+            'keranjang*', 
+            'wishlist*', 
+            'notifikasi*', 
+            'produk*'
+        ]);
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

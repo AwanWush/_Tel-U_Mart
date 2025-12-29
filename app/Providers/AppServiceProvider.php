@@ -37,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
         /**
          * GLOBAL DATA (cart, wishlist, notif)
          */
+if (str_contains(request()->header('Host'), 'ngrok-free')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
         View::composer('*', function ($view) {
             if (Auth::check()) {
                 $view->with('cartCount', Cart::where('user_id', Auth::id())->count());

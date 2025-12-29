@@ -21,52 +21,76 @@ use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\MetodePembayaranController;
 
+
 Route::post('/pembayaran', [MetodePembayaranController::class, 'store'])
     ->name('pembayaran.store')
     ->middleware('auth');
 
+    // Route::post('/checkout', [CheckoutController::class, 'processCheckout'])
+    // ->name('checkout.process');
 
+Route::get('/checkout', [CheckoutController::class, 'index'])
+    ->name('checkout');
+
+    
 Route::middleware(['auth'])->group(function () {
-    // Checkout page (GET)
-    Route::get('/checkout', [CheckoutController::class, 'checkoutPage'])
-        ->middleware(['auth'])
+
+    // HALAMAN CHECKOUT
+    Route::get('/checkout', [CheckoutController::class, 'index'])
         ->name('checkout.index');
 
-    // Handle selected cart (POST)
-    Route::post('/checkout/selected', [CheckoutController::class, 'storeSelected'])
-        ->middleware(['auth'])
-        ->name('checkout.selected');
+    // PROSES CHECKOUT
+    Route::post('/checkout', [CheckoutController::class, 'processCheckout'])
+        ->name('checkout.process');
+
+
+    // BELI SEKARANG (POST)
+    Route::post('/checkout/direct', [CheckoutController::class, 'directCheckout'])
+        ->name('checkout.direct');
+
+    // CHECKOUT DARI CART (POST)
+    Route::post('/cart/checkout', [CartController::class, 'checkout'])
+        ->name('cart.checkout');
+
+    // PROSES CHECKOUT → PAYMENT
+    Route::post('/checkout/process', [CheckoutController::class, 'processSuccess'])
+        ->name('checkout.process');
+    //     Route::get('/checkout/page', [CheckoutController::class, 'checkoutPage'])
+    // ->name('checkout.page');
 
     // Payment Method
     Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])
         ->middleware(['auth'])
         ->name('payment.method');
 });
+Route::post('/checkout/selected', [CheckoutController::class, 'selected'])
+    ->name('checkout.selected');
+
 Route::patch('/cart/update/{id}', [App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/remove/{id}', [App\Http\Controllers\CartController::class, 'destroy'])->name('cart.remove');
 Route::post('/checkout/selected', [CheckoutController::class, 'index'])->name('checkout.selected');
 // Route::get('/order/success/{order_id}', [App\Http\Controllers\CheckoutController::class, 'showSuccess'])->name('order.success');
 // Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('checkout.process');
-Route::post('/checkout/process', [CheckoutController::class, 'processCheckout'])->name('checkout.process');
-Route::post('/checkout/process', [CheckoutController::class, 'processSuccess'])->name('checkout.process');
+// Route::post('/checkout/process', [CheckoutController::class, 'processCheckout'])->name('checkout.process');
+// Route::post('/checkout/process', [CheckoutController::class, 'processSuccess'])->name('checkout.process');
 Route::get('/order/success/{order_id}', [CheckoutController::class, 'showSuccess'])->name('order.success');
 Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile');
 Route::post('/cart/store', [CartController::class, 'store'])->name('cart.store');
-Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
+// Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.remove');
 Route::post('/cart/add', [CartController::class, 'store'])->name('cart.add');
-Route::post('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+// Route::post('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
-Route::get('/order/success', [CheckoutController::class, 'showSuccess'])
-    ->name('order.success');
+// Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+// Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
+// Route::get('/order/success', [CheckoutController::class, 'showSuccess'])
+//     ->name('order.success');
 Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])
     ->name('payment.method');
 Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])
     ->name('payment.snap-token');
 // Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])
 //     ->name('payment.snap-token');
-Route::post('/checkout/direct', [CheckoutController::class, 'directCheckout'])->name('checkout.direct');
+// Route::post('/checkout/direct', [CheckoutController::class, 'directCheckout'])->name('checkout.direct');
 // Route::get('/order/success', [CheckoutController::class, 'showSuccess'])->name('order.success');
 
 Route::get('/order/success', [OrderController::class, 'success'])
@@ -151,9 +175,9 @@ Route::get('/kategori/{kategori}', [ProdukController::class, 'byKategori'])
 
 require __DIR__.'/auth.php';
 // ==================== CHECKOUT (WAJIB LOGIN) ==================== //
-Route::middleware(['auth', 'verified'])->group(function () {
+// Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('/checkout', 'checkout.index')->name('checkout.index');
-});
+// });
 
 // ==================== Profil ==================== //
 Route::get('/profil/transaksi', [ProfileController::class, 'transaksi'])
@@ -162,7 +186,7 @@ Route::get('/profil/transaksi', [ProfileController::class, 'transaksi'])
 
 // ==================== FITUR TAMBAHAN: GALON & TOKEN LISTRIK ==================== //
 Route::middleware(['auth'])->group(function () {
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])->name('payment.method');
     // Token
     Route::get('/token-listrik', [UserTokenController::class, 'index'])->name('token.index');
@@ -312,7 +336,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin/produk-laris', [DashboardController::class, 'admin'])->name('produk.laris');
 
     Route::middleware(['auth', 'verified'])->group(function () {
-    Route::post('/checkout', [CheckoutController::class, 'selected'])->name('checkout.selected');
+
+        
 });
 
 

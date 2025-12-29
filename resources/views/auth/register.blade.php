@@ -20,10 +20,8 @@
                 class="absolute inset-0 w-full h-full object-cover opacity-40 blur-md scale-110"
                 alt="Background Register">
 
-
             {{-- Overlay gradasi hitam agar teks lebih terbaca --}}
             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-
 
             <div class="relative z-10 w-full flex flex-col justify-between p-12 xl:p-16 text-white h-full">
                 <div>
@@ -84,27 +82,27 @@
                     @submit="loading = true" class="space-y-4">
                     @csrf
 
-                    {{-- 1. Nama Lengkap --}}
+                    {{-- 1. Nama Lengkap (REVISI: value diubah agar stabil dengan old()) --}}
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Nama Lengkap</label>
-                        <input type="text" name="name" :value="old('name')" required autofocus
+                        <input type="text" name="name" value="{{ old('name') }}" required autofocus
                             class="w-full border-gray-300 rounded-lg focus:ring-[#d50d27] focus:border-[#d50d27] py-2.5 px-4 text-sm"
                             placeholder="Nama sesuai KTM">
                         <x-input-error :messages="$errors->get('name')" class="mt-1" />
                     </div>
 
-                    {{-- 2. Email & No Telp (Grid) --}}
+                    {{-- 2. Email & No Telp (Grid) (REVISI: value diubah agar stabil dengan old()) --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-1">Email</label>
-                            <input type="email" name="email" :value="old('email')" required
+                            <input type="email" name="email" value="{{ old('email') }}" required
                                 class="w-full border-gray-300 rounded-lg focus:ring-[#d50d27] focus:border-[#d50d27] py-2.5 px-4 text-sm"
                                 placeholder="email@gmail...">
                             <x-input-error :messages="$errors->get('email')" class="mt-1" />
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-1">No. WhatsApp</label>
-                            <input type="text" name="no_telp" :value="old('no_telp')" required
+                            <input type="text" name="no_telp" value="{{ old('no_telp') }}" required
                                 class="w-full border-gray-300 rounded-lg focus:ring-[#d50d27] focus:border-[#d50d27] py-2.5 px-4 text-sm"
                                 placeholder="0812...">
                             <x-input-error :messages="$errors->get('no_telp')" class="mt-1" />

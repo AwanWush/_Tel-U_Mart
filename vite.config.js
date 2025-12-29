@@ -8,4 +8,10 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        host: 'localhost', // Pakai localhost saja
+        hmr: {
+            host: 'localhost',
+        },
+    },
 });
