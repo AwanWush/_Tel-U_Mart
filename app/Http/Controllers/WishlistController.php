@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Wishlist;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class WishlistController extends Controller
 {
@@ -15,6 +15,7 @@ class WishlistController extends Controller
     {
         $items = Wishlist::with('produk')
             ->where('user_id', Auth::id())
+            ->whereHas('produk') 
             ->get();
 
         return view('wishlist.index', compact('items'));
@@ -23,66 +24,77 @@ class WishlistController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'produk_id' => 'required|exists:produk,id'
+            'produk_id' => 'required|exists:produk,id',
         ]);
 
         Wishlist::firstOrCreate([
-            'user_id'    => Auth::id(),
-            'produk_id' => $request->produk_id
+            'user_id' => Auth::id(),
+            'product_id' => $request->produk_id,
         ]);
 
         return back()->with('success', 'Produk ditambahkan ke wishlist');
     }
 
-
     public function removeSelected(Request $request)
     {
         $request->validate([
-            'wishlist_ids' => 'required|array'
+            'wishlist_ids' => 'required|array',
         ]);
 
         Wishlist::whereIn('id', $request->wishlist_ids)
             ->where('user_id', Auth::id())
             ->delete();
 
-        return back()->with('success','Produk berhasil dihapus dari wishlist');
+        return back()->with('success', 'Produk berhasil dihapus dari wishlist');
     }
 
-    public function moveToCart(Request $request)
-    {
-        $request->validate([
-            'wishlist_ids' => 'required|array'
+public function moveToCart(Request $request)
+{
+    $request->validate([
+        'wishlist_ids' => 'required|array',
+    ]);
+
+    DB::transaction(function () use ($request) {
+
+        $cart = Cart::firstOrCreate([
+            'user_id' => Auth::id(),
         ]);
 
-        DB::transaction(function () use ($request) {
+        $wishlists = Wishlist::with('produk')
+            ->whereIn('id', $request->wishlist_ids)
+            ->where('user_id', Auth::id())
+            ->get();
 
-            $cart = Cart::firstOrCreate([
-                'user_id' => Auth::id()
+        foreach ($wishlists as $wish) {
+
+            // 🔒 Proteksi produk null
+            if (!$wish->produk) {
+                $wish->delete();
+                continue;
+            }
+
+            // 🔒 Proteksi stok habis
+            if ($wish->produk->stok < 1) {
+                continue;
+            }
+
+            $item = CartItem::firstOrNew([
+                'cart_id'    => $cart->id,
+                'product_id' => $wish->produk->id,
             ]);
 
-            $wishlists = Wishlist::with('produk')
-                ->whereIn('id', $request->wishlist_ids)
-                ->where('user_id', Auth::id())
-                ->get();
+            $item->quantity = ($item->quantity ?? 0) + 1;
+            $item->price    = $wish->produk->harga;
+            $item->save();
 
-            foreach ($wishlists as $wish) {
-                if ($wish->produk->stok < 1) continue;
+            // hapus dari wishlist setelah dipindah
+            $wish->delete();
+        }
+    });
 
-                $item = CartItem::firstOrNew([
-                    'cart_id'    => $cart->id,
-                    'product_id' => $wish->produk->id
-                ]);
+    return back()->with('success', 'Produk dipindahkan ke keranjang');
+}
 
-                $item->quantity = ($item->quantity ?? 0) + 1;
-                $item->price    = $wish->produk->harga;
-                $item->save();
-
-                $wish->delete();
-            }
-        });
-
-        return back()->with('success','Produk dipindahkan ke keranjang');
-    }
 
     public function destroy($id)
     {
@@ -90,7 +102,6 @@ class WishlistController extends Controller
             ->where('user_id', Auth::id())
             ->delete();
 
-        return back()->with('success','Produk dihapus dari wishlist');
-    } 
+        return back()->with('success', 'Produk dihapus dari wishlist');
+    }
 }
- 
