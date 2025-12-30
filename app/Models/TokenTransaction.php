@@ -13,16 +13,15 @@ class TokenTransaction extends Model
 
     protected $fillable = [
         'user_id',
+        'gedung',
+        'kamar',
+        'nama_penghuni',
+        'nomor_hp',
         'nominal',
-        'harga',
-        'token_kode',
-        'metode_pembayaran',
-        'waktu_transaksi',
+        'total_harga',
+        'kode_token',
+        'metode',
         'status',
-    ];
-
-    protected $casts = [
-        'waktu_transaksi' => 'datetime',
     ];
 
     public function user()

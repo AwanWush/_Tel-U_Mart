@@ -12,7 +12,7 @@ use App\Models\Mart;
 use App\Models\Produk;
 use Midtrans\Config;
 use App\Models\KategoriProduk;
-// use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\URL;
 
 
 

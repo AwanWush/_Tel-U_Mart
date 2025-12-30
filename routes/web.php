@@ -195,6 +195,9 @@ Route::middleware(['auth'])->group(function () {
     // Riwayat Token
     Route::get('/token-listrik/riwayat', [UserTokenController::class, 'history'])->name('token.history');
     Route::get('/token-listrik/detail/{id}', [UserTokenController::class, 'detail'])->name('token.detail');
+
+    Route::get('/token/result/{id}', [UserTokenController::class, 'result'])
+        ->name('token.result');
     
     // Galon
     Route::get('/galon', [UserGalonController::class, 'index'])->name('galon.index');

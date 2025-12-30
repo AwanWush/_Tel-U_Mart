@@ -22,25 +22,24 @@ class UserTokenController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'nominal' => 'required|integer',
-            'harga' => 'required|integer',
-            'metode' => 'required|string',
-        ]);
-
         $tokenCode = $this->generateTokenCode();
 
         $transaksi = TokenTransaction::create([
             'user_id' => Auth::id(),
+            'gedung' => Auth::user()->lokasi->nama_lokasi ?? '-',
+            'kamar' => Auth::user()->nomor_kamar ?? '-',
+            'nama_penghuni' => Auth::user()->name,
+            'nomor_hp' => Auth::user()->no_hp,
             'nominal' => $request->nominal,
             'total_harga' => $request->harga,
-            'token_kode' => $tokenCode,
+            'kode_token' => $tokenCode,
             'metode' => $request->metode,
-            'waktu_transaksi' => now(),
-            'status' => 'Berhasil', 
+            'status' => 'Berhasil',
         ]);
 
-        return view('fitur-user.token-result', compact('transaksi'));
+        return response()->json([
+            'id' => $transaksi->id
+        ]);
     }
 
 
@@ -53,7 +52,7 @@ class UserTokenController extends Controller
         return trim(chunk_split($result, 4, ' '));
     }
 
-        public function history()
+    public function history()
     {
         $riwayat = TokenTransaction::where('user_id', Auth::id())
                     ->orderBy('created_at', 'desc')
@@ -71,4 +70,15 @@ class UserTokenController extends Controller
         return view('fitur-user.token-detail', compact('transaksi'));
     }
 
+    public function result($id)
+    {
+        $transaksi = TokenTransaction::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        return view('fitur-user.token-result', [
+            'nomor_token' => $transaksi->kode_token,
+            'amount' => $transaksi->nominal
+        ]);
+    }
 }
