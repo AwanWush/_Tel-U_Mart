@@ -124,14 +124,70 @@
             color: #b91c1c; /* text-red-hover */
             transform: translateX(4px);
         }
+
+        /* === BARU DITAMBAHKAN DARI GALON PAGE UNTUK HEADER STYLE === */
+        .btn-back-icon-only {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent; /* Tambahkan border transparan */
+            color: #dc2626; /* text-red-main */
+        }
+        .btn-back-icon-only:hover {
+            color: #b91c1c; /* text-red-hover */
+            transform: translateX(-3px); /* Sedikit efek bergerak ke kiri */
+        }
     </style>
 
-    {{-- Header untuk Light Mode --}}
+    {{-- Header untuk Light Mode (Diubah total) --}}
     <x-slot name="header">
-        <div class="flex justify-between items-center max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <h2 class="font-black text-2xl text-gray-800 leading-tight tracking-tight uppercase">
-                <span class="text-primary-accent">Token</span> Listrik
-            </h2>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-2">
+            {{-- Breadcrumb --}}
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-2 md:space-x-3 rtl:space-x-reverse text-sm">
+                    <li class="inline-flex items-center">
+                        <a href="{{ route('dashboard') }}" class="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-gray-500 hover:text-red-main transition-colors">
+                            <svg class="w-3.5 h-3.5 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 001 1h3a2 2 0 002-2v-7.586l.293.293a1 1 0 001.414-1.414Z"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                            </svg>
+                            <span class="ms-1 text-xs font-extrabold uppercase tracking-wider text-red-main">Beli Token</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+            {{-- CONTAINER UTAMA: Judul Halaman dan Tombol Riwayat Transaksi --}}
+            <div class="flex items-center justify-between mt-4">
+                
+                {{-- Bagian Kiri: Tombol Kembali (Ikon) dan Judul Halaman --}}
+                <div class="flex items-center">
+                    {{-- Tombol Kembali ke Beranda (Hanya Ikon) --}}
+                    <a href="{{ route('dashboard') }}"
+                        class="btn-back-icon-only p-2 rounded-full mr-1 -ml-1 text-gray-500 hover:text-red-main active:scale-[0.98]">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </a>
+                    
+                    {{-- Judul Halaman --}}
+                    <h1 class="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
+                        <span class="text-red-main">TOKEN</span> <span class="text-black">LISTRIK</span>
+                    </h1>
+                </div>
+
+                {{-- Bagian Kanan: Tombol Riwayat Transaksi --}}
+                <a href="{{ route('token.history') }}"
+                    class="btn-history-style inline-flex items-center px-4 py-2 sm:px-6 sm:py-3 bg-white border-2 border-red-main/50 rounded-xl font-bold text-xs sm:text-sm text-red-main uppercase tracking-widest shadow-lg shadow-red-soft active:scale-95 hover:bg-red-50/50 text-nowrap">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Riwayat Transaksi
+                </a>
+                
+            </div>
         </div>
     </x-slot>
 
@@ -155,50 +211,6 @@
                  // if (firstToken) { updateHarga(firstToken.nominal, firstToken.harga); }
              ">
 
-            {{-- Breadcrumb dan Tombol Back (Diperbagus) --}}
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-                {{-- Kiri: Breadcrumb & Back Button --}}
-                <div class="space-y-4">
-                    {{-- Breadcrumb (Diubah) --}}
-                    <nav class="flex" aria-label="Breadcrumb">
-                        <ol class="inline-flex items-center space-x-2 md:space-x-3 rtl:space-x-reverse text-sm">
-                            <li class="inline-flex items-center">
-                                <a href="{{ route('dashboard') }}" class="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-gray-500 hover:text-red-main transition-colors">
-                                    <svg class="w-3.5 h-3.5 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
-                                    </svg>
-                                    Dashboard
-                                </a>
-                            </li>
-                            <li>
-                                <div class="flex items-center">
-                                    <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
-                                    </svg>
-                                    <span class="ms-1 text-xs font-extrabold uppercase tracking-wider text-red-main">Beli Token</span>
-                                </div>
-                            </li>
-                        </ol>
-                    </nav>
-
-                    {{-- Tombol Back (Diperbagus) --}}
-                    <a href="{{ route('dashboard') }}" 
-                        class="btn-back-style group inline-flex items-center text-gray-500 transition-all duration-300 active:scale-[0.98]">
-                        <div class="w-10 h-10 rounded-full border-2 shadow-md flex items-center justify-center mr-3 btn-back-icon">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        </div>
-                        <span class="font-extrabold text-xl text-gray-900 transition-colors btn-back-text">Kembali</span>
-                    </a>
-                </div>
-
-                {{-- Kanan: Tombol Riwayat Transaksi (Style Diperbagus) --}}
-                <a href="{{ route('token.history') }}"
-                    class="btn-history-style inline-flex items-center px-6 py-3 bg-white border-2 border-red-main/50 rounded-xl font-bold text-sm text-red-main uppercase tracking-widest shadow-lg shadow-red-soft active:scale-95 hover:bg-red-50/50">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Riwayat Transaksi
-                </a>
-            </div>
-
             {{-- Card Informasi Pengguna (DIPERBAGUS) --}}
             <div class="bg-white p-8 rounded-[2rem] mb-10 text-gray-800 border-2 border-red-main/10 shadow-xl shadow-red-main/10 transition-all duration-300 hover:shadow-2xl hover:shadow-red-main/15">
                 <div class="flex items-center mb-6 border-b border-gray-100 pb-4">
@@ -206,7 +218,7 @@
                     <div class="p-3 rounded-full mr-4 bg-red-main text-white shadow-lg shadow-red-main/30">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.935 13.935 0 0112 16c2.585 0 5.013.84 6.942 2.227M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     </div>
-                    <h3 class="text-2xl font-black uppercase tracking-wider text-gray-900">Detail Akun Penghuni</h3>
+                    <h3 class="text-2xl font-black uppercase tracking-wider text-gray-900">Informasi Penghuni Asrama</h3>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
