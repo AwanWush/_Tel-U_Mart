@@ -53,6 +53,12 @@ class Produk extends Model
     //     static::addGlobalScope(new ActiveMartScope);
     // }
 
+    public function activeMart()
+    {
+        return $this->marts->firstWhere('id', optional(activeMart())->id)
+            ?? $this->marts->first();
+    }
+
     public function highlightedMarts()
     {
         $activeMart = activeMart();

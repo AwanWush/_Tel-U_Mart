@@ -24,7 +24,7 @@ class CheckoutController extends Controller
 
         // 2. Ambil data dari database lengkap dengan relasi produk
         $cartItems = \App\Models\Cart::whereIn('id', $selectedIds)
-            ->where('user_id', auth()->id())
+            ->where('user_id', Auth::id())
             ->with('produk')
             ->get();
 
@@ -149,61 +149,148 @@ class CheckoutController extends Controller
     /**
      * LANGKAH 4: Struk Akhir
      */
-    public function showSuccess($order_id)
+    // public function showSuccess($order_id)
+    // {
+    //     $riwayat = RiwayatPembelian::where('id_transaksi', $order_id)->firstOrFail();
+
+    //     // Mengambil data dari session (Data asli dari transaksi barusan)
+    //     $order_data = session('last_order_items', []);
+    //     $delivery_address = session('last_order_address', 'Alamat tidak ditemukan');
+    //     $serviceType = session('last_order_type', 'delivery');
+
+    //     return view('order.success', [
+    //         'order_id' => $riwayat->id_transaksi,
+    //         'status' => $riwayat->status,
+    //         'paymentMethod' => $riwayat->metode_pembayaran,
+    //         'total_payment' => $riwayat->total_harga,
+    //         'order_date' => $riwayat->created_at->format('d M Y, H:i'),
+    //         'delivery_address' => $delivery_address,
+    //         'order_data' => $order_data,
+    //         'serviceType' => $serviceType,
+    //     ]);
+    // }
+
+    // public function directCheckout(Request $request)
+    // {
+    //     $productId = $request->product_id;
+    //     $qty = $request->qty ?? 1;
+
+    //     $produk = \App\Models\Produk::findOrFail($productId);
+
+    //     // ===== STRUKTUR SESUAI BLADE =====
+    //     $order_data = [
+    //         [
+    //             'store' => $produk->mart->nama_mart ?? 'TJ Mart',
+    //             'items' => [
+    //                 [
+    //                     'name' => $produk->nama_produk,
+    //                     'qty' => $qty,
+    //                     'price' => $produk->harga,
+    //                 ]
+    //             ]
+    //         ]
+    //     ];
+    //     $order_data = [
+    //         [
+    //             'name'  => $produk->nama_produk,
+    //             'qty'   => $qty,
+    //             'price' => $produk->harga,
+    //             'store' => $produk->mart->nama_mart ?? 'TJ Mart',
+    //         ]
+    //     ];
+
+
+    //     // ===== PERHITUNGAN =====
+    //     $subtotal_order = $produk->harga * $qty;
+    //     $delivery_fee   = 0;        // default, JS yang toggle
+    //     $service_fee    = 2000;     // sesuai blade
+    //     $total_payment  = $subtotal_order + $service_fee + $delivery_fee;
+
+    //     session([
+    //         'direct_checkout' => [
+    //             'product_id' => $produk->id,
+    //             'qty' => $qty,
+    //         ]
+    //     ]);
+
+    //     return view('checkout.index', compact(
+    //         'order_data',
+    //         'subtotal_order',
+    //         'delivery_fee',
+    //         'service_fee',
+    //         'total_payment'
+    //     ));
+    // }
+
+    public function directCheckout(Request $request)
     {
-        $riwayat = RiwayatPembelian::where('id_transaksi', $order_id)->firstOrFail();
-
-        // Mengambil data dari session (Data asli dari transaksi barusan)
-        $order_data = session('last_order_items', []);
-        $delivery_address = session('last_order_address', 'Alamat tidak ditemukan');
-        $serviceType = session('last_order_type', 'delivery');
-
-        return view('order.success', [
-            'order_id' => $riwayat->id_transaksi,
-            'status' => $riwayat->status,
-            'paymentMethod' => $riwayat->metode_pembayaran,
-            'total_payment' => $riwayat->total_harga,
-            'order_date' => $riwayat->created_at->format('d M Y, H:i'),
-            'delivery_address' => $delivery_address,
-            'order_data' => $order_data,
-            'serviceType' => $serviceType,
+        $request->validate([
+            'product_id' => 'required|exists:produk,id',
+            'qty' => 'required|integer|min:1',
         ]);
-    }
 
-public function directCheckout(Request $request)
-{
-    $productId = $request->product_id;
-    $qty = $request->qty ?? 1;
+        
+        $produk = Produk::with('marts')->findOrFail($request->product_id);
+        $qty = $request->qty;
 
-    $produk = \App\Models\Produk::findOrFail($productId);
+        $storeName = activeMart()?->nama_mart
+            ?? $produk->marts->first()?->nama_mart
+            ?? 'TJ Mart';
 
-    // ===== STRUKTUR SESUAI BLADE =====
-    $order_data = [
-        [
-            'store' => $produk->mart->nama_mart ?? 'TJ Mart',
-            'items' => [
-                [
-                    'name' => $produk->nama_produk,
-                    'qty' => $qty,
-                    'price' => $produk->harga,
+        // FORMAT 1 (nested store -> items)
+        $order_data = [
+            [
+                'store' => $storeName,
+                'items' => [
+                    [
+                        'name'  => $produk->nama_produk,
+                        'qty'   => $qty,
+                        'price' => $produk->harga,
+                        'subtotal' => $produk->harga * $qty,
+                    ]
                 ]
             ]
-        ]
-    ];
+        ];
 
-    // ===== PERHITUNGAN =====
-    $subtotal_order = $produk->harga * $qty;
-    $delivery_fee   = 0;        // default, JS yang toggle
-    $service_fee    = 2000;     // sesuai blade
-    $total_payment  = $subtotal_order + $service_fee + $delivery_fee;
+        // ATAU FORMAT 2 (flat)
+        /*
+        $order_data = [
+            [
+                'name'  => $produk->nama_produk,
+                'qty'   => $qty,
+                'price' => $produk->harga,
+                'store' => $produk->mart->nama_mart ?? 'TJ Mart',
+            ]
+        ];
+        */
 
-    return view('checkout.index', compact(
-        'order_data',
-        'subtotal_order',
-        'delivery_fee',
-        'service_fee',
-        'total_payment'
-    ));
-}
+        // lanjut ke proses checkout
+        // ===== PERHITUNGAN =====
+        $subtotal_order = $produk->harga * $qty;
+        $delivery_fee   = 0;        // default, JS yang toggle
+        $service_fee    = 2000;     // sesuai blade
+        $total_payment  = $subtotal_order + $service_fee + $delivery_fee;
 
+        session([
+            'direct_checkout' => [
+                'order_data' => $order_data,
+                'summary' => [
+                    'subtotal' => $subtotal_order,
+                    'service_fee' => $service_fee,
+                    'delivery_fee' => $delivery_fee,
+                    'total' => $total_payment,
+                ]
+            ]
+        ]);
+
+        return view('checkout.index', compact(
+            'order_data',
+            'subtotal_order',
+            'delivery_fee',
+            'service_fee',
+            'total_payment'
+        ));
+
+        // return view('checkout.index', compact('order_data'));
     }
+}

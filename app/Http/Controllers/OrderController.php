@@ -22,8 +22,8 @@ class OrderController extends Controller
         $serviceType = $request->query('type', 'delivery');
         $statusParam = $request->query('status');
         $customAddress = $request->query('address');
-        $directProductId = $request->query('product_id');
-        $directQty = (int) $request->query('qty', 1);
+        // $directProductId = $request->query('product_id');
+        // $directQty = (int) $request->query('qty', 1);
         $orderIdParam = $request->query('order_id');
 
         // Khusus Token Listrik
@@ -32,10 +32,12 @@ class OrderController extends Controller
 
         $status = ($statusParam == 'success' || $statusParam == 'paid') ? 'Lunas' : 'Belum Bayar';
 
-        return DB::transaction(function () use ($amount, $serviceType, $status, $customAddress, $directProductId, $directQty, $orderIdParam, $isToken, $nominalToken) {
+        // return DB::transaction(function () use ($amount, $serviceType, $status, $customAddress, $directProductId, $directQty, $orderIdParam, $isToken, $nominalToken) {
+        return DB::transaction(function () use ($amount, $serviceType, $status, $customAddress, $orderIdParam, $isToken, $nominalToken) {
 
             // 2. LOGIKA ANTI-DOUBLE: Cari transaksi lama atau buat baru
             $pesanan = RiwayatPembelian::where('id_transaksi', $orderIdParam)->first();
+            $directCheckout = session('direct_checkout');
 
             if (!$pesanan) {
                 $pesanan = new RiwayatPembelian;
@@ -69,21 +71,45 @@ class OrderController extends Controller
                             'harga_satuan' => $amount,
                             'jumlah' => 1,
                             'subtotal' => $amount,
-                            'created_at' => now(), 'updated_at' => now(),
+                            'created_at' => now(), 
+                            'updated_at' => now(),
                         ]);
                     }
-                } elseif (!empty($directProductId) && $directProductId !== 'undefined') {
-                    // --- KASUS: CHECKOUT LANGSUNG PRODUK ---
-                    $produk = Produk::findOrFail($directProductId);
-                    DB::table('detail_pembelian')->insert([
-                        'riwayat_pembelian_id' => $pesanan->id,
-                        'nama_produk' => $produk->nama_produk,
-                        'harga_satuan' => (int) $produk->harga,
-                        'jumlah' => $directQty,
-                        'subtotal' => $produk->harga * $directQty,
-                        'created_at' => now(), 'updated_at' => now(),
-                    ]);
-                    $produk->decrement('stok', $directQty);
+                // } elseif (!empty($directProductId) && $directProductId !== 'undefined') {
+                //     // --- KASUS: CHECKOUT LANGSUNG PRODUK ---
+                //     $produk = Produk::findOrFail($directProductId);
+                //     DB::table('detail_pembelian')->insert([
+                //         'riwayat_pembelian_id' => $pesanan->id,
+                //         'nama_produk' => $produk->nama_produk,
+                //         'harga_satuan' => (int) $produk->harga,
+                //         'jumlah' => $directQty,
+                //         'subtotal' => $produk->harga * $directQty,
+                //         'created_at' => now(), 'updated_at' => now(),
+                //     ]);
+                //     $produk->decrement('stok', $directQty);
+                } elseif ($directCheckout) {
+                        // ===============================
+                        // DIRECT CHECKOUT (DARI SESSION)
+                        // ===============================
+                        foreach ($directCheckout['order_data'] as $store) {
+                            foreach ($store['items'] as $item) {
+                                DB::table('detail_pembelian')->insert([
+                                    'riwayat_pembelian_id' => $pesanan->id,
+                                    'nama_produk' => $item['name'],
+                                    'harga_satuan' => (int) $item['price'],
+                                    'jumlah' => (int) $item['qty'],
+                                    'subtotal' => (int) $item['subtotal'],
+                                    'created_at' => now(),
+                                    'updated_at' => now(),
+                                ]);
+
+                                // Kurangi stok
+                                Produk::where('nama_produk', $item['name'])
+                                    ->decrement('stok', $item['qty']);
+                            }
+                        }
+
+                        session()->forget('direct_checkout');
                 } else {
                     // --- KASUS: DARI KERANJANG ---
                     $selectedIds = session('checkout_cart_items', []);
@@ -129,12 +155,48 @@ class OrderController extends Controller
             // 5. Siapkan data untuk View
             $order_id = $pesanan->id_transaksi;
             $order_date = $pesanan->created_at->format('d M Y, H:i');
-            $order_data = DB::table('detail_pembelian')
-                ->where('riwayat_pembelian_id', $pesanan->id)
-                ->get()
-                ->map(fn ($d) => ['name' => $d->nama_produk, 'qty' => $d->jumlah, 'price' => $d->harga_satuan, 'store' => 'T-Mart Point']);
-
-            session()->forget('checkout_cart_items');
+            // $order_data = DB::table('detail_pembelian')
+            //     ->where('riwayat_pembelian_id', $pesanan->id)
+            //     ->get()
+            //     ->map(fn ($d) => [
+            //         'name' => $d->nama_produk,
+            //         'qty' => $d->jumlah,
+            //         'price' => $d->harga_satuan,
+            //         'store' => 'T-Mart Point'
+            //     ]);
+            // $order_data = DB::table('detail_pembelian')
+            //     ->where('riwayat_pembelian_id', $pesanan->id)
+            //     ->get()
+            //     ->map(fn ($d) => [
+            //         'name' => $d->nama_produk,
+            //         'qty' => $d->jumlah,
+            //         'price' => $d->harga_satuan,
+            //         'store' => 'T-Mart Point'
+            //     ])
+            //     ->toArray();
+            if ($directCheckout) {
+                $order_data = collect($directCheckout['order_data'])
+                    ->flatMap(fn ($store) =>
+                        collect($store['items'])->map(fn ($item) => [
+                            'name' => $item['name'],
+                            'qty' => $item['qty'],
+                            'price' => $item['price'],
+                            'store' => $store['store'],
+                        ])
+                    )->toArray();
+            } else {
+                // fallback (cart / token)
+                $order_data = DB::table('detail_pembelian')
+                    ->where('riwayat_pembelian_id', $pesanan->id)
+                    ->get()
+                    ->map(fn ($d) => [
+                        'name' => $d->nama_produk,
+                        'qty' => $d->jumlah,
+                        'price' => $d->harga_satuan,
+                        'store' => 'T-Mart Point'
+                    ])
+                    ->toArray();
+            }
 
             return view('order.success', [
                 'serviceType' => $serviceType,

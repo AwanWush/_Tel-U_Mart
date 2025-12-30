@@ -142,32 +142,6 @@
     
         <main class="p-6 lg:p-10 max-w-[1200px] mx-auto">
     
-            {{-- Header: Invoice ID & Action Buttons OLD --}}
-            <!-- <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
-                <div>
-                    <nav class="flex text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-2">
-                        <ol class="list-none p-0 inline-flex">
-                            <li class="flex items-center">Beranda <i class="fas fa-chevron-right mx-2 text-[8px]"></i>
-                            </li>
-                            <li class="text-indigo-600">Detail Transaksi</li>
-                        </ol>
-                    </nav>
-                    <h2 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        Invoice <span class="text-indigo-600 font-mono">#{{ $order_id }}</span>
-                    </h2>
-                </div>
-    
-                <div class="no-print flex items-center gap-3">
-                    <button onclick="window.print()"
-                        class="px-6 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2">
-                        <i class="fas fa-print text-xs"></i> Cetak Struk
-                    </button>
-                    <a href="/"
-                        class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">
-                        <i class="fas fa-plus text-xs mr-2"></i> Pesanan Baru
-                    </a>
-                </div>
-            </div> -->
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
                 {{-- Title & Breadcrumb --}}
                 <div>
