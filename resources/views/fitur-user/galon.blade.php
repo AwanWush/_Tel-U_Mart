@@ -482,7 +482,7 @@
                 btn.innerText = 'MEMPROSES...';
                 
                 try {
-                    const response = await fetch("{{ route('payment.snap-token') }}", {
+                    const response = await fetch("{{ route('payment.snap-galon') }}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -490,21 +490,82 @@
                         },
                         body: JSON.stringify({ 
                             total_amount: alpineData.totalHarga,
-                            type: 'galon',
                             product_name: alpineData.pilihanGalon
                         })
                     });
 
                     const midData = await response.json();
 
+                    if (!midData.snap_token) {
+                        alert('Gagal mendapatkan token pembayaran. Silakan coba lagi.');
+                        btn.disabled = false;
+                        btn.innerText = 'Buat Pesanan Sekarang';
+                        return;
+                    }
+
                     window.snap.pay(midData.snap_token, {
-                        onSuccess: function(result) {
-                            window.location.href = `/order/success?status=paid&amount=${alpineData.totalHarga}&type=galon&order_id=${midData.order_id}&nama_galon=${alpineData.pilihanGalon}&jumlah=${alpineData.jumlah}`;
+                        onSuccess: async function(result) {
+                            try {
+                                const save = await fetch("{{ route('galon.store.midtrans') }}", {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: JSON.stringify({
+                                        nama_galon: alpineData.pilihanGalon,
+                                        jumlah: alpineData.jumlah,
+                                        harga_satuan: alpineData.hargaSatuan,
+                                        total_harga: alpineData.totalHarga,
+                                        order_id: result.order_id,
+                                        status: 'paid'
+                                    })
+                                });
+
+                                if (!save.ok) throw new Error('Gagal simpan transaksi');
+
+                                const res = await save.json();
+
+                                window.location.href = `/fitur-user/galon-result/${res.id}`;
+
+                            } catch (err) {
+                                // alert('Pembayaran berhasil, tapi gagal menyimpan transaksi.');
+                                alert(`Terjadi error: ${err.message}`); console.log('Detail error:', err); console.log('Stack trace:', err.stack);
+                                btn.disabled = false;
+                                btn.innerText = 'Buat Pesanan Sekarang';
+                            }
                         },
-                        onPending: function(result) {
-                            window.location.href = `/order/success?status=pending&amount=${alpineData.totalHarga}&type=galon&order_id=${midData.order_id}`;
+                        onPending: async function(result) {
+                            try {
+                                const save = await fetch("{{ route('galon.store.midtrans') }}", {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: JSON.stringify({
+                                        nama_galon: alpineData.pilihanGalon,
+                                        jumlah: alpineData.jumlah,
+                                        harga_satuan: alpineData.hargaSatuan,
+                                        total_harga: alpineData.totalHarga,
+                                        order_id: result.order_id,
+                                        status: 'pending'
+                                    })
+                                });
+
+                                const res = await save.json();
+                                window.location.href = `/fitur-user/galon-pending/${res.id}`;
+                            } catch {
+                                alert('Pesanan pending, tapi gagal disimpan.');
+                            }
+                        },
+                        onError: function(result) {
+                            alert('Pembayaran gagal atau dibatalkan oleh sistem.');
+                            btn.disabled = false;
+                            btn.innerText = 'Buat Pesanan Sekarang';
                         },
                         onClose: function() {
+                            alert('Pembayaran belum selesai.');
                             btn.disabled = false;
                             btn.innerText = 'Buat Pesanan Sekarang';
                         }

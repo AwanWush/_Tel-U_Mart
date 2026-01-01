@@ -192,7 +192,7 @@
                 </div>
 
                 {{-- MOBILE POPUP --}}
-                    <template x-if="openGroup !== null">
+                    <!-- <template x-if="openGroup !== null">
                         <div
                             class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
                             @click.self="closePopup()"
@@ -254,7 +254,7 @@
                             @endforeach
 
                         </div>
-                    </div>
+                    </div> -->
                 </div>
 
             </div>

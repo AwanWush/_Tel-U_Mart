@@ -1,10 +1,11 @@
 <x-app-layout>
-    <x-slot name="header"></x-slot>
+    <x-slot name="header">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            {{-- Banner Slider --}}
+            <x-banner-slider :banners="$banners" />
+        </div>
+    </x-slot>
 
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        {{-- Banner Slider --}}
-        <x-banner-slider :banners="$banners" />
-    </div>
 
     <div class="py-2">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
