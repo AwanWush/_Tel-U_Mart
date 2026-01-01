@@ -84,10 +84,7 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 // Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
 // Route::get('/order/success', [CheckoutController::class, 'showSuccess'])
 //     ->name('order.success');
-Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])
-    ->name('payment.method');
-Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])
-    ->name('payment.snap-token');
+
 // Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])
 //     ->name('payment.snap-token');
 // Route::post('/checkout/direct', [CheckoutController::class, 'directCheckout'])->name('checkout.direct');
@@ -186,6 +183,15 @@ Route::get('/profil/transaksi', [ProfileController::class, 'transaksi'])
 
 // ==================== FITUR TAMBAHAN: GALON & TOKEN LISTRIK ==================== //
 Route::middleware(['auth'])->group(function () {
+    Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])
+        ->name('payment.method');
+    Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])
+        ->name('payment.snap-token');
+    Route::post('/payment/snap-galon', [PaymentController::class, 'snapGalon'])
+        ->name('payment.snap-galon');
+    Route::post('/payment/snap-product', [PaymentController::class, 'snapProduct'])
+        ->name('payment.snap-product');
+        
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])->name('payment.method');
     // Token
@@ -206,6 +212,12 @@ Route::middleware(['auth'])->group(function () {
     // Riwayat Galon
     Route::get('/galon/riwayat', [UserGalonController::class, 'history'])->name('galon.history');
     
+    Route::get('/fitur-user/galon-result/{id}', [UserGalonController::class, 'result'])
+        ->name('galon.result');
+
+    Route::post('/galon/store-midtrans', [UserGalonController::class, 'storeMidtrans'])
+        ->name('galon.store.midtrans');
+
     // Detail Galon
     Route::get('/galon/detail/{id}', [UserGalonController::class, 'detail'])->name('galon.detail');
 });

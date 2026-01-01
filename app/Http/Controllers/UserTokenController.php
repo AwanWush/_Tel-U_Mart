@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\TokenTransaction;
+use App\Helpers\NotificationHelper;
 use Illuminate\Support\Facades\Auth;
+use App\Models\RiwayatPembelian;
+use App\Models\DetailPembelian;
 
 class UserTokenController extends Controller
 {
@@ -22,20 +25,83 @@ class UserTokenController extends Controller
 
     public function store(Request $request)
     {
+        // $tokenCode = $this->generateTokenCode();
+
+        // $transaksi = TokenTransaction::create([
+        //     'user_id' => Auth::id(),
+        //     'gedung' => Auth::user()->lokasi->nama_lokasi ?? '-',
+        //     'kamar' => Auth::user()->nomor_kamar ?? '-',
+        //     'nama_penghuni' => Auth::user()->name,
+        //     'nomor_hp' => Auth::user()->no_hp,
+        //     'nominal' => $request->nominal,
+        //     'total_harga' => $request->harga,
+        //     'kode_token' => $tokenCode,
+        //     'metode' => $request->metode,
+        //     'status' => 'Berhasil',
+        // ]);
+        $transaksi = TokenTransaction::findOrFail($request->transaction_id);
+
         $tokenCode = $this->generateTokenCode();
 
-        $transaksi = TokenTransaction::create([
-            'user_id' => Auth::id(),
-            'gedung' => Auth::user()->lokasi->nama_lokasi ?? '-',
-            'kamar' => Auth::user()->nomor_kamar ?? '-',
-            'nama_penghuni' => Auth::user()->name,
-            'nomor_hp' => Auth::user()->no_hp,
-            'nominal' => $request->nominal,
-            'total_harga' => $request->harga,
+        $transaksi->update([
             'kode_token' => $tokenCode,
-            'metode' => $request->metode,
             'status' => 'Berhasil',
+            'metode' => $request->metode,
         ]);
+
+        // $riwayat = RiwayatPembelian::create([
+        //     'user_id' => Auth::id(),
+        //     'id_transaksi' => 'TOKEN-' . now()->timestamp,
+        //     'total_harga' => $request->harga,
+        //     'status' => 'Lunas',
+        //     'status_antar' => 'selesai', // token langsung selesai
+        //     'metode_pembayaran' => strtoupper($request->metode),
+        //     'tipe_layanan' => 'token',
+        // ]);
+        // $riwayat = RiwayatPembelian::create([
+        //     'user_id' => Auth::id(),
+        //     'id_transaksi' => $request->order_id,
+        //     'total_harga' => $request->harga,
+        //     'status' => 'Lunas',
+        //     'metode_pembayaran' => 'MIDTRANS',
+        //     'tipe_layanan' => 'token',
+        // ]);
+        $riwayat = RiwayatPembelian::firstOrCreate(
+            ['id_transaksi' => $request->order_id],
+            [
+                'user_id' => Auth::id(),
+                'total_harga' => $transaksi->total_harga,
+                'status' => 'Lunas',
+                'metode_pembayaran' => 'MIDTRANS',
+                'tipe_layanan' => 'token',
+            ]
+        );
+
+        DetailPembelian::create([
+            'riwayat_pembelian_id' => $riwayat->id,
+            'nama_produk' => 'Token Listrik',
+            'keterangan' => 'Nomor Token: ' . $tokenCode,
+            'harga_satuan' => $request->nominal,
+            'jumlah' => 1,
+            'subtotal' => $request->harga,
+        ]);
+
+        // ✅ KIRIM NOTIFIKASI TOKEN
+        // NotificationHelper::send(
+        //     Auth::user(),
+        //     'token',
+        //     'Token Listrik Berhasil ⚡',
+        //     'Pembelian token listrik Rp ' . number_format($request->nominal, 0, ',', '.') . ' berhasil.',
+        //     null
+        // );
+        NotificationHelper::send(
+            Auth::user(),
+            'token',
+            'Token Listrik Berhasil ⚡',
+            'Pesanan token listrik dengan ID ' . $request->order_id .
+            ' Pembelian token listrik Rp ' . number_format($request->nominal, 0, ',', '.') . ' berhasil.',
+            $riwayat
+        );
 
         return response()->json([
             'id' => $transaksi->id

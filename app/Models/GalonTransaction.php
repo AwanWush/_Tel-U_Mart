@@ -9,6 +9,8 @@ class GalonTransaction extends Model
 {
     use HasFactory;
 
+    protected $table = 'galon_transactions'; // SESUAI DB
+
     protected $fillable = [
         'user_id',
         'nama_galon',
@@ -18,5 +20,7 @@ class GalonTransaction extends Model
         'catatan',
         'status',
         'waktu_transaksi',
+        'metode_pembayaran',
+        'order_id',
     ];
 }

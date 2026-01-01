@@ -12,6 +12,40 @@ use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
+    public function snapProduct(Request $request)
+    {
+        Config::$serverKey = config('services.midtrans.serverKey');
+        Config::$isProduction = config('services.midtrans.isProduction');
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        $orderId = 'PRD-' . strtoupper(uniqid());
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => (int) $request->total_amount,
+            ],
+            'customer_details' => [
+                'first_name' => Auth::user()->name,
+                'email' => Auth::user()->email,
+            ],
+        ];
+
+        try {
+            $snapToken = Snap::getSnapToken($params);
+
+            return response()->json([
+                'snap_token' => $snapToken,
+                'order_id' => $orderId
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getSnapToken(Request $request)
     {
         // 1. Konfigurasi Midtrans
@@ -83,5 +117,47 @@ class PaymentController extends Controller
         // } catch (Exception $e) {
         //     return response()->json(['error' => $e->getMessage()], 500);
         // }
+    }
+
+    public function snapGalon(Request $request)
+    {
+        Config::$serverKey = config('services.midtrans.serverKey');
+        Config::$isProduction = config('services.midtrans.isProduction');
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        $orderId = 'GALON-' . time();
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => (int) $request->total_amount,
+            ],
+            'customer_details' => [
+                'first_name' => Auth::user()->name,
+                'email' => Auth::user()->email,
+            ],
+            'item_details' => [
+                [
+                    'id' => 'galon',
+                    'price' => (int) $request->total_amount,
+                    'quantity' => 1,
+                    'name' => $request->product_name ?? 'Galon Air',
+                ]
+            ]
+        ];
+
+        try {
+            $snapToken = Snap::getSnapToken($params);
+
+            return response()->json([
+                'snap_token' => $snapToken,
+                'order_id' => $orderId
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

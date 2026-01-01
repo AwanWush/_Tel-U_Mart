@@ -143,12 +143,20 @@ class OrderController extends Controller
                         'subtotal' => $d->subtotal
                     ]);
 
+                // NotificationHelper::send(
+                //     Auth::user(), 
+                //     'transaction', 
+                //     'Pesanan Berhasil! 🎉', 
+                //     'Pesanan #' . $pesanan->id_transaksi . ' telah diterima dan sedang menunggu konfirmasi.',
+                //     $pesanan // Mengirimkan objek pesanan lengkap untuk kebutuhan Mailable
+                // );
+
                 NotificationHelper::send(
-                    Auth::user(), 
-                    'transaction', 
-                    'Pesanan Berhasil! 🎉', 
-                    'Pesanan #' . $pesanan->id_transaksi . ' telah diterima dan sedang menunggu konfirmasi.',
-                    $pesanan // Mengirimkan objek pesanan lengkap untuk kebutuhan Mailable
+                    Auth::user(),
+                    'produk',
+                    'Pesanan Produk Berhasil 🛒',
+                    'Pesanan #' . $pesanan->id_transaksi . ' berhasil dan sedang diproses.',
+                    $pesanan
                 );
             }
 

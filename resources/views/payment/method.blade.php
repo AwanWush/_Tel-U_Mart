@@ -235,7 +235,7 @@
 
                     // Metode pembayaran online
                     try {
-                        const res = await fetch("{{ route('payment.snap-token') }}", {
+                        const res = await fetch("{{ route('payment.snap-product') }}", {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -251,13 +251,27 @@
                         const data = await res.json();
 
                         window.snap.pay(data.snap_token, {
-                            onSuccess: () => {
+                            // onSuccess: () => {
+                            //     window.location.href =
+                            //         `/order/success?method=online&status=paid&amount=${amount}&product_id=${product}&qty=${qty}&address=${encodeURIComponent(address)}`;
+                            // },
+                            // onPending: () => {
+                            //     window.location.href =
+                            //         `/order/success?method=online&status=pending&amount=${amount}&product_id=${product}&qty=${qty}&address=${encodeURIComponent(address)}`;
+                            // },
+                            onSuccess: (result) => {
                                 window.location.href =
-                                    `/order/success?method=online&status=paid&amount=${amount}&product_id=${product}&qty=${qty}&address=${encodeURIComponent(address)}`;
+                                    `/order/success?method=online
+                                    &status=paid
+                                    &amount=${amount}
+                                    &order_id=${result.order_id}`;
                             },
-                            onPending: () => {
+                            onPending: (result) => {
                                 window.location.href =
-                                    `/order/success?method=online&status=pending&amount=${amount}&product_id=${product}&qty=${qty}&address=${encodeURIComponent(address)}`;
+                                    `/order/success?method=online
+                                    &status=pending
+                                    &amount=${amount}
+                                    &order_id=${result.order_id}`;
                             },
                             onError: () => {
                                 alert('Pembayaran gagal.');
@@ -270,8 +284,10 @@
                         });
 
                     } catch (e) {
-                        alert('Terjadi kesalahan sistem.');
-                        location.reload();
+                        console.error(e);
+                        alert('Terjadi kesalahan sistem: ' + e.message);
+                        payBtn.disabled = false;
+                        payBtn.innerHTML = 'Konfirmasi Pembayaran';
                     }
                 });
             </script>
