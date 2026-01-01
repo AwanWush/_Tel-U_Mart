@@ -148,9 +148,6 @@
                             <svg class="w-3.5 h-3.5 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 001 1h3a2 2 0 002-2v-7.586l.293.293a1 1 0 001.414-1.414Z"/>
                             </svg>
-                            <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
-                            </svg>
                             Dashboard
                         </a>
                     </li>
@@ -459,23 +456,40 @@
                 if (data.snap_token) {
                     window.snap.pay(data.snap_token, {
                         onSuccess: async function (result) {
-                            const response = await fetch('/token-listrik/beli', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                body: JSON.stringify({
-                                    nominal: nominal,
-                                    harga: harga,
-                                    metode: result.payment_type,
-                                    order_id: result.order_id
-                                })
-                            });
+                            try {
+                                const response = await fetch('/token-listrik/beli', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: JSON.stringify({
+                                        transaction_id: data.transaction_id,
+                                        nominal: nominal,
+                                        harga: harga,
+                                        metode: result.payment_type,
+                                        order_id: result.order_id
+                                    })
+                                });
 
-                            const data = await response.json();
+                                if (!response.ok) {
+                                    throw new Error('Gagal menyimpan transaksi');
+                                }
 
-                            window.location.href = `/token/result/${data.id}`;
+                                const res = await response.json();
+
+                                if (!res.id) {
+                                    throw new Error('Response tidak memiliki ID');
+                                }
+
+                                window.location.href = `/token/result/${res.id}`;
+
+                            } catch (err) {
+                                console.error(err);
+                                alert('Pembayaran berhasil, tapi gagal memproses token. Silakan cek riwayat.');
+                                btn.disabled = false;
+                                btn.innerHTML = 'BAYAR SEKARANG';
+                            }
                         },
                         onPending: function () {
                             alert('Pembayaran pending, silakan selesaikan pembayaran.');

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-            <h2 class="font-black text-2xl text-white tracking-widest uppercase">Notifikasi 🔔</h2>
+            <h2 class="font-black text-2xl text-[#5B000B] tracking-widest uppercase">Notifikasi 🔔</h2>
 
             <div class="flex gap-2">
                 <form action="{{ route('notifications.markAllRead') }}" method="POST">

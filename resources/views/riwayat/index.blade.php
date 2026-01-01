@@ -35,7 +35,17 @@
                                             </div>
                                             <span class="text-white font-bold uppercase text-sm tracking-tight">{{ $item->nama_produk }}</span>
                                         </div>
-                                        <span class="text-[#E7BD8A] font-black text-sm">Rp{{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                                        <div>
+                                            <span class="text-white font-bold uppercase text-sm tracking-tight">
+                                                {{ $item->nama_produk }}
+                                            </span>
+
+                                            @if($item->keterangan)
+                                                <p class="text-[10px] text-[#E7BD8A] font-mono mt-1">
+                                                    {{ $item->keterangan }}
+                                                </p>
+                                            @endif
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>

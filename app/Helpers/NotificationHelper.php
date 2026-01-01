@@ -6,6 +6,7 @@ use App\Models\Notification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OrderUpdateMail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Model;
 
 class NotificationHelper
 {
@@ -21,18 +22,31 @@ class NotificationHelper
         ]);
 
         // 2. Kirim Email jika ada data order
-        if ($order) {
+        // if ($order) {
+        //     try {
+        //         // Pastikan relasi 'details' dimuat agar muncul di tabel email
+        //         if (!$order->relationLoaded('details')) {
+        //             $order->load('details');
+        //         }
+
+        //         Mail::to($user->email)->send(new OrderUpdateMail($order, $title));
+                
+        //         Log::info("Email Berhasil Dikirim ke: " . $user->email);
+        //     } catch (\Exception $e) {
+        //         Log::error("Gagal kirim email: " . $e->getMessage());
+        //     }
+        // }
+
+        
+        if ($order instanceof Model) {
             try {
-                // Pastikan relasi 'details' dimuat agar muncul di tabel email
-                if (!$order->relationLoaded('details')) {
-                    $order->load('details');
+                if (method_exists($order, 'details')) {
+                    $order->loadMissing('details');
                 }
 
                 Mail::to($user->email)->send(new OrderUpdateMail($order, $title));
-                
-                Log::info("Email Berhasil Dikirim ke: " . $user->email);
-            } catch (\Exception $e) {
-                Log::error("Gagal kirim email: " . $e->getMessage());
+            } catch (\Throwable $e) {
+                Log::error('Email gagal: ' . $e->getMessage());
             }
         }
     }

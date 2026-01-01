@@ -39,6 +39,17 @@
         .text-red-main { color: #dc2626; }
         .border-red-main { border-color: #dc2626; }
         .bg-red-soft { background-color: #fee2e2; }
+        
+        /* Tambahan Palet untuk Status (SUCCESS: Berhasil / Lunas) */
+        .bg-status-success { background-color: #fee2e2; } /* Menggunakan Red Soft (#fee2e2) */
+        .border-status-success { border-color: #DB4B3A; } /* Menggunakan Primary Accent (#DB4B3A) */
+        .text-status-success { color: #930014; } /* Menggunakan Deep Accent (#930014) */
+        
+        /* Tambahan Palet untuk Status (PENDING / Gagal) */
+        /* Untuk Pending, kita gunakan palet Kuning/Oranye yang lebih soft */
+        .bg-status-pending { background-color: #fef9c3; } /* Yellow-100/200 */
+        .border-status-pending { border-color: #E68757; } /* Menggunakan Secondary (#E68757) */
+        .text-status-pending { color: #E68757; } /* Menggunakan Secondary (#E68757) */
     </style>
 
     {{-- ⚡ Header untuk Halaman Riwayat (Diselaraskan dengan Token Page Header) ⚡ --}}
@@ -84,12 +95,11 @@
         </div>
     </x-slot>
 
-    {{-- Background Utama: Putih Bersih (Sama seperti halaman token) --}}
+   {{-- Background Utama: Putih Bersih (Sama seperti halaman token) --}}
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8" 
              x-data="{ filterStatus: 'semua' }">
-
-             
+              
              {{-- Container Daftar Transaksi (Diubah ke Light Mode) --}}
              <div class="bg-white p-8 rounded-[2.5rem] border border-gray-200 shadow-2xl shadow-gray-300/50 mx-4 sm:mx-0">
                  {{-- Judul (Daftar Transaksi dipindahkan ke Body) --}}
@@ -121,24 +131,45 @@
                                 x-transition:enter="transition transform duration-500"
                                 x-transition:enter-start="opacity-0 translate-y-4">
 
+                                {{-- START: PERUBAHAN ISI CARD TRANSAKSI --}}
                                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-                                    <div class="flex gap-5 items-center">
-                                        {{-- Icon Power (Diubah ke skema warna merah) --}}
-                                        <div class="h-14 w-14 rounded-2xl flex items-center justify-center bg-red-main/10 text-red-main border border-red-main/20 shadow-inner shadow-red-100">
-                                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    
+                                    {{-- Kiri: Detail Transaksi --}}
+                                    <div class="flex gap-4 items-start">
+                                        
+                                        {{-- Icon Power (Diubah ke skema warna merah dan Deep Accent untuk shadow) --}}
+                                        <div class="h-14 w-14 flex-shrink-0 rounded-xl flex items-center justify-center bg-[#fee2e2] text-[#930014] border border-[#dc2626]/20 shadow-md shadow-[#fee2e2]">
+                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                             </svg>
                                         </div>
 
                                         <div>
-                                            {{-- Waktu Transaksi --}}
-                                            <p class="text-[10px] font-black text-red-main uppercase tracking-[0.2em] mb-1">
-                                                {{ $r->created_at ? $r->created_at->format('d M Y • H:i') : '-' }}
-                                            </p>
-                                            {{-- Nominal Pembelian --}}
-                                            <h4 class="text-2xl font-black text-gray-900 group-hover:text-red-main transition-colors tracking-tighter">
+                                            {{-- Nominal Pembelian (Menjadi Judul Utama) --}}
+                                            <h4 class="text-3xl font-black text-gray-900 tracking-tighter">
                                                 Rp{{ number_format($r->total_harga, 0, ',', '.') }}
                                             </h4>
+                                            
+                                            {{-- Waktu Transaksi (Lebih soft) --}}
+                                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-1">
+                                                Tanggal: {{ $r->created_at ? $r->created_at->format('d M Y') : '-' }} • Pukul: {{ $r->created_at ? $r->created_at->format('H:i') : '-' }}
+                                            </p>
+
+                                            {{-- Tampilan Status (Dibuat lebih menonjol dan menggunakan warna palet) --}}
+                                            <div class="flex items-center gap-3 mt-3">
+                                                {{-- Text: Status: --}}
+                                                <span class="text-xs font-extrabold uppercase tracking-widest text-gray-400">Status:</span>
+                                                
+                                                {{-- Chip Status yang Diperbarui --}}
+                                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider
+                                                    @if($r->status == 'Lunas') 
+                                                        bg-status-success text-status-success border border-status-success/50
+                                                    @else 
+                                                        bg-status-pending text-status-pending border border-status-pending/50
+                                                    @endif">
+                                                    {{ $r->status == 'Lunas' ? 'Berhasil' : $r->status }}
+                                                </span>
+                                            </div>
                                             
                                             {{-- LOGIKA PENGAMBILAN KODE TOKEN (Kode PHP tidak diubah) --}}
                                             @php 
@@ -152,27 +183,31 @@
 
                                             @if($kodeToken && $r->status == 'Lunas')
                                                 {{-- Token Display (Penyempurnaan tampilan kode token) --}}
-                                                <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg border border-gray-200">
-                                                    <span class="font-mono text-xs text-red-main font-bold tracking-[0.2em]">{{ $kodeToken }}</span>
+                                                <div class="mt-4">
+                                                    <span class="block text-xs font-extrabold uppercase tracking-widest text-[#DB4B3A] mb-1">Kode Token:</span>
+                                                    {{-- Gunakan Soft Accent untuk kontras --}}
+                                                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#E7BD8A]/30 rounded-xl border-2 border-[#E7BD8A]/50 shadow-inner shadow-gray-100/50">
+                                                        {{-- Deep Accent untuk teks token --}}
+                                                        <span class="font-mono text-base text-[#5B000B] font-bold tracking-[0.2em]">{{ $kodeToken }}</span>
+                                                        {{-- Tambahkan tombol copy (Alpine.js) --}}
+                                                        <button 
+                                                            type="button" 
+                                                            @click="navigator.clipboard.writeText('{{ $kodeToken }}'); $el.innerText = 'Tersalin!'; setTimeout(() => { $el.innerText = 'SALIN'; }, 1500)"
+                                                            class="text-xs font-bold uppercase tracking-widest text-[#930014] hover:text-[#DB4B3A] transition-colors active:scale-95 ml-2"
+                                                            x-init="$el.innerText = 'SALIN'">
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             @endif
 
-                                            {{-- Tampilan Status (Dibuat lebih menonjol) --}}
-                                            <div class="flex items-center gap-3 mt-3"> {{-- DIUBAH: margin-top ditingkatkan menjadi mt-3 --}}
-                                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Status:</span>
-                                                <span class="px-3 py-0.5 rounded-lg text-[10px] font-black uppercase border
-                                                    @if($r->status == 'Lunas') border-green-500/50 text-green-700 bg-green-500/10
-                                                    @else border-yellow-500/50 text-yellow-700 bg-yellow-500/10 @endif">
-                                                    {{ $r->status == 'Lunas' ? 'Berhasil' : $r->status }}
-                                                </span>
-                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="w-full md:w-auto">
+                                    {{-- Kanan: Tombol Aksi --}}
+                                    <div class="w-full md:w-auto mt-4 md:mt-0">
                                         {{-- Tombol Struk Digital (Diubah ke style tombol utama: putih-merah) --}}
                                         <a href="{{ route('token.result', $r->id) }}"
-                                            class="btn-struk-digital group flex items-center justify-center gap-2 w-full md:w-auto px-8 py-3 bg-white text-gray-900 font-black rounded-xl border-2 border-red-main/50 shadow-lg shadow-red-main/10 active:scale-95 hover:bg-red-main hover:text-white">
+                                            class="btn-struk-digital group flex items-center justify-center gap-2 w-full md:w-auto px-8 py-3 bg-white text-gray-900 font-black rounded-xl border-2 border-[#DB4B3A]/50 shadow-lg shadow-[#DB4B3A]/10 active:scale-95 hover:bg-[#DB4B3A] hover:text-white transition-all duration-300 ease-in-out">
                                             STRUK DIGITAL
                                             <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -181,9 +216,10 @@
                                     </div>
                                 </div>
 
-                                {{-- Dekorasi Background (Diubah ke skema warna merah) --}}
-                                <div class="absolute -right-10 -bottom-10 h-32 w-32 bg-red-main/5 rounded-full blur-3xl group-hover:bg-red-main/10 transition-colors"></div>
+                                {{-- Dekorasi Background (Menggunakan Soft Accent dan Primary Accent) --}}
+                                <div class="absolute -right-10 -bottom-10 h-32 w-32 bg-[#E7BD8A]/10 rounded-full blur-3xl group-hover:bg-[#DB4B3A]/10 transition-colors"></div>
                             </div>
+                            {{-- END: PERUBAHAN ISI CARD TRANSAKSI --}}
                         @endforeach
                     </div>
                 @endif
