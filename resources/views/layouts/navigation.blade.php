@@ -88,7 +88,7 @@
 
 
             {{-- SEARCH --}}
-            <div x-data="{ focused: false }" class="relative flex-1 mx-4 max-w-xl">
+            <div x-data="{ focused: false }" class="relative flex-1 mx-4 max-w-xl hidden md:block">
                 <form action="/search" method="GET" class="relative hover:text-[#DB4B3A] hover:border-[#DB4B3A]">
 
                     {{-- SEARCH ICON --}}
@@ -246,6 +246,28 @@
         <!-- <a href="/category" class="flex items-center gap-3 p-2 rounded hover:bg-[#E7BD8A]/30">
             @include('icons.category-icon') Kategori
         </a> -->
+        <form action="/search" method="GET" class="mb-3">
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    @include('icons.search-icon')
+                </span>
+
+                <input 
+                    type="text"
+                    name="q"
+                    @focus="focused = true"
+                    @blur="focused = false"
+                    class="w-full h-11 pl-10 pr-3 rounded-lg
+                        border border-black
+                        text-sm text-black
+                        focus:outline-none
+                        focus:ring-1 focus:ring-[#930013]
+                        focus:border-[#930013]
+                        transition"
+                    placeholder="Cari produk di TJ&TMart"
+                >
+            </div>
+        </form>
 
         <a href="/wishlist" class="flex items-center gap-3 p-2 rounded hover:bg-[#E7BD8A]/30">
             @include('icons.heart') Wishlist
@@ -253,6 +275,14 @@
 
         <a href="/notifications" class="flex items-center gap-3 p-2 rounded hover:bg-[#E7BD8A]/30">
             @include('icons.notification-icon') Notifikasi
+        </a>
+
+        <a href="/kontak" class="flex items-center gap-3 p-2 rounded hover:bg-[#E7BD8A]/30">
+            @include('icons.phone-icon') Kontak
+        </a>
+
+        <a href="/tentang-kami" class="flex items-center gap-3 p-2 rounded hover:bg-[#E7BD8A]/30">
+            @include('icons.info-icon') Tentang Kami
         </a>
     </div>
 </nav>
@@ -291,10 +321,10 @@
                     </a>
                 </li>
 
-                <li class="h-4 w-px bg-white/40"></li>
+                <li class="h-4 w-px bg-white/40 hidden md:block"></li>
 
                 <li>
-                    <a href="/kontak" class="relative transition hover:text-[#E7BD8A]
+                    <a href="/kontak" class="relative hidden md:block transition hover:text-[#E7BD8A]
                                              after:absolute after:left-0 after:-bottom-1
                                              after:w-0 after:h-[2px]
                                              after:bg-[#E7BD8A]
@@ -304,10 +334,10 @@
                     </a>
                 </li>
 
-                <li class="h-4 w-px bg-white/40"></li>
+                <li class="h-4 w-px bg-white/40 hidden md:block"></li>
 
                 <li>
-                    <a href="/tentang-kami" class="relative transition hover:text-[#E7BD8A]
+                    <a href="/tentang-kami" class="relative hidden md:block transition hover:text-[#E7BD8A]
                                                    after:absolute after:left-0 after:-bottom-1
                                                    after:w-0 after:h-[2px]
                                                    after:bg-[#E7BD8A]

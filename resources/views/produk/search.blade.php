@@ -1,4 +1,5 @@
 <x-app-layout>
+    <x-slot name="header"></x-slot>
     {{-- SCRIPT RESTORE POSISI SCROLL --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {

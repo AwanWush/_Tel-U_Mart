@@ -28,7 +28,7 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
             border: 1px solid #e5e7eb
         }
 
-        .hidden {
+        .is-hidden {
             display: none
         }
 
@@ -74,7 +74,9 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
             @apply bg-white rounded-3xl border border-gray-100 shadow-sm p-6;
         }
     </style>
-    <x-slot name="header"></x-slot>
+    <x-slot name="header">
+        <div class="h-0"></div>
+    </x-slot>
 
 
 
@@ -164,7 +166,7 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
 
 
 
-                    <div id="addressForm" class="hidden mt-6 space-y-4">
+                    <div id="addressForm" class="is-hidden mt-6 space-y-4">
 
                         <div id="map" class="shadow-inner"></div>
 
@@ -443,7 +445,7 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
 
         document.getElementById('changeAddressBtn').onclick = () => {
 
-            document.getElementById('addressForm').classList.toggle('hidden');
+            document.getElementById('addressForm').classList.toggle('is-hidden');
 
             setTimeout(() => {
                 initMap();
@@ -462,7 +464,7 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
 
             document.getElementById('displayGedung').innerText = `${gedung}, Kamar ${kamar}`;
 
-            document.getElementById('addressForm').classList.add('hidden');
+            document.getElementById('addressForm').classList.add('is-hidden');
 
         }
 
@@ -484,7 +486,7 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
 
             // Tampilkan Alamat & Ongkir
 
-            addressContainer.classList.remove('hidden');
+            addressContainer.classList.remove('is-hidden');
 
             deliveryFeeRow.style.display = 'flex';
 
@@ -516,7 +518,7 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
 
             // Sembunyikan Alamat & Ongkir
 
-            addressContainer.classList.add('hidden');
+            addressContainer.classList.add('is-hidden');
 
             deliveryFeeRow.style.display = 'none';
 
