@@ -82,7 +82,7 @@
                             {{-- WISHLIST --}}
                             <form action="{{ route('wishlist.store') }}" method="POST">
                                 @csrf
-                                <input type="hidden" name="product_id" value="{{ $item->id }}">
+                                <input type="hidden" name="produk_id" value="{{ $item->id }}">
 
                                 <button type="submit"
                                     class="w-9 h-9 rounded-full
@@ -98,9 +98,9 @@
                             </form>
 
                             {{-- CART --}}
-                            <form action="{{ route('cart.add') }}" method="POST">
+                            <form action="{{ route('cart.store') }}" method="POST">
                                 @csrf
-                                <input type="hidden" name="product_id" value="{{ $item->id }}">
+                                <input type="hidden" name="produk_id" value="{{ $item->id }}">
 
                                 <button type="submit"
                                     class="w-9 h-9 rounded-full

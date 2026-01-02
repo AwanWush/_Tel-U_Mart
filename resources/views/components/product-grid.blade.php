@@ -105,9 +105,6 @@
                                 </button>
                             </form>
 
-
-
-
                             {{-- Cart --}}
                             <form action="{{ route('cart.store') }}" method="POST">
                                 @csrf
