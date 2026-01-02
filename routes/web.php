@@ -20,6 +20,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\MetodePembayaranController;
+use App\Http\Controllers\Admin\LaporanPenjualanController;
 
 
 Route::post('/pembayaran', [MetodePembayaranController::class, 'store'])
@@ -356,6 +357,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         
 });
+
+Route::middleware(['auth', 'verified'])
+    ->prefix('admin/produk')
+    ->name('admin.produk.')
+    ->group(function () {
+
+        Route::get('/laporan', 
+            [LaporanPenjualanController::class, 'index']
+        )->name('laporan.index');
+
+    });
 
 
 

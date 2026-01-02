@@ -136,7 +136,7 @@
                     </p>
                 </a>
 
-                <a href="{{ route('penjualan.bulanini') }}"
+                <a href="{{ route('admin.produk.laporan.index') }}"
                    class="group bg-white rounded-xl shadow-sm p-6 border border-gray-100
                           transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-red-200">
 
