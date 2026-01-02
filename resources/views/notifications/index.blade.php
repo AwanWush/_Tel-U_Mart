@@ -29,7 +29,7 @@
 
         @if (session('success'))
             <div
-                class="mb-6 p-4 bg-[#E7BD8A]/10 border border-[#E7BD8A]/50 text-[#E7BD8A] rounded-2xl font-bold flex items-center animate-pulse">
+                class="mb-6 p-4 bg-[#E7BD8A]/10 border border-[#E7BD8A]/50 text-[#DC2626] rounded-2xl font-bold flex items-center animate-pulse">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
