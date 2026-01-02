@@ -299,12 +299,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/delete-selected', [NotificationController::class, 'deleteSelected'])
         ->name('notifications.deleteSelected');
 
+         Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+Route::delete('/notifications/delete-all', [NotificationController::class, 'deleteAll'])->name('notifications.deleteAll');
+});
+
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])
         ->name('notifications.destroy');
 
-        Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
-Route::delete('/notifications/delete-all', [NotificationController::class, 'deleteAll'])->name('notifications.deleteAll');
-});
+       
 
 Route::get('/riwayat-pembelian', [RiwayatController::class, 'index'])->name('riwayat.pembelian');
 
