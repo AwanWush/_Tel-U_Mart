@@ -8,44 +8,56 @@
                 <h2 class="text-3xl font-black text-red-700 uppercase tracking-tighter">
                     Laporan Penjualan
                 </h2>
-                <p class="text-gray-500 text-sm mt-1">
-                </p>
+                <p class="text-gray-500 text-sm mt-1"></p>
             </div>
 
-            {{-- FILTER --}}
+            {{-- FILTER + EXPORT --}}
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <form method="GET" class="flex flex-col sm:flex-row gap-4 items-end">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Bulan</label>
-                        <select name="bulan" class="rounded-xl border-gray-200 text-sm focus:ring-red-500 focus:border-red-500 shadow-sm">
-                            @for ($i = 1; $i <= 12; $i++)
-                                <option value="{{ $i }}" {{ $bulan == $i ? 'selected' : '' }}>
-                                    {{ date('F', mktime(0,0,0,$i,1)) }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
+                <div class="flex flex-col lg:flex-row gap-4 items-end justify-between">
 
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Tahun</label>
-                        <select name="tahun" class="rounded-xl border-gray-200 text-sm focus:ring-red-500 focus:border-red-500 shadow-sm">
-                            @for ($y = now()->year; $y >= now()->year - 5; $y--)
-                                <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>
-                                    {{ $y }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
+                    {{-- FORM FILTER --}}
+                    <form method="GET" class="flex flex-col sm:flex-row gap-4 items-end">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Bulan</label>
+                            <select name="bulan" class="rounded-xl border-gray-200 text-sm focus:ring-red-500 focus:border-red-500 shadow-sm">
+                                @for ($i = 1; $i <= 12; $i++)
+                                    <option value="{{ $i }}" {{ $bulan == $i ? 'selected' : '' }}>
+                                        {{ date('F', mktime(0,0,0,$i,1)) }}
+                                    </option>
+                                @endfor
+                            </select>
+                        </div>
 
-                    {{-- TOMBOL: Menggunakan inline style untuk mengunci warna teks --}}
-                    <button type="submit"
-                        style="color: white !important; background-color: #dc2626;" 
-                        onmouseover="this.style.backgroundColor='#991b1b'"
-                        onmouseout="this.style.backgroundColor='#dc2626'"
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Tahun</label>
+                            <select name="tahun" class="rounded-xl border-gray-200 text-sm focus:ring-red-500 focus:border-red-500 shadow-sm">
+                                @for ($y = now()->year; $y >= now()->year - 5; $y--)
+                                    <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>
+                                        {{ $y }}
+                                    </option>
+                                @endfor
+                            </select>
+                        </div>
+
+                        <button type="submit"
+                            style="color: white !important; background-color: #dc2626;" 
+                            onmouseover="this.style.backgroundColor='#991b1b'"
+                            onmouseout="this.style.backgroundColor='#dc2626'"
+                            class="px-6 py-2 rounded-xl font-bold transition-all shadow-md active:scale-95">
+                            Tampilkan
+                        </button>
+                    </form>
+
+                    {{-- 🔽 TOMBOL EXPORT --}}
+                    <a href="{{ route('admin.produk.laporan.export', ['bulan' => $bulan, 'tahun' => $tahun]) }}"
+                        style="color: white !important; background-color: #16a34a;" 
+                        onmouseover="this.style.backgroundColor='#15803d'"
+                        onmouseout="this.style.backgroundColor='#16a34a'"
                         class="px-6 py-2 rounded-xl font-bold transition-all shadow-md active:scale-95">
-                        Tampilkan
-                    </button>
-                </form>
+                        Export Excel
+                    </a>
+
+                </div>
             </div>
 
             {{-- RINGKASAN --}}

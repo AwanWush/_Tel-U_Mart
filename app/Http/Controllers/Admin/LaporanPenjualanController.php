@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Penjualan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\LaporanPenjualanExport;
 
 class LaporanPenjualanController extends Controller
 {
@@ -31,5 +33,16 @@ class LaporanPenjualanController extends Controller
             'totalCash' => $penjualan->where('metode_pembayaran', 'Cash')->sum('total'),
             'totalQRIS' => $penjualan->where('metode_pembayaran', 'QRIS')->sum('total'),
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        $bulan = $request->bulan ?? now()->month;
+        $tahun = $request->tahun ?? now()->year;
+
+        return Excel::download(
+            new LaporanPenjualanExport($bulan, $tahun),
+            "laporan-penjualan-{$bulan}-{$tahun}.xlsx"
+        );
     }
 }

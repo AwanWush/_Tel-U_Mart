@@ -369,6 +369,9 @@ Route::middleware(['auth', 'verified'])
 
     });
 
+Route::get('/admin/produk/laporan/export', [LaporanPenjualanController::class, 'export'])
+    ->name('admin.produk.laporan.export');
+
 
 
 // ==================== SUPER ADMIN (WAJIB LOGIN) ==================== //
