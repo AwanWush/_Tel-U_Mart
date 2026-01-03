@@ -7,6 +7,7 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\KategoriProdukController;
+use App\Http\Controllers\ProdukReviewController;
 use App\Http\Controllers\UserGalonController;
 use App\Http\Controllers\UserTokenController;
 use App\Http\Controllers\CartController;
@@ -164,6 +165,10 @@ Route::get('/produk', [ProdukController::class, 'index'])
 
 Route::get('/produk/{produk}', [ProdukController::class, 'show'])
     ->name('produk.show');
+
+Route::post('/produk/{produk}/rating', [ProdukReviewController::class, 'store'])
+    ->name('produk.rating.store')
+    ->middleware('auth');
 // ==================== USER KATEGORI PRODUK ====================
 Route::get('/kategori/{kategori}', [ProdukController::class, 'byKategori'])
     ->name('produk.by-kategori');

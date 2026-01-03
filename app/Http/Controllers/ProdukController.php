@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KategoriProduk;
+use App\Models\ProdukReview;
 use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -87,6 +88,14 @@ class ProdukController extends Controller
             'reviews',
         ]);
 
+        // Statistik rating
+        $ratingStats = ProdukReview::where('produk_id', $produk->id)
+            ->selectRaw('rating, COUNT(*) as total')
+            ->groupBy('rating')
+            ->pluck('total', 'rating');
+
+        $totalReviews = $ratingStats->sum();
+
         $rekomendasi = Produk::where('kategori_id', $produk->kategori_id)
             ->where('id', '!=', $produk->id)
             ->where('is_active', true)
@@ -99,7 +108,12 @@ class ProdukController extends Controller
             ->take(12)
             ->get();
 
-        return view('produk.show', compact('produk', 'rekomendasi'));
+        return view('produk.show', compact(
+            'produk',
+            'rekomendasi',
+            'ratingStats',
+            'totalReviews'
+        ));
     }
 
     public function byKategori(KategoriProduk $kategori)

@@ -168,7 +168,7 @@
                             <div class="mt-5 relative">
                                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#dc2626] to-transparent rounded-full"></div>
                                 <p class="pl-4 text-gray-500 leading-relaxed text-xs antialiased font-medium">
-                                    Permudah setiap kebutuhan asramamu dengan sistem yang <span class="text-[#dc2626] font-bold">terintegrasi</span>, cepat, dan aman.
+                                    Permudah penuhi setiap kebutuhan asramamu dengan sistem yang <span class="text-[#dc2626] font-bold">terintegrasi</span>, cepat, dan aman.
                                 </p>
                             </div>
                         </div>

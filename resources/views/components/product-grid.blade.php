@@ -1,6 +1,6 @@
 @props(['kategoriProduk'])
 
-<div class="max-w-screen-2xl mx-auto px-4 pt-4 pb-8">
+<div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-4 pt-4 pb-8">
 
     @foreach ($kategoriProduk as $kategori)
         @php
