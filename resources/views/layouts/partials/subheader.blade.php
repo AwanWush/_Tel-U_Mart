@@ -120,7 +120,7 @@
         <div class="flex items-center justify-between h-10 text-sm overflow-hidden">
 
             {{-- LEFT MENU --}}
-            <ul class="flex items-center gap-4 font-semibold h-full">
+            <ul class="flex items-center gap-1 font-semibold h-full">
                 @php
                     $links = [
                         ['name' => 'Beranda', 'url' => '/'],
