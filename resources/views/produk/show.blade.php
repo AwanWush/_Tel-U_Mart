@@ -262,7 +262,7 @@
                         @endphp
                         
                         <div class="flex items-baseline gap-2">
-                            <span class="text-2xl font-black text-red-main">
+                            <span class="text-2xl font-black text-black">
                                 Rp {{ number_format($hargaDiskon ?? $hargaAsli, 0, ',', '.') }}
                             </span>
                             @if($produk->persentase_diskon)

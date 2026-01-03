@@ -174,7 +174,7 @@
                         </div>
                     @endauth
 
-                    <h4 class="text-[10px] font-extrabold text-[#dc2626] uppercase tracking-[0.2em] mt-2 mb-2 ml-1">Fitur Layanan Utama</h4>
+                    <h4 class="text-[10px] font-extrabold text-[#dc2626] uppercase tracking-[0.2em] mt-2 mb-2 ml-1">Layanan Utama</h4>
 
                     <div class="flex flex-row md:flex-row lg:flex-col gap-2 lg:gap-1.5">
                         {{-- Token --}}

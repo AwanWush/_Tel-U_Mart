@@ -20,7 +20,7 @@
                 </h2>
 
                 @if ($hasMore)
-                    <a href="{{ route('produk.by-kategori', $kategori) }}"
+                    <a href="{{ route('produk.index', ['kategori' => $kategori->id ?? '1']) }}"
                         class="text-sm font-medium
                           text-[#930014]
                           hover:text-[#DB4B3A]
