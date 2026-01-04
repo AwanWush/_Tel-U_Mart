@@ -74,13 +74,8 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
             @apply bg-white rounded-3xl border border-gray-100 shadow-sm p-6;
         }
     </style>
-    <x-slot name="header">
-        <div class="h-0"></div>
-    </x-slot>
 
-
-
-    <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6">
+    <div class="max-w-7xl mx-auto py-10 pt-[140px] px-4 sm:px-6">
 
         <nav class="flex text-gray-500 text-sm mb-6" aria-label="Breadcrumb">
 

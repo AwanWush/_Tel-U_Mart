@@ -22,7 +22,10 @@ use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\MetodePembayaranController;
 use App\Http\Controllers\Admin\LaporanPenjualanController;
-
+use App\Http\Controllers\SuperAdmin\SuperAdminController;
+use App\Http\Controllers\SuperAdmin\GajiController;
+use App\Http\Controllers\SuperAdmin\AdminManagementController;
+use App\Http\Controllers\SuperAdmin\KategoriController;
 
 Route::post('/pembayaran', [MetodePembayaranController::class, 'store'])
     ->name('pembayaran.store')
@@ -131,10 +134,10 @@ Route::middleware(['auth', 'verified'])->get(
 )->name('dashboard.admin');
 
 // super admin dashboard
-Route::middleware(['auth', 'verified'])->get(
-    '/dashboard/superadmin',
-    [DashboardController::class, 'superadmin']
-)->name('dashboard.superadmin');
+// Route::middleware(['auth', 'verified'])->get(
+//     '/dashboard/superadmin',
+//     [DashboardController::class, 'superadmin']
+// )->name('dashboard.superadmin');
 
 // user dashboard
 Route::get('/dashboard/user', [DashboardController::class, 'user'])
@@ -380,11 +383,37 @@ Route::get('/admin/produk/laporan/export', [LaporanPenjualanController::class, '
 
 
 // ==================== SUPER ADMIN (WAJIB LOGIN) ==================== //
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('/kelola-admin', 'dashboard.superadmin')->name('admin.manage');
-    Route::view('/laporan-bulanan', 'dashboard.superadmin')->name('laporan.bulanan');
-    Route::view('/grafik-produk', 'dashboard.superadmin')->name('grafik.produk');
-    Route::view('/gaji-admin', 'dashboard.superadmin')->name('gaji.admin');
+Route::middleware(['auth'])->group(function () {
+    // Dashboard Utama Super Admin
+    Route::get('/dashboard/superadmin', [SuperAdminController::class, 'index'])
+        ->name('dashboard.superadmin');
+
+    // Manajemen Gaji
+    Route::get('/gaji-admin', [GajiController::class, 'index'])->name('gaji.admin');
+    Route::post('/gaji-admin/update/{id}', [GajiController::class, 'update'])->name('gaji.update');
+    Route::post('/gaji-admin/store', [GajiController::class, 'store'])->name('gaji.store');
+
+    // Manajemen Mart (Grup Prefix superadmin)
+    Route::prefix('superadmin')->group(function () {
+        Route::get('/kelola-mart', [SuperAdminController::class, 'manageMart'])->name('superadmin.mart.index');
+        Route::post('/kelola-mart/store', [SuperAdminController::class, 'storeMart'])->name('superadmin.mart.store');
+        Route::put('/kelola-mart/update/{id}', [SuperAdminController::class, 'updateMart'])->name('superadmin.mart.update');
+        Route::patch('/kelola-mart/toggle/{id}', [SuperAdminController::class, 'toggleMartStatus'])->name('superadmin.mart.toggle');
+    });
+
+});
+
+Route::middleware(['auth', 'role:superadmin'])->group(function () {
+    Route::get('/manage-admins', [AdminManagementController::class, 'index'])->name('admin.manage');
+    Route::post('/superadmin/admins/store', [AdminManagementController::class, 'store'])->name('admin.store');
+    Route::post('/superadmin/admins/{id}/assign', [AdminManagementController::class, 'updateMart'])->name('admin.update-mart');
+    Route::post('/superadmin/admins/{id}/toggle', [AdminManagementController::class, 'toggleStatus'])->name('admin.toggle');
+});
+
+Route::middleware(['auth', 'role:superadmin'])->group(function () {
+    Route::get('/kategori-global', [KategoriController::class, 'index'])->name('kategori.index');
+    Route::post('/kategori-global/store', [KategoriController::class, 'store'])->name('kategori.store');
+    Route::delete('/kategori-global/delete/{id}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
 });
 
 // ===== Mart to user ===== //

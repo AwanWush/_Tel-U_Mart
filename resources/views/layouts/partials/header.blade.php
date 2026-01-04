@@ -237,10 +237,13 @@
         }
     }
 </style>
+@php
+    $isUser = auth()->check() && auth()->user()->role_id == 3;
+@endphp
 
 <nav x-data="{ open: false }"
      class="fixed top-0 z-50 w-full bg-white border-b border-[#930014]/20 shadow-sm">
-
+    
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex h-20 items-center justify-between">
 
@@ -264,6 +267,7 @@
             </div>
 
             {{-- SEARCH (Improved) --}}
+            @if($isUser)
             <div x-data="{ focused: false }" class="relative flex-1 mx-4 max-w-xl hidden md:block">
                 <form action="/search" method="GET" 
                       class="relative group transition-all duration-300"
@@ -291,10 +295,12 @@
                          :class="focused ? 'border-[#dc2626]/20' : ''"></div>
                 </form>
             </div>
+            @endif
 
             {{-- RIGHT --}}
             <div class="flex items-center gap-3 md:gap-5">
 
+                @if($isUser)
                 {{-- WISHLIST --}}
                 <a href="/wishlist"
                     class="nav-icon-btn btn-active-scale
@@ -320,7 +326,9 @@
                         @endif
                     @endauth
                 </a>
+                @endif
 
+                @if($isUser)
                 {{-- CART --}}
                 <a href="/cart"
                     class="nav-icon-btn btn-active-scale 
@@ -346,7 +354,8 @@
                         @endif
                     @endauth
                 </a>
-
+                @endif
+                @if($isUser)
                 {{-- NOTIFICATION --}}
                 <a href="/notifications"
                     class="nav-icon-btn btn-active-scale
@@ -372,7 +381,7 @@
                         @endif
                     @endauth
                 </a>
-
+                @endif
                 {{-- PROFILE DROPDOWN --}}
                 @auth
                 @php
