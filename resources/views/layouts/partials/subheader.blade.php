@@ -132,10 +132,12 @@
 
                 @foreach($links as $index => $link)
                     @if($index > 0)
-                        <li class="h-5 w-[1px] bg-gradient-to-b from-transparent via-[#E7BD8A]/40 to-transparent {{ ($link['mobile_hidden'] ?? false) ? 'hidden md:block' : '' }}"></li>
+                        <li class="hidden sm:block h-5 w-[1px]
+                                bg-gradient-to-b from-transparent via-[#E7BD8A]/40 to-transparent">
+                        </li>
                     @endif
 
-                    <li class="{{ ($link['mobile_hidden'] ?? false) ? 'hidden md:block' : '' }} h-full flex items-center">
+                    <li class="{{ ($link['mobile_hidden'] ?? false) ? 'hidden sm:block' : '' }} h-full flex items-center">
                         <a href="{{ $link['url'] }}" 
                            class="nav-link-shine btn-click-effect relative flex items-center h-full px-3 transition-all duration-300 hover:text-[#fee2e2] group">
                             <span class="relative z-10">{{ $link['name'] }}</span>
