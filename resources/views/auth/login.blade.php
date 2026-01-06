@@ -1,30 +1,23 @@
 <x-guest-layout>
-    {{-- 
-        LAYOUT LOGIN (WARNA MERAH-HITAM & BLUR IMAGE)
-    --}}
     <div x-data="{ 
             showPassword: false, 
             loading: false 
          }" 
          class="fixed inset-0 z-50 flex bg-white font-sans overflow-hidden">
-
-        {{-- BAGIAN KIRI: BRANDING (Dark Theme with Blur) --}}
         <div class="hidden lg:flex lg:w-1/2 relative bg-black h-full overflow-hidden">
-            {{-- Gambar dengan filter Blur dan Grayscale sedikit agar menyatu dengan Hitam --}}
             <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
                  class="absolute inset-0 w-full h-full object-cover opacity-40 blur-md scale-110" 
                  alt="Background Login">
             
-            {{-- Overlay gradasi hitam agar teks lebih terbaca --}}
             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
 
             <div class="relative z-10 w-full flex flex-col justify-between p-12 xl:p-16 text-white h-full">
                 <div>
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="h-10 w-10 bg-[#d50d27] rounded-xl flex items-center justify-center shadow-lg shadow-[#d50d27]/40">
-                            <span class="text-xl font-bold">TJ</span>
+                        <div class="h-10 w-20 bg-[#d50d27] rounded-xl flex items-center justify-center shadow-lg shadow-[#d50d27]/40">
+                            <span class="text-xl font-bold">TJ&T</span>
                         </div>
-                        <span class="text-lg font-semibold tracking-wide">TJ-T Mart</span>
+                        <span class="text-lg font-bold tracking-wide">Mart</span>
                     </div>
                     
                     <h1 class="text-4xl xl:text-5xl font-bold leading-tight mb-4">

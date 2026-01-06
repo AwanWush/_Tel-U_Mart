@@ -5,9 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\KategoriProduk;
 use App\Models\Produk;
-use App\Models\Mart; 
+use App\Models\Mart;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ProdukController extends Controller
 {
@@ -38,13 +37,20 @@ class ProdukController extends Controller
             'stok' => 'required|integer',
             'mart_id' => 'required|array',
             'status_ketersediaan' => 'required|in:Tersedia,Habis',
-            'gambar' => 'nullable|image|max:2048',
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $data = $request->except('mart_id');
 
         if ($request->hasFile('gambar')) {
-            $data['gambar'] = $request->file('gambar')->store('produk', 'public');
+            $file = $request->file('gambar');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            // ⬇️ SIMPAN KE public/produk_assets
+            $file->move(public_path('produk_assets'), $filename);
+
+            // simpan path relatif ke DB
+            $data['gambar'] = 'produk_assets/' . $filename;
         }
 
         $produk = Produk::create($data);
@@ -60,7 +66,7 @@ class ProdukController extends Controller
         $kategori = KategoriProduk::all();
         $mart = Mart::all();
 
-        return view('kategori.admin.edit', compact('produk', 'kategori', 'mart'));
+        return view('admin.produk.edit', compact('produk', 'kategori', 'mart'));
     }
 
     // ================= UPDATE =================
@@ -72,31 +78,44 @@ class ProdukController extends Controller
             'stok' => 'required|integer',
             'mart_id' => 'required|array',
             'status_ketersediaan' => 'required|in:Tersedia,Habis',
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $data = $request->except('mart_id');
 
         if ($request->hasFile('gambar')) {
-            if ($produk->gambar) {
-                Storage::disk('public')->delete($produk->gambar);
+
+            // hapus gambar lama
+            if ($produk->gambar && file_exists(public_path($produk->gambar))) {
+                unlink(public_path($produk->gambar));
             }
-            $data['gambar'] = $request->file('gambar')->store('produk', 'public');
+
+            $file = $request->file('gambar');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('produk_assets'), $filename);
+
+            $data['gambar'] = 'produk_assets/' . $filename;
         }
 
         $produk->update($data);
         $produk->marts()->sync($request->mart_id);
 
-        return redirect()->route('admin.kategori.index')
+        return redirect()->route('admin.produk.index')
             ->with('success', 'Produk berhasil diperbarui');
     }
 
     // ================= DELETE =================
     public function destroy(Produk $produk)
     {
+        // hapus gambar
+        if ($produk->gambar && file_exists(public_path($produk->gambar))) {
+            unlink(public_path($produk->gambar));
+        }
+
         $produk->marts()->detach();
         $produk->delete();
 
-        return redirect()->route('admin.kategori.index')
+        return redirect()->route('admin.produk.index')
             ->with('success', 'Produk berhasil dihapus');
     }
 }

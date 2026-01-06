@@ -27,10 +27,10 @@
                 <div>
                     <div class="flex items-center gap-3 mb-6">
                         <div
-                            class="h-10 w-10 bg-[#d50d27] rounded-xl flex items-center justify-center shadow-lg shadow-[#d50d27]/40">
-                            <span class="text-xl font-bold">TJ</span>
+                            class="h-10 w-20 bg-[#d50d27] rounded-xl flex items-center justify-center shadow-lg shadow-[#d50d27]/40">
+                            <span class="text-xl font-bold">TJ&T</span>
                         </div>
-                        <span class="text-lg font-semibold tracking-wide">TJ-T Mart</span>
+                        <span class="text-lg font-semibold tracking-wide">Mart</span>
                     </div>
 
                     <h1 class="text-4xl xl:text-5xl font-bold leading-tight mb-4">

@@ -2,7 +2,14 @@
     {{-- padding-top tetap 120px agar turun dari navbar --}}
     <div class="bg-gray-50 min-h-screen pb-12" style="padding-top: 120px;"> 
         <div class="max-w-7xl mx-auto px-4 space-y-8">
-
+                                <nav class="flex items-center space-x-2 mb-4 text-sm font-bold text-gray-500">
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 hover:text-[#dc2626] transition-all group">
+                    <svg class="w-5 h-5 text-gray-400 group-hover:text-[#dc2626] transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 001 1h3a2 2 0 002-2v-7.586l.293.293a1 1 0 001.414-1.414Z" />
+                    </svg>
+                    <span class="tracking-wide">Dashboard</span>
+                </a>
+            </nav>
             {{-- HEADER --}}
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h2 class="text-3xl font-black text-red-700 uppercase tracking-tighter">

@@ -12,13 +12,19 @@ return Application::configure(basePath: dirname(__DIR__))
     )
 
     ->withMiddleware(function (Middleware $middleware) {
-        // 1. Agar Laravel percaya IP dari Ngrok (PENTING untuk Session)
+        // --- TAMBAHKAN INI ---
+        $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class, // Pastikan path class ini benar sesuai file middleware Anda
+        ]);
+        // ---------------------
+
+        // 1. Agar Laravel percaya IP dari Ngrok
         $middleware->trustProxies(at: '*'); 
 
         // 2. Tambahkan Middleware Ngrok kamu
         $middleware->append(\App\Http\Middleware\NgrokSkipWarning::class);
         
-        // 3. Bypass CSRF agar tidak 419 Page Expired
+        // 3. Bypass CSRF
         $middleware->validateCsrfTokens(except: [
             'register', 
             'login', 
