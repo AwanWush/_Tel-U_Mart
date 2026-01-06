@@ -12,22 +12,36 @@ class LaporanPenjualanController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil dari request atau default ke bulan & tahun sekarang
+
         $bulan = $request->bulan ?? now()->month;
         $tahun = $request->tahun ?? now()->year;
 
-        // 🔥 Query dengan filter bulan & tahun + hanya yang LUNAS
+        // DAFTAR METODE YANG DIIZINKAN TAMPIL DI LAPORAN
+        $allowedMethods = [
+            'cash',
+            'qris',
+            'midtrans',
+            'transfer',
+            'e-wallet',
+        ];
+
+
         $data = RiwayatPembelian::where('status', 'Lunas')
             ->whereMonth('created_at', $bulan)
             ->whereYear('created_at', $tahun)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Hitung ringkasan
+
+        $data = $data->filter(function ($item) use ($allowedMethods) {
+            return in_array(strtolower($item->metode_pembayaran), $allowedMethods);
+        });
+
+
         $totalOmset = $data->sum('total_harga');
         $totalTransaksi = $data->count();
 
-        // Normalisasi metode pembayaran (biar Cash, cash, CASH kebaca sama)
+
         $totalCash = $data->filter(fn($x) => strtolower($x->metode_pembayaran) === 'cash')->sum('total_harga');
         $totalQRIS = $data->filter(fn($x) => strtolower($x->metode_pembayaran) === 'qris')->sum('total_harga');
         $totalMidtrans = $data->filter(fn($x) => strtolower($x->metode_pembayaran) === 'midtrans')->sum('total_harga');
