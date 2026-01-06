@@ -2,25 +2,25 @@
 
 namespace App\Exports;
 
-use App\Models\Penjualan;
-use Illuminate\Support\Collection;
+use App\Models\RiwayatPembelian;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize; // 🔥 Tambahkan ini
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Illuminate\Support\Collection;
 
-class LaporanPenjualanExport implements
-    FromCollection,
-    WithHeadings,
-    WithStyles,
-    WithColumnFormatting,
-    ShouldAutoSize // 🔥 Daftarkan di sini
+class LaporanPenjualanExport implements 
+    FromCollection, 
+    WithHeadings, 
+    WithStyles, 
+    WithColumnFormatting, 
+    ShouldAutoSize
 {
     protected $bulan;
     protected $tahun;
@@ -33,42 +33,55 @@ class LaporanPenjualanExport implements
 
     public function collection()
     {
-        $data = Penjualan::whereMonth('tanggal_penjualan', $this->bulan)
-            ->whereYear('tanggal_penjualan', $this->tahun)
-            ->select('tanggal_penjualan', 'metode_pembayaran', 'total')
+        $data = RiwayatPembelian::where('status', 'Lunas')
+            ->whereMonth('created_at', $this->bulan)
+            ->whereYear('created_at', $this->tahun)
+            ->orderBy('created_at', 'desc')
             ->get();
 
         if ($data->isEmpty()) {
             return new Collection([
                 [
-                    'tanggal_penjualan' => '-',
-                    'metode_pembayaran' => 'Tidak ada data untuk periode ini',
-                    'total' => 0,
+                    'Tanggal' => '-',
+                    'ID Transaksi' => '-',
+                    'Metode Pembayaran' => 'Tidak ada data lunas untuk periode ini',
+                    'Total' => 0,
+                    'Status' => '-',
                 ]
             ]);
         }
 
-        return $data;
+        return $data->map(function ($item) {
+            return [
+                'Tanggal' => $item->created_at->format('d-m-Y'),
+                'ID Transaksi' => $item->id_transaksi,
+                'Metode Pembayaran' => $item->metode_pembayaran,
+                'Total' => $item->total_harga,
+                'Status' => $item->status,
+            ];
+        });
     }
 
     public function headings(): array
     {
         return [
-            'Tanggal Penjualan',
+            'Tanggal',
+            'ID Transaksi',
             'Metode Pembayaran',
             'Total Pembayaran',
+            'Status',
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         $lastRow = $sheet->getHighestRow();
+        $lastColumn = 'E';
 
-        // Styling Header (Baris 1)
-        $sheet->getStyle('A1:C1')->applyFromArray([
+        $sheet->getStyle("A1:{$lastColumn}1")->applyFromArray([
             'font' => [
                 'bold' => true,
-                'color' => ['rgb' => 'FFFFFF'], // Teks Putih
+                'color' => ['rgb' => 'FFFFFF'],
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -76,16 +89,14 @@ class LaporanPenjualanExport implements
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '4F81BD'], // Biru Profesional
+                'startColor' => ['rgb' => '4F81BD'],
             ],
         ]);
 
-        // Styling Seluruh Tabel
-        $sheet->getStyle("A1:C{$lastRow}")->applyFromArray([
+        $sheet->getStyle("A1:{$lastColumn}{$lastRow}")->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['rgb' => '000000'],
                 ],
             ],
             'alignment' => [
@@ -93,17 +104,17 @@ class LaporanPenjualanExport implements
             ],
         ]);
 
-        // Meratakan teks di tengah untuk kolom A dan B agar lebih rapi
-        $sheet->getStyle("A2:B{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("A2:C{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("E2:E{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         return $sheet;
     }
 
+    // Fungsi yang menyebabkan error tadi sudah diperbaiki namanya:
     public function columnFormats(): array
     {
         return [
-            'A' => 'dd/mm/yyyy',
-            'C' => '"Rp "#,##0', // Format Rupiah yang lebih proper
+            'D' => '"Rp "#,##0', 
         ];
     }
 }
