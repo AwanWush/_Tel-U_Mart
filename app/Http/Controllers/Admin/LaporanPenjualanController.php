@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\RiwayatPembelian;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LaporanPenjualanExport;
 
@@ -13,28 +12,39 @@ class LaporanPenjualanController extends Controller
 {
     public function index(Request $request)
     {
-        $martId = Auth::user()->mart_id;
-
+        // Ambil dari request atau default ke bulan & tahun sekarang
         $bulan = $request->bulan ?? now()->month;
         $tahun = $request->tahun ?? now()->year;
 
-        $query = RiwayatPembelian::where('status', 'Lunas')
+        // 🔥 Query dengan filter bulan & tahun + hanya yang LUNAS
+        $data = RiwayatPembelian::where('status', 'Lunas')
             ->whereMonth('created_at', $bulan)
-            ->whereYear('created_at', $tahun);
+            ->whereYear('created_at', $tahun)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        // Kalau tabel ini punya mart_id:
-        // ->where('mart_id', $martId);
+        // Hitung ringkasan
+        $totalOmset = $data->sum('total_harga');
+        $totalTransaksi = $data->count();
 
-        $data = $query->orderBy('created_at', 'desc')->get();
+        // Normalisasi metode pembayaran (biar Cash, cash, CASH kebaca sama)
+        $totalCash = $data->filter(fn($x) => strtolower($x->metode_pembayaran) === 'cash')->sum('total_harga');
+        $totalQRIS = $data->filter(fn($x) => strtolower($x->metode_pembayaran) === 'qris')->sum('total_harga');
+        $totalMidtrans = $data->filter(fn($x) => strtolower($x->metode_pembayaran) === 'midtrans')->sum('total_harga');
+        $totalTransfer = $data->filter(fn($x) => strtolower($x->metode_pembayaran) === 'transfer')->sum('total_harga');
+        $totalEwallet = $data->filter(fn($x) => strtolower($x->metode_pembayaran) === 'e-wallet')->sum('total_harga');
 
         return view('admin.produk.laporan.index', [
             'penjualan' => $data,
             'bulan' => $bulan,
             'tahun' => $tahun,
-            'totalOmset' => $data->sum('total_harga'),
-            'totalTransaksi' => $data->count(),
-            'totalCash' => $data->where('metode_pembayaran', 'Cash')->sum('total_harga'),
-            'totalQRIS' => $data->where('metode_pembayaran', 'QRIS')->sum('total_harga'),
+            'totalOmset' => $totalOmset,
+            'totalTransaksi' => $totalTransaksi,
+            'totalCash' => $totalCash,
+            'totalQRIS' => $totalQRIS,
+            'totalMidtrans' => $totalMidtrans,
+            'totalTransfer' => $totalTransfer,
+            'totalEwallet' => $totalEwallet,
         ]);
     }
 
