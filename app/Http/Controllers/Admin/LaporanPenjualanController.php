@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Penjualan;
+use App\Models\RiwayatPembelian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -18,20 +18,23 @@ class LaporanPenjualanController extends Controller
         $bulan = $request->bulan ?? now()->month;
         $tahun = $request->tahun ?? now()->year;
 
-        $penjualan = Penjualan::where('mart_id', $martId)
-            ->whereMonth('tanggal_penjualan', $bulan)
-            ->whereYear('tanggal_penjualan', $tahun)
-            ->orderBy('tanggal_penjualan', 'desc')
-            ->get();
+        $query = RiwayatPembelian::where('status', 'Lunas')
+            ->whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun);
+
+        // Kalau tabel ini punya mart_id:
+        // ->where('mart_id', $martId);
+
+        $data = $query->orderBy('created_at', 'desc')->get();
 
         return view('admin.produk.laporan.index', [
-            'penjualan' => $penjualan,
+            'penjualan' => $data,
             'bulan' => $bulan,
             'tahun' => $tahun,
-            'totalOmset' => $penjualan->sum('total'),
-            'totalTransaksi' => $penjualan->count(),
-            'totalCash' => $penjualan->where('metode_pembayaran', 'Cash')->sum('total'),
-            'totalQRIS' => $penjualan->where('metode_pembayaran', 'QRIS')->sum('total'),
+            'totalOmset' => $data->sum('total_harga'),
+            'totalTransaksi' => $data->count(),
+            'totalCash' => $data->where('metode_pembayaran', 'Cash')->sum('total_harga'),
+            'totalQRIS' => $data->where('metode_pembayaran', 'QRIS')->sum('total_harga'),
         ]);
     }
 
