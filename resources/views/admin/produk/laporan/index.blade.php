@@ -75,14 +75,14 @@
                     <p class="text-xs font-bold text-gray-400 uppercase">Total Omset</p>
                     <h3 class="text-2xl font-black text-gray-800 mt-1">Rp {{ number_format($totalOmset) }}</h3>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border-b-4 border-red-600 shadow-sm">
+                {{-- <div class="bg-white p-6 rounded-2xl border-b-4 border-red-600 shadow-sm">
                     <p class="text-xs font-bold text-gray-400 uppercase">Cash</p>
                     <h3 class="text-2xl font-black text-gray-800 mt-1">Rp {{ number_format($totalCash) }}</h3>
                 </div>
                 <div class="bg-white p-6 rounded-2xl border-b-4 border-red-600 shadow-sm">
                     <p class="text-xs font-bold text-gray-400 uppercase">QRIS</p>
                     <h3 class="text-2xl font-black text-gray-800 mt-1">Rp {{ number_format($totalQRIS) }}</h3>
-                </div>
+                </div> --}}
             </div>
 
             {{-- TABEL --}}
