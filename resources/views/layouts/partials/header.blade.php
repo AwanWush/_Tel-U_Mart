@@ -1,5 +1,4 @@
 <style>
-    /* Tombol Icon */
     .nav-icon-btn {
         position: relative;
         width: 44px;
@@ -8,7 +7,6 @@
         overflow: visible;
     }
 
-    /* Layer Icon */
     .nav-icon-btn .icon-layer {
         position: relative;
         z-index: 2;
@@ -17,7 +15,6 @@
         justify-content: center;
     }
 
-    /* Shine Layer */
     .nav-icon-btn .shine-layer {
         position: absolute;
         inset: 0;
@@ -38,13 +35,11 @@
         transition: none;
     }
 
-    /* Shine hanya saat hover & TIDAK aktif */
     .nav-icon-btn:not(.active):hover .shine-layer::after {
         left: 120%;
         transition: all 0.6s ease-in-out;
     }
 
-    /* Badge */
     .nav-badge {
         position: absolute;
         top: -6px;
@@ -66,26 +61,22 @@
         ring: 2px solid white;
     }
 
-    /* Active state */
     .nav-icon-btn.active {
         background: #dc2626;
         color: white;
         box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);
     }
 
-    /* Klik animasi */
     .btn-active-scale:active {
         transform: scale(0.92);
     }
 
-    /* Hover state untuk tombol yang tidak aktif */
     .nav-icon-btn:not(.active):hover {
-        background-color: #fee2e2; /* Varian merah muda */
-        color: #b91c1c; /* Varian merah gelap */
+        background-color: #fee2e2; 
+        color: #b91c1c; 
         border: 1px solid #fecaca;
     }
 
-    /* Logo Glitch/Shine Effect */
     .logo-animate {
         position: relative;
         overflow: hidden;
@@ -94,13 +85,11 @@
         -webkit-text-fill-color: transparent;
     }
 
-    /* Search Bar Focus Effect */
     .search-container-focus {
         box-shadow: 0 0 15px rgba(220, 38, 38, 0.15);
         transform: translateY(-1px);
     }
 
-    /* Shine effect untuk Mobile Toggle */
     .shine-mobile {
         position: relative;
         overflow: hidden;
@@ -127,7 +116,6 @@
         outline: none !important;
     }
 
-    /* Profile Button Enhancements */
     .profile-btn-active {
         background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
         color: white !important;
@@ -147,7 +135,6 @@
         box-shadow: 0 2px 10px rgba(220, 38, 38, 0.1);
     }
 
-    /* Dropdown Item Styling */
     .dropdown-item-red {
         color: #1a1a1a;
         transition: all 0.2s ease;
@@ -161,7 +148,6 @@
         padding-left: 1.25rem !important;
     }
 
-    /* Logout Button - Warna Utama #dc2626 */
     .dropdown-logout {
         background-color: transparent;
         color: #dc2626 !important;
@@ -169,11 +155,10 @@
     }
 
     .dropdown-logout:hover {
-        background-color: #dc2626 !important; /* Warna Utama */
+        background-color: #dc2626 !important;
         color: white !important;
     }
 
-    /* Icon Profile Container Animation */
     .profile-icon-container {
         position: relative;
         transition: transform 0.3s ease;
@@ -183,7 +168,6 @@
         transform: scale(1.1);
     }
 
-    /* Mobile Menu Link Enhancements */
     .mobile-link {
         display: flex;
         align-items: center;
@@ -210,7 +194,6 @@
         transform: scale(0.98);
     }
 
-    /* Mobile Search Input Enhancement */
     .mobile-search-input {
         border: 1px solid #5B000B !important;
         transition: all 0.3s ease;
@@ -223,7 +206,6 @@
         background-color: white;
     }
 
-    /* Animation for Mobile Menu items */
     .mobile-menu-item {
         opacity: 0;
         transform: translateX(-10px);

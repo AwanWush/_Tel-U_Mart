@@ -36,14 +36,12 @@
         left: 150%;
     }
 
-    /* Animasi Klik Berdenyut (Pulse) */
     .btn-click-effect:active {
         transform: scale(0.92);
         filter: brightness(1.2);
         transition: transform 0.1s;
     }
 
-    /* Peningkatan Glassmorphism dengan skema warna spesifik */
     .mart-button-premium {
         background: linear-gradient(135deg, rgba(91, 0, 11, 0.4), rgba(185, 28, 28, 0.2));
         backdrop-filter: blur(12px);
@@ -54,7 +52,6 @@
         position: relative;
     }
 
-    /* Efek Hover: Berubah menjadi gradasi emas ke merah gelap */
     .mart-button-premium:hover {
         background: linear-gradient(135deg, #5B000B, #b91c1c);
         border-color: #E7BD8A;
@@ -62,7 +59,6 @@
         transform: translateY(-1px);
     }
 
-    /* Efek Shining Kristal Putih yang lebih tajam */
     .crystal-shine {
         position: relative;
         overflow: hidden;
@@ -89,7 +85,6 @@
         left: 150%;
     }
 
-    /* Pulse animation khusus untuk Pin Icon saat hover */
     .mart-button-premium:hover .floating-icon {
         animation: pinPulse 1.5s infinite;
     }
@@ -100,7 +95,6 @@
         100% { transform: scale(1); filter: drop-shadow(0 0 0px #E7BD8A); }
     }
 
-    /* Floating Animation untuk Icon */
     .floating-icon {
         animation: miniFloat 2s ease-in-out infinite;
     }

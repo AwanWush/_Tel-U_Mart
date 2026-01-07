@@ -19,7 +19,6 @@
         background: linear-gradient(to top, rgba(220, 38, 38, 0.9), transparent);
     }
 
-    /* Shining Effect Animation */
     @keyframes shine {
         100% { left: 125%; }
     }
@@ -45,30 +44,27 @@
         animation: shine 0.8s forwards;
     }
 
-    /* Menambahkan class agar konsisten dengan style Riwayat Transaksi */
     .badge-history-style {
         transition: all 0.3s ease;
         background-color: #ffffff;
-        border: 0.3px solid rgba(220, 38, 38, 0.5); /* border-red-main/50 */
-        color: #dc2626; /* text-red-main */
-        box-shadow: 0 2px 6px rgba(220, 38, 38, 0.15); /* shadow-red-soft */
+        border: 0.3px solid rgba(220, 38, 38, 0.5); 
+        color: #dc2626;
+        box-shadow: 0 2px 6px rgba(220, 38, 38, 0.15); 
     }
 
     .badge-history-style:hover {
         box-shadow: 0 6px 15px rgba(220, 38, 38, 0.3);
         border-color: #dc2626;
         transform: translateY(-2px);
-        background-color: rgba(254, 226, 226, 0.5); /* hover:bg-red-50/50 */
+        background-color: rgba(254, 226, 226, 0.5);
     }
 
-    /* Smooth Scroll for Mobile */
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* === Scrollbar Horizontal Katalog Produk === */
     .product-scrollbar {
-        scrollbar-width: thin;              /* Firefox */
-        scrollbar-color: #dc2626 #fef2f2;    /* thumb | track */
+        scrollbar-width: thin;           
+        scrollbar-color: #dc2626 #fef2f2;   
     }
 
     .product-scrollbar::-webkit-scrollbar {
@@ -89,7 +85,6 @@
         background: linear-gradient(to right, #b91c1c, #991b1b);
     }
 
-    /* Penambahan Animasi Katalog */
     .product-card-container {
         perspective: 1000px;
     }
@@ -112,7 +107,6 @@
         100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
     }
 
-    /* Memastikan scroll halus untuk navigasi klik */
     .scroll-smooth {
         scroll-behavior: smooth;
     }
@@ -378,7 +372,6 @@
             startAutoSlide();
         }
 
-        // Expose ke global (dipakai tombol)
         window.nextBanner = () => {
             nextBanner();
             resetAutoSlide();
@@ -393,7 +386,6 @@
             goToBanner(index);
         };
 
-        // Init
         updateBannerDisplay();
         startAutoSlide();
     });

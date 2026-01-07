@@ -4,8 +4,7 @@
     <div id="banner-track" class="flex transition-all duration-700">
         @forelse($banners ?? [] as $banner)
             <a href="{{ $banner->redirect_url ?? '#' }}" class="min-w-full">
-                
-                <!-- 🔒 HEIGHT DIKUNCI DI SINI -->
+
                 <div class="w-full h-52 bg-gray-200 rounded-xl overflow-hidden">
                     <img
                         src="{{ asset('banners/' . $banner->image_path) }}"

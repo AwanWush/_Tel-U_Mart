@@ -11,7 +11,6 @@
                 color: #b91c1c;
                 transform: translateX(-3px);
             }
-            /* Animasi tambahan untuk Gambar Produk */
             .product-image-container {
                 position: relative;
                 cursor: crosshair;
@@ -19,7 +18,7 @@
                 border: 1px solid #e5e7eb;
             }
             .product-image-container:hover {
-                border-color: #dc2626; /* Warna merah utama */
+                border-color: #dc2626; 
                 box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.1), 0 8px 10px -6px rgba(220, 38, 38, 0.1);
             }
             .img-zoom {
@@ -30,10 +29,9 @@
             }        
             .img-magnifier-glass {
                 position: fixed;
-                border: 2px solid #dc2626; /* Warna merah utama */
+                border: 2px solid #dc2626;
                 border-radius: 50%;
                 cursor: crosshair;
-                /* Ukuran lensa */
                 width: 150px;
                 height: 150px;
                 display: none;
@@ -42,7 +40,6 @@
                 z-index: 9999;
                 transition: left 0.05s linear, top 0.05s linear;
             }
-            /* Style tambahan untuk Informasi Produk */
             .select-variant {
                 transition: all 0.2s ease;
                 border: 1px solid #e5e7eb;
@@ -59,7 +56,6 @@
             .mart-badge:hover {
                 transform: translateY(-2px);
             }
-            /* Animasi & Style Baru untuk Informasi Produk */
             @keyframes fadeInUp {
                 from { opacity: 0; transform: translateY(10px); }
                 to { opacity: 1; transform: translateY(0); }
@@ -73,7 +69,6 @@
                 border-left: 3px solid #dc2626;
                 padding-left: 8px;
             }
-            /* Animasi Idle untuk Harga */
             @keyframes priceGlow {
                 0%, 100% { opacity: 1; filter: drop-shadow(0 0 0px rgba(220, 38, 38, 0)); }
                 50% { opacity: 0.9; filter: drop-shadow(0 0 4px rgba(220, 38, 38, 0.3)); }
@@ -81,8 +76,6 @@
             .animate-price-idle {
                 animation: priceGlow 3s ease-in-out infinite;
             }
-
-            /* Animasi Rating Berhasil */
             @keyframes ratingSuccess {
                 0% { transform: scale(1); }
                 50% { transform: scale(1.15); }
@@ -90,9 +83,8 @@
             }
             .rating-success-animate {
                 animation: ratingSuccess 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                color: #fbbf24 !important; /* Warna kuning emas saat sukses */
+                color: #fbbf24 !important; 
             }
-            /* Animasi Progress Bar */
             @keyframes growBar {
                 from { width: 0; }
                 to { width: var(--target-width); }
@@ -101,7 +93,6 @@
                 animation: growBar 1s ease-out forwards;
             }
 
-            /* Hover effect untuk Rating Input */
             .star-input {
                 transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s;
             }
@@ -109,13 +100,11 @@
                 transform: scale(1.3) rotate(15deg);
             }
 
-            /* Animasi tombol pada Action Card */
             .btn-action:hover {
                 filter: brightness(1.1);
                 transform: translateY(-2px);
                 box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
             }
-            /* Warna fokus input qty */
             #main-qty-input:focus {
                 border-color: #dc2626;
                 ring: 2px;
@@ -123,7 +112,6 @@
                 box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
             }
 
-            /* Efek Kilau (Shine Animation) */
             @keyframes shine {
                 100% { left: 125%; }
             }
@@ -154,7 +142,6 @@
                 animation: shine 0.8s forwards;
             }
 
-            /* Animasi Idle Pulse untuk Tombol Utama */
             @keyframes softPulse {
                 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
                 70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
@@ -165,7 +152,6 @@
                 animation: softPulse 2s infinite;
             }
 
-            /* Refinement btn-action */
             .btn-action {
                 transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             }
@@ -502,7 +488,7 @@
 
                 const glass = document.createElement("div");
                 glass.className = "img-magnifier-glass";
-                document.body.appendChild(glass); // FIXED → body
+                document.body.appendChild(glass); 
 
                 const zoom = 2;
 
@@ -522,11 +508,9 @@
                     const glassSize = glass.offsetWidth / 2;
                     const offset = 10; // jarak dari cursor (biar tidak nutup)
 
-                    // POSISI LENS DEKAT CURSOR
                     glass.style.left = (e.clientX + offset) + "px";
                     glass.style.top  = (e.clientY + offset) + "px";
 
-                    // ZOOM IMAGE
                     glass.style.backgroundImage = `url('${img.src}')`;
                     glass.style.backgroundRepeat = "no-repeat";
                     glass.style.backgroundSize =
@@ -540,7 +524,6 @@
                 container.addEventListener("mousemove", moveMagnifier);
                 container.addEventListener("mouseleave", () => glass.style.display = "none");
 
-                // STAR RATING INTERACTION
                 const stars = document.querySelectorAll('#star-rating .star');
                 const ratingInput = document.getElementById('rating-input');
 
@@ -570,18 +553,14 @@
 
                 if (ratingForm && ratingContainer) {
                     ratingForm.addEventListener('submit', function(e) {
-                        // Kita berikan efek animasi sesaat sebelum/saat proses kirim
                         ratingContainer.classList.add('rating-success-animate');
                         
-                        // Opsional: Jika Anda ingin animasi terlihat jelas sebelum redirect/refresh
-                        // hapus class setelah animasi selesai
                         setTimeout(() => {
                             ratingContainer.classList.remove('rating-success-animate');
                         }, 1000);
                     });
                 }
 
-                // Jika ulasan berhasil diperbaharui (deteksi lewat session Laravel)
                 @if(session('success'))
                     const ratingContainerEl = document.getElementById('rating-container');
                     if (ratingContainerEl) {
@@ -612,7 +591,6 @@
                     displaySubtotal.innerText = 'Rp ' + total.toLocaleString('id-ID');
                 }
 
-                // PASANG EVENT
                 qtyInput.addEventListener('input', updateSubtotal);
                 qtyInput.addEventListener('change', updateSubtotal);
 
