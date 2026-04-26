@@ -33,10 +33,11 @@ class RiwayatPembelian extends Model
      * Relasi ke Detail Pembelian (Daftar barang yang dibeli)
      * Digunakan agar admin bisa melihat rincian produk di tabel pesanan
      */
-    public function details()
-    {
-        return $this->hasMany(DetailPembelian::class, 'riwayat_pembelian_id');
-    }
+// Tambahkan relasi detail agar kurir bisa melihat APA yang harus diantar
+public function details()
+{
+    return $this->hasMany(DetailPembelian::class, 'riwayat_pembelian_id');
+}
 
     /**
      * Relasi ke Transaksi (Opsional jika Anda memiliki tabel transaksi terpisah)

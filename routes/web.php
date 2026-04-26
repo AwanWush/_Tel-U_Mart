@@ -388,6 +388,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/superadmin', [SuperAdminController::class, 'index'])
         ->name('dashboard.superadmin');
 
+        // Tambahkan di dalam Route::middleware(['auth'])->group(...)
+Route::prefix('superadmin')->group(function () {
+    Route::get('/kelola-kurir', [SuperAdminController::class, 'manageKurir'])->name('superadmin.kurir.index');
+    Route::post('/kelola-kurir/store', [SuperAdminController::class, 'storeKurir'])->name('superadmin.kurir.store');
+    Route::delete('/kelola-kurir/delete/{id}', [SuperAdminController::class, 'destroyKurir'])->name('superadmin.kurir.destroy');
+});
+
     // Manajemen Gaji
     Route::get('/gaji-admin', [GajiController::class, 'index'])->name('gaji.admin');
     Route::post('/gaji-admin/update/{id}', [GajiController::class, 'update'])->name('gaji.update');

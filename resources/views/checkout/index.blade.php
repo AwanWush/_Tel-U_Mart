@@ -410,8 +410,6 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
 
 
         let map, marker;
-
-        // Ganti fungsi initMap lama dengan ini
         function initMap() {
             if (map) return;
 

@@ -105,6 +105,10 @@
                             <i class="fas fa-tags text-2xl text-yellow-600 mb-2 group-hover:scale-110 transition"></i>
                             <span class="font-black text-xs uppercase tracking-widest text-yellow-700">Kategori</span>
                         </a>
+                        <a href="{{ route('superadmin.kurir.index') }}" class="flex flex-col items-center justify-center p-5 bg-white border-2 border-blue-50 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-all group shadow-sm active:scale-95">
+    <i class="fas fa-motorcycle text-2xl text-blue-600 mb-2 group-hover:scale-110 transition"></i>
+    <span class="font-black text-xs uppercase tracking-widest text-blue-700">Kelola Kurir</span>
+</a>
                     </div>
                 </div>
 

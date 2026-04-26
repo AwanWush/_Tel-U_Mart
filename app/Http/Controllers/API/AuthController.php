@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB; // Tambahkan ini untuk loginDriver
+use Illuminate\Support\Str; // Tambahkan ini untuk register
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -78,4 +80,40 @@ class AuthController extends Controller
     {
         return response()->json($request->user());
     }
+    public function loginDriver(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Email atau Password salah'], 401);
+    }
+
+    // Validasi apakah user ini terdaftar sebagai KURIR di tabel admins
+    $isKurir = DB::table('admins')
+                ->where('user_id', $user->id)
+                ->where('jabatan', 'Kurir')
+                ->exists();
+
+    if (!$isKurir) {
+        return response()->json(['message' => 'Anda tidak memiliki akses sebagai kurir'], 403);
+    }
+
+    $token = $user->createToken('driver_token')->plainTextToken;
+
+    return response()->json([
+        'status' => 'success',
+        'token' => $token,
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'no_telp' => $user->no_telp
+        ]
+    ]);
+}
 }
