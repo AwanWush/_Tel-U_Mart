@@ -88,4 +88,8 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Mart::class, 'active_mart_id');
     }
+    public function riwayatPembelian()
+{
+    return $this->hasMany(RiwayatPembelian::class);
+}
 }

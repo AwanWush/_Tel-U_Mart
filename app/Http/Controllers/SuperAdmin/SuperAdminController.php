@@ -8,7 +8,6 @@ use App\Models\RiwayatPembelian;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Admin; // Pastikan model Admin di-import
 use Illuminate\Support\Facades\Hash;
 
 class SuperAdminController extends Controller
@@ -75,7 +74,7 @@ class SuperAdminController extends Controller
         return redirect()->back()->with('success', 'Mart berhasil ditambahkan');
     }
 
-        public function updateMart(Request $request, $id)
+    public function updateMart(Request $request, $id)
     {
         $request->validate([
             'nama_mart' => 'required|string|max:255',
@@ -91,18 +90,19 @@ class SuperAdminController extends Controller
         return redirect()->back()->with('success', 'Data Unit Mart berhasil diperbarui!');
     }
 
-        public function toggleMartStatus($id)
-        {
-            $mart = \App\Models\Mart::findOrFail($id);
-            $mart->is_active = ! $mart->is_active;
-            $mart->save();
+    public function toggleMartStatus($id)
+    {
+        $mart = \App\Models\Mart::findOrFail($id);
+        $mart->is_active = ! $mart->is_active;
+        $mart->save();
 
-            return redirect()->back()->with('success', 'Status Mart berhasil diubah');
-        }
-        public function manageKurir()
+        return redirect()->back()->with('success', 'Status Mart berhasil diubah');
+    }
+
+    public function manageKurir()
     {
         // Mengambil user yang jabatannya adalah Kurir di tabel admins
-        $kurirs = User::whereHas('role', function($q){
+        $kurirs = User::whereHas('role', function ($q) {
             $q->where('role_name', 'admin'); // Role admin/staff
         })->whereExists(function ($query) {
             $query->select(DB::raw(1))
@@ -120,43 +120,48 @@ class SuperAdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users',
             'password' => 'required|min:8',
-            'no_telp' => 'required'
+            'no_telp' => 'required',
+            'nama_bank' => 'required|in:BCA,MANDIRI,BRI,BNI', // Validasi pilihan bank
+            'nomor_rekening' => 'required|numeric|unique:admins,nomor_rekening', // Validasi unik di tabel admins
         ]);
 
         DB::beginTransaction();
         try {
-            // 1. Simpan ke tabel Users
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'role_id' => 2, // Role Admin/Staff
+                'role_id' => 2,
                 'no_telp' => $request->no_telp,
-                'status' => 'aktif'
+                'status' => 'aktif',
             ]);
 
-            // 2. Simpan ke tabel Admins sebagai Kurir
             DB::table('admins')->insert([
                 'user_id' => $user->id,
                 'nama_custom' => $request->name,
                 'jabatan' => 'Kurir',
+                'nama_bank' => $request->nama_bank,
+                'nomor_rekening' => $request->nomor_rekening,
                 'gaji' => 0,
-                'tanggal_gaji' => now()
+                'tanggal_gaji' => now(),
             ]);
 
             DB::commit();
+
             return redirect()->back()->with('success', 'Kurir berhasil didaftarkan!');
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Gagal menambah kurir: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal: '.$e->getMessage());
         }
     }
-    public function destroyKurir($id)
-{
-    $user = User::findOrFail($id);
-    // Hapus data di admins otomatis terhapus karena ON DELETE CASCADE di SQL Anda
-    $user->delete();
 
-    return redirect()->back()->with('success', 'Akun Kurir berhasil dihapus.');
-}
+    public function destroyKurir($id)
+    {
+        $user = User::findOrFail($id);
+        // Hapus data di admins otomatis terhapus karena ON DELETE CASCADE di SQL Anda
+        $user->delete();
+
+        return redirect()->back()->with('success', 'Akun Kurir berhasil dihapus.');
+    }
 }

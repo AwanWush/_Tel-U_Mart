@@ -9,10 +9,11 @@ class RiwayatPembelian extends Model
 {
     use HasFactory;
 
-    protected $table = 'riwayat_pembelian'; // Paksa nama tabel sesuai database
+    protected $table = 'riwayat_pembelian';
 
     protected $fillable = [
         'user_id',
+        'kurir_id',        // ← Tambahan agar claim bisa update kurir_id
         'id_transaksi',
         'total_harga',
         'status',          // Status Bayar (Lunas/Belum Bayar)
@@ -21,18 +22,10 @@ class RiwayatPembelian extends Model
         'tipe_layanan',
     ];
 
-    /**
-     * Relasi ke User (Pelanggan)
-     */
     public function user() 
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
-    /**
-     * Relasi ke Detail Pembelian (Daftar barang yang dibeli)
-     * Digunakan agar admin bisa melihat rincian produk di tabel pesanan
-     */
 // Tambahkan relasi detail agar kurir bisa melihat APA yang harus diantar
 public function details()
 {
