@@ -83,60 +83,69 @@ class CheckoutController extends Controller
      * LANGKAH 3: Proses Simpan ke Database (Tabel riwayat_pembelian)
      */
     public function processCheckout(Request $request)
-    {
-        $metodePilihan = $request->payment_method;
-        $unique_order_id = 'TM-'.strtoupper(Str::random(12));
+{
+    $metodePilihan = $request->payment_method;
+    $unique_order_id = 'TM-' . strtoupper(Str::random(12));
 
-        $statusFinal = ($metodePilihan == 'cash_cod') ? 'Belum Bayar' : 'pending';
-        $labelMetode = $request->address ?? 'delivery'; // ← Simpan alamat sebagai metode_pembayaran
+    $statusFinal = ($metodePilihan == 'cash_cod') ? 'unpaid' : 'pending';
+    $labelMetode = ($metodePilihan == 'cash_cod') ? 'cash_cod' : 'va_online';
 
-        // Ambil cart_items — coba dari request dulu, fallback ke session
-        $selectedIds = $request->input('cart_items', []);
-        if (empty($selectedIds)) {
-            $selectedIds = session('checkout_cart_items', []);
-        }
+    // 1️⃣ Ambil item cart yang dipilih
+    $selectedIds = $request->input('cart_items', []);
 
-        $cartItems = \App\Models\Cart::whereIn('id', $selectedIds)
-            ->where('user_id', Auth::id())
-            ->with('produk')
-            ->get();
+    $cartItems = \App\Models\Cart::whereIn('id', $selectedIds)
+        ->where('user_id', Auth::id())
+        ->with('produk')
+        ->get();
 
-        if ($cartItems->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Cart kosong atau sesi habis, coba lagi.');
-        }
+    if ($cartItems->isEmpty()) {
+        return redirect()->route('cart.index')
+            ->with('error', 'Cart kosong');
+    }
 
-        $subtotal = $cartItems->sum(fn ($item) => $item->produk->harga * $item->quantity);
-        $service_fee = 2000;
-        $total_harga = $subtotal + $service_fee;
+    // 2️⃣ HITUNG TOTAL HARGA DI BACKEND (WAJIB)
+    $subtotal = $cartItems->sum(function ($item) {
+        return $item->produk->harga * $item->quantity;
+    });
 
-        $riwayat = RiwayatPembelian::create([
-            'user_id' => Auth::id(),
-            'id_transaksi' => $unique_order_id,
-            'total_harga' => $total_harga,
-            'status' => $statusFinal,
-            'status_antar' => 'diproses',   // ← Ini yang bikin muncul di driver
-            'metode_pembayaran' => $labelMetode,
-            'tipe_layanan' => 'delivery',
+    $service_fee = 2000;
+    $delivery_fee = 0;
+
+    $total_harga = $subtotal + $service_fee + $delivery_fee;
+
+    // 3️⃣ SIMPAN RIWAYAT PEMBELIAN
+    $riwayat = RiwayatPembelian::create([
+        'user_id' => Auth::id(),
+        'id_transaksi' => $unique_order_id,
+        'total_harga' => $total_harga, // ✅ SUDAH AMAN
+        'status' => $statusFinal,
+        'metode_pembayaran' => $labelMetode,
+    ]);
+
+    // 4️⃣ SIMPAN DETAIL PEMBELIAN
+    foreach ($cartItems as $item) {
+        DB::table('detail_pembelian')->insert([
+            'riwayat_pembelian_id' => $riwayat->id,
+            'nama_produk' => $item->produk->nama_produk,
+            'harga_satuan' => $item->produk->harga,
+            'jumlah' => $item->quantity,
+            'subtotal' => $item->produk->harga * $item->quantity,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        foreach ($cartItems as $item) {
-            DB::table('detail_pembelian')->insert([
-                'riwayat_pembelian_id' => $riwayat->id,
-                'nama_produk' => $item->produk->nama_produk,
-                'harga_satuan' => $item->produk->harga,
-                'jumlah' => $item->quantity,
-                'subtotal' => $item->produk->harga * $item->quantity,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $item->produk->decrement('stok', $item->quantity);
-        }
-
-        \App\Models\Cart::whereIn('id', $selectedIds)->delete();
-        session()->forget('checkout_cart_items');
-
-        return redirect()->route('order.success', ['order_id' => $unique_order_id]);
+        // Kurangi stok
+        $item->produk->decrement('stok', $item->quantity);
     }
+
+    // 5️⃣ HAPUS CART
+    \App\Models\Cart::whereIn('id', $selectedIds)->delete();
+
+    return redirect()->route('order.success', [
+        'order_id' => $unique_order_id
+    ]);
+}
+
     /**
      * LANGKAH 4: Struk Akhir
      */
@@ -190,6 +199,7 @@ class CheckoutController extends Controller
     //         ]
     //     ];
 
+
     //     // ===== PERHITUNGAN =====
     //     $subtotal_order = $produk->harga * $qty;
     //     $delivery_fee   = 0;        // default, JS yang toggle
@@ -219,6 +229,7 @@ class CheckoutController extends Controller
             'qty' => 'required|integer|min:1',
         ]);
 
+        
         $produk = Produk::with('marts')->findOrFail($request->product_id);
         $qty = $request->qty;
 
@@ -232,13 +243,13 @@ class CheckoutController extends Controller
                 'store' => $storeName,
                 'items' => [
                     [
-                        'name' => $produk->nama_produk,
-                        'qty' => $qty,
+                        'name'  => $produk->nama_produk,
+                        'qty'   => $qty,
                         'price' => $produk->harga,
                         'subtotal' => $produk->harga * $qty,
-                    ],
-                ],
-            ],
+                    ]
+                ]
+            ]
         ];
 
         // ATAU FORMAT 2 (flat)
@@ -256,9 +267,9 @@ class CheckoutController extends Controller
         // lanjut ke proses checkout
         // ===== PERHITUNGAN =====
         $subtotal_order = $produk->harga * $qty;
-        $delivery_fee = 0;        // default, JS yang toggle
-        $service_fee = 2000;     // sesuai blade
-        $total_payment = $subtotal_order + $service_fee + $delivery_fee;
+        $delivery_fee   = 0;        // default, JS yang toggle
+        $service_fee    = 2000;     // sesuai blade
+        $total_payment  = $subtotal_order + $service_fee + $delivery_fee;
 
         session([
             'direct_checkout' => [
@@ -268,8 +279,8 @@ class CheckoutController extends Controller
                     'service_fee' => $service_fee,
                     'delivery_fee' => $delivery_fee,
                     'total' => $total_payment,
-                ],
-            ],
+                ]
+            ]
         ]);
 
         return view('checkout.index', compact(

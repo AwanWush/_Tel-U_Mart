@@ -15,7 +15,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/driver/login', [AuthController::class, 'loginDriver']);
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Fitur untuk Aplikasi Driver (Android)
+    // Fitur untuk Aplipkasi Driver (Android)
     Route::prefix('driver')->group(function () {
         // Ambil daftar pesanan yang harus diantar oleh kurir
         Route::get('/pesanan', [App\Http\Controllers\API\DriverController::class, 'index']);

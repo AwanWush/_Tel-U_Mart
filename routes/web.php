@@ -94,7 +94,7 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 //     ->name('payment.snap-token');
 // Route::post('/checkout/direct', [CheckoutController::class, 'directCheckout'])->name('checkout.direct');
 // Route::get('/order/success', [CheckoutController::class, 'showSuccess'])->name('order.success');
-
+Route::get('/process-checkout', [CheckoutController::class, 'processCheckout'])->name('process.checkout');
 Route::get('/order/success', [OrderController::class, 'success'])
     ->name('order.success');
 Route::get('/', function () {
