@@ -22,6 +22,7 @@ class RiwayatPembelian extends Model
         'tipe_layanan',
     ];
 
+
     public function user() 
     {
         return $this->belongsTo(User::class, 'user_id');
