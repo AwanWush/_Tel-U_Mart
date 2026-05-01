@@ -120,6 +120,7 @@ class CheckoutController extends Controller
         'total_harga' => $total_harga, // ✅ SUDAH AMAN
         'status' => $statusFinal,
         'metode_pembayaran' => $labelMetode,
+        'tipe_layanan' => 'delivery',
     ]);
 
     // 4️⃣ SIMPAN DETAIL PEMBELIAN
@@ -132,6 +133,7 @@ class CheckoutController extends Controller
             'subtotal' => $item->produk->harga * $item->quantity,
             'created_at' => now(),
             'updated_at' => now(),
+
         ]);
 
         // Kurangi stok

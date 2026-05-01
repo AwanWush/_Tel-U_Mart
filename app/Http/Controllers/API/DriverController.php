@@ -14,21 +14,29 @@ class DriverController extends Controller
     {
         $driverId = $request->user()->id;
 
-        // FIX: Wrap setiap kondisi orWhere dalam closure agar SQL-nya benar
-        $pesanan = RiwayatPembelian::with(['user', 'user.lokasi', 'details'])
+        $pesanan = RiwayatPembelian::with([
+            // Ambil ID, nama, dan relasi lokasi saja
+            'user' => function ($q) {
+                $q->select('id', 'name', 'no_telp', 'lokasi_id');
+            },
+            'user.lokasi:id,nama_lokasi,nama_gedung',
+            // Ambil detail produk yang penting saja
+            'details' => function ($q) {
+                $q->select('id', 'riwayat_pembelian_id', 'nama_produk', 'jumlah', 'harga_satuan', 'subtotal');
+            },
+        ])
             ->where(function ($query) use ($driverId) {
-                // Kondisi 1: Pesanan baru — belum ada kurir, tipe delivery, status diproses
                 $query->where(function ($q) {
                     $q->where('status_antar', 'diproses')
-                      ->whereNull('kurir_id')
-                      ->where('tipe_layanan', 'delivery');
+                        ->whereNull('kurir_id')
+                        ->where('tipe_layanan', 'delivery');
                 })
-                // Kondisi 2: Pesanan milik driver ini yang sedang diantar
-                ->orWhere(function ($q) use ($driverId) {
-                    $q->where('status_antar', 'sedang diantar')
-                      ->where('kurir_id', $driverId);
-                });
+                    ->orWhere(function ($q) use ($driverId) {
+                        $q->where('status_antar', 'sedang diantar')
+                            ->where('kurir_id', $driverId);
+                    });
             })
+            ->select('id', 'user_id', 'id_transaksi', 'total_harga', 'status', 'status_antar', 'tipe_layanan', 'created_at')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -45,7 +53,7 @@ class DriverController extends Controller
         $pesanan = RiwayatPembelian::findOrFail($id);
 
         // FIX: Cegah race condition — pastikan belum diklaim driver lain
-        if (!is_null($pesanan->kurir_id)) {
+        if (! is_null($pesanan->kurir_id)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Pesanan sudah diklaim driver lain!',
@@ -61,12 +69,12 @@ class DriverController extends Controller
         }
 
         $pesanan->update([
-            'kurir_id'    => $driverId,
+            'kurir_id' => $driverId,
             'status_antar' => 'sedang diantar',
         ]);
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Pesanan berhasil diklaim!',
         ]);
     }
@@ -84,7 +92,7 @@ class DriverController extends Controller
 
         $pesanan->update([
             'status_antar' => 'selesai',
-            'status'       => 'Lunas',   // opsional: tandai juga lunas
+            'status' => 'Lunas',   // opsional: tandai juga lunas
         ]);
 
         return response()->json(['message' => 'Pesanan berhasil diselesaikan!']);
@@ -98,16 +106,16 @@ class DriverController extends Controller
         $adminData = DB::table('admins')->where('user_id', $user->id)->first();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Data profil driver',
-            'data'    => [
-                'id'              => $user->id,
-                'name'            => $user->name,
-                'email'           => $user->email,
-                'no_telp'         => $user->no_telp,
-                'nama_bank'       => $adminData->nama_bank ?? '-',
-                'nomor_rekening'  => $adminData->nomor_rekening ?? '-',
-                'tanggal_gaji'    => $adminData->tanggal_gaji ?? '-',
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'no_telp' => $user->no_telp,
+                'nama_bank' => $adminData->nama_bank ?? '-',
+                'nomor_rekening' => $adminData->nomor_rekening ?? '-',
+                'tanggal_gaji' => $adminData->tanggal_gaji ?? '-',
             ],
         ]);
     }
@@ -125,11 +133,11 @@ class DriverController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data'   => [
-                'saldo'           => $saldo,
-                'nama_bank'       => $adminData->nama_bank ?? '-',
-                'nomor_rekening'  => $adminData->nomor_rekening ?? '-',
-                'tanggal_gaji'    => $adminData
+            'data' => [
+                'saldo' => $saldo,
+                'nama_bank' => $adminData->nama_bank ?? '-',
+                'nomor_rekening' => $adminData->nomor_rekening ?? '-',
+                'tanggal_gaji' => $adminData
                                      ? Carbon::parse($adminData->tanggal_gaji)->format('d M Y')
                                      : Carbon::now()->format('d M Y'),
             ],
@@ -139,15 +147,16 @@ class DriverController extends Controller
     public function riwayat(Request $request)
     {
         $user = $request->user();
-
-        $riwayat = RiwayatPembelian::with(['user', 'details'])
+        $riwayat = RiwayatPembelian::with([
+            'user:id,name', // Cukup ambil nama pelanggan saja
+            'details:id,riwayat_pembelian_id,nama_produk,jumlah,subtotal',
+        ])
             ->where('kurir_id', $user->id)
             ->orderBy('updated_at', 'desc')
+        // Ambil hanya kolom yang benar-benar ditampilkan di tabel riwayat mobile
+            ->select('id', 'user_id', 'total_harga', 'status_antar', 'updated_at')
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data'   => $riwayat,
-        ]);
+        return response()->json(['status' => 'success', 'data' => $riwayat]);
     }
 }
