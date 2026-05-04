@@ -93,13 +93,12 @@ class AuthController extends Controller
         return response()->json(['message' => 'Email atau Password salah'], 401);
     }
 
-    // Validasi apakah user ini terdaftar sebagai KURIR di tabel admins
-    $isKurir = DB::table('admins')
-                ->where('user_id', $user->id)
-                ->where('jabatan', 'Kurir')
-                ->exists();
+    $kurir = DB::table('admins')
+        ->where('user_id', $user->id)
+        ->where('jabatan', 'Kurir')
+        ->first();
 
-    if (!$isKurir) {
+    if (!$kurir) {
         return response()->json(['message' => 'Anda tidak memiliki akses sebagai kurir'], 403);
     }
 
@@ -112,7 +111,9 @@ class AuthController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'no_telp' => $user->no_telp
+            'no_telp' => $user->no_telp,
+            'nama_bank' => $kurir->nama_bank,
+            'nomor_rekening' => $kurir->nomor_rekening
         ]
     ]);
 }

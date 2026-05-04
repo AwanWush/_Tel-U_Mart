@@ -48,7 +48,6 @@ class User extends Authenticatable
         return "{$gedung} - {$kamar}";
     }
 
-
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id', 'id');
@@ -88,8 +87,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Mart::class, 'active_mart_id');
     }
+
     public function riwayatPembelian()
-{
-    return $this->hasMany(RiwayatPembelian::class);
-}
+    {
+        return $this->hasMany(RiwayatPembelian::class);
+    }
+
+    public function admin()
+    {
+        return $this->hasOne(\App\Models\Admin::class, 'user_id', 'id');
+    }
 }

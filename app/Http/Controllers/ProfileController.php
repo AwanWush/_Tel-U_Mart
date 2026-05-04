@@ -69,53 +69,57 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'no_telp' => ['nullable', 'string', 'max:20'],
+            'name'            => ['required', 'string', 'max:255'],
+            'email'           => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'no_telp'         => ['nullable', 'string', 'max:20'],
             'penghuni_asrama' => ['required', 'in:ya,tidak'],
-            'lokasi_id' => ['nullable', 'exists:lokasi_delivery,id'],
-            'nomor_kamar' => ['nullable', 'string', 'max:10'],
-            'alamat_gedung' => ['nullable', 'string', 'max:255'],
-            'gambar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
-            'password' => ['nullable', 'string', 'min:8'],
+            'lokasi_id'       => ['nullable', 'exists:lokasi_delivery,id'],
+            'nomor_kamar'     => ['nullable', 'string', 'max:10'],
+            'alamat_gedung'   => ['nullable', 'string', 'max:255'],
+            'gambar'          => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'password'        => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
-        // Upload foto profil
+        // ── Upload foto profil ──────────────────────────────────────────────
         if ($request->hasFile('gambar')) {
+            // Hapus foto lama jika ada
             if ($user->gambar && Storage::disk('public')->exists($user->gambar)) {
                 Storage::disk('public')->delete($user->gambar);
             }
-            $path = $request->file('gambar')->store('profil', 'public');
+            $path        = $request->file('gambar')->store('profil', 'public');
             $user->gambar = $path;
         }
 
-        // Update data dasar
-        $user->name = $validated['name'];
-        $user->email = $validated['email'];
-        $user->no_telp = $validated['no_telp'];
+        // ── Update data dasar ───────────────────────────────────────────────
+        $user->name     = $validated['name'];
+        $user->email    = $validated['email'];
+        $user->no_telp  = $validated['no_telp'];
         $user->penghuni_asrama = $validated['penghuni_asrama'];
 
-        // Logika Lokasi Asrama
+        // ── Logika Lokasi Asrama ────────────────────────────────────────────
         if ($validated['penghuni_asrama'] === 'ya') {
-            $user->lokasi_id = $validated['lokasi_id'];
-            $user->nomor_kamar = $validated['nomor_kamar'];
-            
-            $gedung = LokasiDelivery::find($validated['lokasi_id']);
-            $user->alamat_gedung = $gedung ? $gedung->nama_lokasi : $validated['alamat_gedung'];
+            $user->lokasi_id    = $validated['lokasi_id'];
+            $user->nomor_kamar  = $validated['nomor_kamar'];
+
+            $gedung             = LokasiDelivery::find($validated['lokasi_id']);
+            $user->alamat_gedung = $gedung ? $gedung->nama_lokasi : ($validated['alamat_gedung'] ?? null);
         } else {
-            $user->lokasi_id = null;
-            $user->nomor_kamar = null;
+            $user->lokasi_id     = null;
+            $user->nomor_kamar   = null;
             $user->alamat_gedung = $validated['alamat_gedung'] ?? null;
         }
 
-        // Update Password jika diisi
+        // ── Update Password jika diisi ──────────────────────────────────────
         if (!empty($validated['password'])) {
             $user->password = bcrypt($validated['password']);
         }
 
         $user->save();
 
-        return redirect()->route('profile.edit', ['tab' => 'profil'])
+        // ── Redirect sesuai role ────────────────────────────────────────────
+        $route = ($user->role_id == 3) ? 'user.akun' : 'profile.edit';
+
+        return redirect()->route($route, ['tab' => 'profil'])
             ->with('success', 'Profil berhasil diperbarui!');
     }
 
@@ -143,7 +147,7 @@ class ProfileController extends Controller
      */
     public function transaksiPage(Request $request): View
     {
-        $user = $request->user();
+        $user  = $request->user();
         $query = Transaksi::where('user_id', $user->id)->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {
@@ -153,36 +157,35 @@ class ProfileController extends Controller
         $transaksi = $query->get();
 
         return view('profile.transaksi-page', [
-            'user' => $user,
-            'transaksi' => $transaksi,
-            'statusFilter' => $request->query('status')
+            'user'         => $user,
+            'transaksi'    => $transaksi,
+            'statusFilter' => $request->query('status'),
         ]);
     }
-    public function simpanKeRiwayat($transaksiId) 
-{
-    $transaksi = Transaksi::find($transaksiId);
 
-    if ($transaksi) {
-        RiwayatPembelian::create([
-            'user_id'           => $transaksi->user_id,
-            'id_transaksi'      => $transaksi->id_transaksi, // Sesuaikan dengan field di tabel transaksi Anda
-            'total_harga'       => $transaksi->total_harga,
-            'status'            => 'Sukses',
-            'metode_pembayaran' => $transaksi->metode_pembayaran,
-        ]);
+    public function simpanKeRiwayat($transaksiId)
+    {
+        $transaksi = Transaksi::find($transaksiId);
+
+        if ($transaksi) {
+            RiwayatPembelian::create([
+                'user_id'           => $transaksi->user_id,
+                'id_transaksi'      => $transaksi->id_transaksi,
+                'total_harga'       => $transaksi->total_harga,
+                'status'            => 'Sukses',
+                'metode_pembayaran' => $transaksi->metode_pembayaran,
+            ]);
+        }
     }
-}
 
-public function index()
-{
-    $userId = auth()->id();
+    public function index()
+    {
+        $userId = auth()->id();
 
-    // Mengambil riwayat berdasarkan user yang sedang login
-    $riwayat = \App\Models\RiwayatPembelian::where('user_id', $userId)
-                ->orderBy('created_at', 'desc')
-                ->get();
+        $riwayat = \App\Models\RiwayatPembelian::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    // Kembalikan ke view user/akun (karena Anda tidak pakai profile/index)
-    return view('user.akun', compact('riwayat'));
-}
+        return view('user.akun', compact('riwayat'));
+    }
 }

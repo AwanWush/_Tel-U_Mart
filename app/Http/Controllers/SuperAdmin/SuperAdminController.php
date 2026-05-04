@@ -14,19 +14,12 @@ class SuperAdminController extends Controller
 {
     public function index()
     {
-        // 1. Total Mart Aktif
         $totalMart = Mart::where('is_active', 1)->count();
-
-        // 2. Total Admin
         $totalAdmin = User::where('role_id', 2)->count();
-
-        // 3. Omzet Global (Total Seluruh Lunas)
         $totalPendapatan = RiwayatPembelian::where('status', 'Lunas')->sum('total_harga');
 
-        // 4. Riwayat Terakhir (Tetap diambil jika ingin ditampilkan di tempat lain, atau bisa dihapus)
         $riwayatTerakhir = RiwayatPembelian::with('user')->latest()->take(5)->get();
 
-        // 5. DATA GRAFIK: Omzet 7 Hari Terakhir
         $grafikOmzet = RiwayatPembelian::select(
             DB::raw('DATE(created_at) as tanggal'),
             DB::raw('SUM(total_harga) as total')
@@ -37,10 +30,10 @@ class SuperAdminController extends Controller
             ->orderBy('tanggal', 'ASC')
             ->get();
 
-        // Menyiapkan Label (Tanggal) dan Data (Nominal)
         $labels = $grafikOmzet->pluck('tanggal')->map(function ($date) {
             return date('d M', strtotime($date));
         });
+
         $totals = $grafikOmzet->pluck('total');
 
         return view('dashboard.superadmin', compact(
@@ -52,12 +45,10 @@ class SuperAdminController extends Controller
             'totals'
         ));
     }
-    // app/Http/Controllers/SuperAdminController.php
 
     public function manageMart()
     {
         $marts = \App\Models\Mart::all();
-
         return view('superadmin.mart.index', compact('marts'));
     }
 
@@ -100,19 +91,18 @@ class SuperAdminController extends Controller
     }
 
     public function manageKurir()
-    {
-        // Mengambil user yang jabatannya adalah Kurir di tabel admins
-        $kurirs = User::whereHas('role', function ($q) {
-            $q->where('role_name', 'admin'); // Role admin/staff
-        })->whereExists(function ($query) {
-            $query->select(DB::raw(1))
-                ->from('admins')
-                ->whereRaw('admins.user_id = users.id')
-                ->where('jabatan', 'Kurir');
-        })->get();
+{
+    $kurirs = User::whereHas('role', function ($q) {
+        $q->where('role_name', 'admin');
+    })->whereExists(function ($query) {
+        $query->select(DB::raw(1))
+            ->from('admins')
+            ->whereRaw('admins.user_id = users.id')
+            ->where('jabatan', 'Kurir');
+    })->with('admin')->get();
 
-        return view('superadmin.kurir.index', compact('kurirs'));
-    }
+    return view('superadmin.kurir.index', compact('kurirs'));
+}
 
     public function storeKurir(Request $request)
     {
@@ -121,18 +111,27 @@ class SuperAdminController extends Controller
             'email' => 'required|string|email|unique:users',
             'password' => 'required|min:8',
             'no_telp' => 'required',
-            'nama_bank' => 'required|in:BCA,MANDIRI,BRI,BNI', // Validasi pilihan bank
-            'nomor_rekening' => 'required|numeric|unique:admins,nomor_rekening', // Validasi unik di tabel admins
+            'nama_bank' => 'required|in:BCA,MANDIRI,BRI,BNI',
+            'nomor_rekening' => 'required|numeric|unique:admins,nomor_rekening',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // ✅ tambahan
         ]);
 
         DB::beginTransaction();
         try {
+
+            // ✅ HANDLE FOTO
+            $pathFoto = null;
+            if ($request->hasFile('foto')) {
+                $pathFoto = $request->file('foto')->store('kurir', 'public');
+            }
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role_id' => 2,
                 'no_telp' => $request->no_telp,
+                'gambar' => $pathFoto, // ✅ simpan ke DB
                 'status' => 'aktif',
             ]);
 
@@ -152,14 +151,13 @@ class SuperAdminController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
 
-            return redirect()->back()->with('error', 'Gagal: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Gagal: ' . $e->getMessage());
         }
     }
 
     public function destroyKurir($id)
     {
         $user = User::findOrFail($id);
-        // Hapus data di admins otomatis terhapus karena ON DELETE CASCADE di SQL Anda
         $user->delete();
 
         return redirect()->back()->with('success', 'Akun Kurir berhasil dihapus.');
