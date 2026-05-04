@@ -35,7 +35,7 @@ class DriverController extends Controller
                             ->where('kurir_id', $driverId);
                     });
             })
-            ->select('id', 'user_id', 'id_transaksi', 'total_harga', 'status', 'status_antar', 'tipe_layanan', 'created_at')
+            ->select('id', 'user_id', 'kurir_id', 'id_transaksi', 'total_harga', 'status', 'status_antar', 'tipe_layanan', 'created_at')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -92,6 +92,35 @@ class DriverController extends Controller
         return response()->json(['message' => 'Pesanan berhasil diselesaikan!']);
     }
 
+    // Batalkan pesanan yang sedang diantar (kembalikan ke antrian)
+    public function batalkan(Request $request, $id)
+    {
+        $driverId = $request->user()->id;
+
+        $pesanan = RiwayatPembelian::findOrFail($id);
+
+        if ($pesanan->kurir_id !== $driverId) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($pesanan->status_antar !== 'sedang diantar') {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Pesanan tidak bisa dibatalkan.',
+            ], 422);
+        }
+
+        $pesanan->update([
+            'kurir_id'     => null,
+            'status_antar' => 'diproses',
+        ]);
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Pesanan berhasil dibatalkan.',
+        ]);
+    }
+
     public function profile(Request $request)
     {
         $user      = $request->user();
@@ -101,25 +130,20 @@ class DriverController extends Controller
             'status'  => true,
             'message' => 'Data profil driver',
             'data'    => [
-                'id'              => $user->id,
-                'name'            => $user->name,
-                'email'           => $user->email,
-                'no_telp'         => $user->no_telp,
-                'nama_bank'       => $adminData->nama_bank       ?? '-',
-                'nomor_rekening'  => $adminData->nomor_rekening  ?? '-',
-                'tanggal_gaji'    => $adminData->tanggal_gaji    ?? '-',
-                // URL foto profil — null kalau belum ada
-                'foto_url'        => $user->gambar
+                'id'             => $user->id,
+                'name'           => $user->name,
+                'email'          => $user->email,
+                'no_telp'        => $user->no_telp,
+                'nama_bank'      => $adminData->nama_bank      ?? '-',
+                'nomor_rekening' => $adminData->nomor_rekening ?? '-',
+                'tanggal_gaji'   => $adminData->tanggal_gaji   ?? '-',
+                'foto_url'       => $user->gambar
                                         ? url('storage/' . $user->gambar)
                                         : null,
             ],
         ]);
     }
 
-    /**
-     * Upload foto profil driver dari Android
-     * POST /api/driver/upload-photo
-     */
     public function uploadPhoto(Request $request)
     {
         $request->validate([
@@ -128,13 +152,11 @@ class DriverController extends Controller
 
         $user = $request->user();
 
-        // Hapus foto lama kalau ada
         if ($user->gambar && Storage::disk('public')->exists($user->gambar)) {
             Storage::disk('public')->delete($user->gambar);
         }
 
-        // Simpan foto baru
-        $path        = $request->file('foto')->store('profil', 'public');
+        $path         = $request->file('foto')->store('profil', 'public');
         $user->gambar = $path;
         $user->save();
 
@@ -157,10 +179,10 @@ class DriverController extends Controller
         return response()->json([
             'status' => 'success',
             'data'   => [
-                'saldo'           => $saldo,
-                'nama_bank'       => $adminData->nama_bank      ?? '-',
-                'nomor_rekening'  => $adminData->nomor_rekening ?? '-',
-                'tanggal_gaji'    => $adminData
+                'saldo'          => $saldo,
+                'nama_bank'      => $adminData->nama_bank      ?? '-',
+                'nomor_rekening' => $adminData->nomor_rekening ?? '-',
+                'tanggal_gaji'   => $adminData
                                         ? Carbon::parse($adminData->tanggal_gaji)->format('d M Y')
                                         : Carbon::now()->format('d M Y'),
             ],
@@ -175,6 +197,7 @@ class DriverController extends Controller
             'details:id,riwayat_pembelian_id,nama_produk,jumlah,subtotal',
         ])
             ->where('kurir_id', $user->id)
+            ->where('status_antar', 'selesai')
             ->orderBy('updated_at', 'desc')
             ->select('id', 'user_id', 'total_harga', 'status_antar', 'updated_at')
             ->get();
