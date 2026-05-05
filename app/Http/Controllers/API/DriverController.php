@@ -22,7 +22,6 @@ class DriverController extends Controller
             },
             'user.lokasi:id,nama_lokasi,nama_gedung',
             'details' => function ($q) {
-                // PERBAIKAN nullx: Menggunakan alias qty agar terbaca di aplikasi
                 $q->select('id', 'riwayat_pembelian_id', 'nama_produk', 'jumlah', 'jumlah as qty', 'harga_satuan', 'subtotal');
             },
         ])
@@ -85,6 +84,7 @@ class DriverController extends Controller
                     'total_harga' => $item->total_harga,
                     'status' => $item->status,
                     'status_antar' => $item->status_antar,
+                    'kurir_id' => $item->kurir_id,
                     'tipe_layanan' => $item->tipe_layanan,
                     'metode_pembayaran' => $item->metode_pembayaran,
                     'alamat_display' => $item->alamat_display,
@@ -96,7 +96,6 @@ class DriverController extends Controller
             }),
         ]);
     }
-    
 
     public function claim(Request $request, $id)
     {
@@ -145,7 +144,6 @@ class DriverController extends Controller
         return response()->json(['message' => 'Pesanan berhasil diselesaikan!']);
     }
 
-    // Batalkan pesanan yang sedang diantar (kembalikan ke antrian)
     public function batalkan(Request $request, $id)
     {
         $driverId = $request->user()->id;
@@ -164,8 +162,7 @@ class DriverController extends Controller
         }
 
         $pesanan->update([
-            'kurir_id' => null,
-            'status_antar' => 'diproses',
+            'status_antar' => 'dibatalkan',
         ]);
 
         return response()->json([
@@ -250,7 +247,7 @@ class DriverController extends Controller
             'details:id,riwayat_pembelian_id,nama_produk,jumlah,subtotal',
         ])
             ->where('kurir_id', $user->id)
-            ->where('status_antar', 'selesai')
+            ->whereIn('status_antar', ['selesai', 'dibatalkan'])
             ->orderBy('updated_at', 'desc')
             ->select('id', 'user_id', 'total_harga', 'status_antar', 'updated_at')
             ->get();
@@ -260,27 +257,23 @@ class DriverController extends Controller
 
     public function submitAbsensi(Request $request)
     {
-        $user = auth()->user(); // Ambil driver yang login
+        $user = auth()->user();
         $now = Carbon::now('Asia/Jakarta');
         $jam = $now->format('H:i');
 
-        // 1. Validasi QR Code (Gunakan kode statis yang kamu print di tembok)
         if ($request->qr_code !== 'TJT-TELKOM-77') {
             return response()->json(['message' => 'QR Code tidak valid!'], 400);
         }
 
-        // 2. Cek Batas Waktu Kadaluarsa (Jam 08:00)
         if ($now->greaterThan(Carbon::createFromTimeString('08:00'))) {
             return response()->json(['message' => 'QR sudah kadaluarsa (Batas jam 08:00)!'], 403);
         }
 
-        // 3. Tentukan Status (Tepat Waktu atau Terlambat)
         $status = 'Tepat Waktu';
         if ($now->greaterThan(Carbon::createFromTimeString('07:00'))) {
             $status = 'Terlambat';
         }
 
-        // 4. Simpan ke Database
         $absensi = Absensi::updateOrCreate(
             ['user_id' => $user->id, 'created_at' => $now->toDateString()],
             [
@@ -301,7 +294,6 @@ class DriverController extends Controller
     {
         $now = Carbon::now('Asia/Jakarta');
 
-        // Validasi jam pulang minimal jam 15:00
         if ($now->hour < 15) {
             return response()->json(['message' => 'Belum jam pulang (Minimal jam 15:00)!'], 403);
         }
