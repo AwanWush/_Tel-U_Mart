@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\NotificationHelper;
 use App\Models\Cart;
-use App\Models\RiwayatPembelian;
 use App\Models\Produk;
+use App\Models\RiwayatPembelian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use App\Helpers\NotificationHelper; // Import Helper
+use Illuminate\Support\Facades\Log; // Import Helper
 
 class OrderController extends Controller
 {
@@ -39,77 +39,85 @@ class OrderController extends Controller
             $pesanan = RiwayatPembelian::where('id_transaksi', $orderIdParam)->first();
             $directCheckout = session('direct_checkout');
 
-            if (!$pesanan) {
+            if (! $pesanan) {
                 $pesanan = new RiwayatPembelian;
                 $pesanan->id_transaksi = $orderIdParam ?? strtoupper(uniqid('TM-'));
                 $pesanan->user_id = Auth::id();
             }
 
             $pesanan->total_harga = $amount;
-            $pesanan->status = $status;
-            $pesanan->tipe_layanan = $isToken ? 'token_listrik' : $serviceType;
-            $pesanan->metode_pembayaran = ($serviceType === 'delivery')
-                                          ? ($customAddress ?? Auth::user()->alamat_gedung)
-                                          : ($isToken ? 'Midtrans Online' : 'Ambil di Toko (Takeaway)');
-            $pesanan->save();
+$pesanan->status = $status;
+$pesanan->tipe_layanan = $isToken ? 'token_listrik' : $serviceType;
+
+if ($serviceType === 'delivery') {
+    $pesanan->alamat_pengantaran = $customAddress;   // ← alamat dari URL masuk sini
+    $pesanan->metode_pembayaran  = 'Cash / Tunai';   // ← bukan alamat!
+} else {
+    $pesanan->metode_pembayaran = $isToken
+        ? 'Midtrans Online'
+        : 'Ambil di Toko (Takeaway)';
+}
+$pesanan->save();
 
             // 3. Simpan Detail & KURANGI STOK
             $cekDetail = DB::table('detail_pembelian')->where('riwayat_pembelian_id', $pesanan->id)->exists();
             $nomorTokenGenerated = null;
-            
-            if (!$cekDetail) {
+
+            if (! $cekDetail) {
                 if ($isToken) {
                     // --- KASUS: PEMBELIAN TOKEN LISTRIK ---
                     if ($status === 'Lunas') {
                         $digits = '';
-                        for ($i = 0; $i < 20; $i++) { $digits .= mt_rand(0, 9); }
+                        for ($i = 0; $i < 20; $i++) {
+                            $digits .= mt_rand(0, 9);
+                        }
                         $nomorTokenGenerated = implode('-', str_split($digits, 4));
 
                         DB::table('detail_pembelian')->insert([
                             'riwayat_pembelian_id' => $pesanan->id,
-                            'nama_produk' => "Token: $nomorTokenGenerated (Rp " . number_format($nominalToken, 0, ',', '.') . ")",
+                            'nama_produk' => "Token: $nomorTokenGenerated (Rp ".number_format($nominalToken, 0, ',', '.').')',
                             'harga_satuan' => $amount,
                             'jumlah' => 1,
                             'subtotal' => $amount,
-                            'created_at' => now(), 
+                            'created_at' => now(),
                             'updated_at' => now(),
                         ]);
                     }
-                // } elseif (!empty($directProductId) && $directProductId !== 'undefined') {
-                //     // --- KASUS: CHECKOUT LANGSUNG PRODUK ---
-                //     $produk = Produk::findOrFail($directProductId);
-                //     DB::table('detail_pembelian')->insert([
-                //         'riwayat_pembelian_id' => $pesanan->id,
-                //         'nama_produk' => $produk->nama_produk,
-                //         'harga_satuan' => (int) $produk->harga,
-                //         'jumlah' => $directQty,
-                //         'subtotal' => $produk->harga * $directQty,
-                //         'created_at' => now(), 'updated_at' => now(),
-                //     ]);
-                //     $produk->decrement('stok', $directQty);
+                    // } elseif (!empty($directProductId) && $directProductId !== 'undefined') {
+                    //     // --- KASUS: CHECKOUT LANGSUNG PRODUK ---
+                    //     $produk = Produk::findOrFail($directProductId);
+                    //     DB::table('detail_pembelian')->insert([
+                    //         'riwayat_pembelian_id' => $pesanan->id,
+                    //         'nama_produk' => $produk->nama_produk,
+                    //         'harga_satuan' => (int) $produk->harga,
+                    //         'jumlah' => $directQty,
+                    //         'subtotal' => $produk->harga * $directQty,
+                    //         'created_at' => now(), 'updated_at' => now(),
+                    //     ]);
+                    //     $produk->decrement('stok', $directQty);
                 } elseif ($directCheckout) {
-                        // ===============================
-                        // DIRECT CHECKOUT (DARI SESSION)
-                        // ===============================
-                        foreach ($directCheckout['order_data'] as $store) {
-                            foreach ($store['items'] as $item) {
-                                DB::table('detail_pembelian')->insert([
-                                    'riwayat_pembelian_id' => $pesanan->id,
-                                    'nama_produk' => $item['name'],
-                                    'harga_satuan' => (int) $item['price'],
-                                    'jumlah' => (int) $item['qty'],
-                                    'subtotal' => (int) $item['subtotal'],
-                                    'created_at' => now(),
-                                    'updated_at' => now(),
-                                ]);
+                    // ===============================
+                    // DIRECT CHECKOUT (DARI SESSION)
+                    // ===============================
+                    foreach ($directCheckout['order_data'] as $store) {
+                        foreach ($store['items'] as $item) {
+                            DB::table('detail_pembelian')->insert([
+                                'riwayat_pembelian_id' => $pesanan->id,
+                                'nama_produk' => $item['name'],
+                                'harga_satuan' => (int) $item['price'],
+                                'jumlah' => (int) $item['qty'],
+                                'subtotal' => (int) $item['subtotal'],
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
 
-                                // Kurangi stok
-                                Produk::where('nama_produk', $item['name'])
-                                    ->decrement('stok', $item['qty']);
-                            }
+                            // Kurangi stok
+                            Produk::where('nama_produk', $item['name'])
+                                ->decrement('stok', $item['qty']);
                         }
+                    }
 
-                        session()->forget('direct_checkout');
+                    session()->forget('direct_checkout');
                 } else {
                     // --- KASUS: DARI KERANJANG ---
                     $selectedIds = session('checkout_cart_items', []);
@@ -137,16 +145,16 @@ class OrderController extends Controller
                     ->where('riwayat_pembelian_id', $pesanan->id)
                     ->get()
                     ->map(fn ($d) => [
-                        'name' => $d->nama_produk, 
-                        'qty' => $d->jumlah, 
-                        'price' => $d->harga_satuan, 
-                        'subtotal' => $d->subtotal
+                        'name' => $d->nama_produk,
+                        'qty' => $d->jumlah,
+                        'price' => $d->harga_satuan,
+                        'subtotal' => $d->subtotal,
                     ]);
 
                 // NotificationHelper::send(
-                //     Auth::user(), 
-                //     'transaction', 
-                //     'Pesanan Berhasil! 🎉', 
+                //     Auth::user(),
+                //     'transaction',
+                //     'Pesanan Berhasil! 🎉',
                 //     'Pesanan #' . $pesanan->id_transaksi . ' telah diterima dan sedang menunggu konfirmasi.',
                 //     $pesanan // Mengirimkan objek pesanan lengkap untuk kebutuhan Mailable
                 // );
@@ -155,7 +163,7 @@ class OrderController extends Controller
                     Auth::user(),
                     'produk',
                     'Pesanan Produk Berhasil 🛒',
-                    'Pesanan #' . $pesanan->id_transaksi . ' berhasil dan sedang diproses.',
+                    'Pesanan #'.$pesanan->id_transaksi.' berhasil dan sedang diproses.',
                     $pesanan
                 );
             }
@@ -184,13 +192,12 @@ class OrderController extends Controller
             //     ->toArray();
             if ($directCheckout) {
                 $order_data = collect($directCheckout['order_data'])
-                    ->flatMap(fn ($store) =>
-                        collect($store['items'])->map(fn ($item) => [
-                            'name' => $item['name'],
-                            'qty' => $item['qty'],
-                            'price' => $item['price'],
-                            'store' => $store['store'],
-                        ])
+                    ->flatMap(fn ($store) => collect($store['items'])->map(fn ($item) => [
+                        'name' => $item['name'],
+                        'qty' => $item['qty'],
+                        'price' => $item['price'],
+                        'store' => $store['store'],
+                    ])
                     )->toArray();
             } else {
                 // fallback (cart / token)
@@ -201,7 +208,7 @@ class OrderController extends Controller
                         'name' => $d->nama_produk,
                         'qty' => $d->jumlah,
                         'price' => $d->harga_satuan,
-                        'store' => 'T-Mart Point'
+                        'store' => 'T-Mart Point',
                     ])
                     ->toArray();
             }
@@ -214,9 +221,9 @@ class OrderController extends Controller
                 'status' => $status,
                 'order_data' => $order_data,
                 'total_payment' => $amount,
-                'delivery_address' => $pesanan->metode_pembayaran,
+                'delivery_address' => $pesanan->alamat_pengantaran ?? $customAddress,
                 'is_token' => $isToken,
-                'nomor_token' => $nomorTokenGenerated
+                'nomor_token' => $nomorTokenGenerated,
             ]);
         });
     }

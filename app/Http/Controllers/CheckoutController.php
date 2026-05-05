@@ -120,6 +120,7 @@ class CheckoutController extends Controller
         'total_harga' => $total_harga, // ✅ SUDAH AMAN
         'status' => $statusFinal,
         'metode_pembayaran' => $labelMetode,
+        'alamat_pengantaran' => $gedung . ' - Kamar ' . $kamar,
         'tipe_layanan' => 'delivery',
     ]);
 

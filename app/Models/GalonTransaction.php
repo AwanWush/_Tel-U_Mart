@@ -22,5 +22,7 @@ class GalonTransaction extends Model
         'waktu_transaksi',
         'metode_pembayaran',
         'order_id',
+        'metode_pengiriman',
+    'ongkir',
     ];
 }

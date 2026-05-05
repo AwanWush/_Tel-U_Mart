@@ -43,9 +43,11 @@ class UserGalonController extends Controller
             'harga_satuan' => 'required|integer',
             'jumlah' => 'required|integer|min:1',
             'catatan' => 'nullable|string',
+            'metode_pengiriman' => 'required|string', // Validasi baru
+        'ongkir' => 'required|integer',           // Validasi baru
         ]);
 
-        $total = $request->harga_satuan * $request->jumlah;
+        $total = ($request->harga_satuan * $request->jumlah) + $request->ongkir;
 
         $transaksi = GalonTransaction::create([
             'user_id' => Auth::id(),
@@ -57,6 +59,8 @@ class UserGalonController extends Controller
             'status' => 'pending',
             'waktu_transaksi' => now(),
             'metode_pembayaran' => 'COD',
+            'metode_pengiriman' => $request->metode_pengiriman,
+        'ongkir' => $request->ongkir,
         ]);
 
         $riwayat = RiwayatPembelian::create([
@@ -71,7 +75,7 @@ class UserGalonController extends Controller
 
         DetailPembelian::create([
             'riwayat_pembelian_id' => $riwayat->id,
-            'nama_produk' => 'Galon - ' . $request->nama_galon,
+            'nama_produk' => 'Galon - ' . $request->nama_galon . ' (' . strtoupper($request->metode_pengiriman) . ')',
             'harga_satuan' => $request->harga_satuan,
             'jumlah' => $request->jumlah,
             'subtotal' => $total,
@@ -122,6 +126,8 @@ class UserGalonController extends Controller
             'total_harga' => 'required|integer',
             'order_id' => 'required|string',
             'status' => 'required|in:paid,pending',
+            'metode_pengiriman' => 'required|string',
+        'catatan' => 'nullable|string',
         ]);
 
         try {
@@ -135,6 +141,9 @@ class UserGalonController extends Controller
                 'status' => $request->status === 'pending' ? 'pending' : 'paid',
                 'metode_pembayaran' => 'MIDTRANS',
                 'waktu_transaksi' => now(),
+                'metode_pengiriman' => $request->metode_pengiriman,
+            'catatan' => $request->catatan,
+            'ongkir' => $request->total_harga - ($request->harga_satuan * $request->jumlah),
             ]);
     
             // $riwayat = RiwayatPembelian::create([

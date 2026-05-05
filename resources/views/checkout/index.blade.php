@@ -3,10 +3,8 @@
 if (!function_exists('currency')) {
         function currency($a) { return 'Rp ' . number_format($a, 0, ',', '.'); }
     }
-$user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
+ $user_gedung = $userLokasi->nama_lokasi ?? Auth::user()->alamat_gedung ?? 'Gedung 1';
     $user_kamar = Auth::user()->nomor_kamar ?? '000';
-    
-    // Gabungkan menjadi satu variabel yang dipanggil di baris 157
     $user_address = "$user_gedung, Kamar $user_kamar";
 
 @endphp
@@ -173,8 +171,7 @@ $user_gedung = Auth::user()->alamat_gedung ?? 'Gedung 1';
                                         class="w-full rounded-xl border-gray-200 focus:ring-red-500 focus:border-red-500">
                                         @foreach (array_merge(array_map(fn($i) => "Gedung $i", range(1, 12)), array_map(fn($l) => "Gedung $l", range('A', 'F'))) as $g)
                                             {{-- PERBAIKAN: Cek apakah gedung ini sama dengan yang di profil user --}}
-                                            <option value="{{ $g }}"
-                                                {{ Auth::user()->alamat_gedung == $g ? 'selected' : '' }}>
+                                            <option value="{{ $g }}" {{ $user_gedung == $g ? 'selected' : '' }}>
                                                 {{ $g }}
                                             </option>
                                         @endforeach
