@@ -23,6 +23,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/profile',       [App\Http\Controllers\API\DriverController::class, 'profile']);
         Route::post('/upload-photo', [App\Http\Controllers\API\DriverController::class, 'uploadPhoto']);
+        Route::post('/driver/absensi', [DriverController::class, 'submitAbsensi']);
+        Route::post('/driver/checkout', [DriverController::class, 'submitCheckout']);
 
         Route::get('/omset',   [App\Http\Controllers\API\DriverController::class, 'omset']);
         Route::get('/riwayat', [App\Http\Controllers\API\DriverController::class, 'riwayat']);

@@ -400,6 +400,8 @@ Route::prefix('superadmin')->group(function () {
     Route::post('/gaji-admin/update/{id}', [GajiController::class, 'update'])->name('gaji.update');
     Route::post('/gaji-admin/store', [GajiController::class, 'store'])->name('gaji.store');
 
+    Route::get('/superadmin/absensi', [SuperAdminController::class, 'manageAbsensi'])->name('superadmin.absensi.index');
+
     // Manajemen Mart (Grup Prefix superadmin)
     Route::prefix('superadmin')->group(function () {
         Route::get('/kelola-mart', [SuperAdminController::class, 'manageMart'])->name('superadmin.mart.index');
@@ -407,6 +409,9 @@ Route::prefix('superadmin')->group(function () {
         Route::put('/kelola-mart/update/{id}', [SuperAdminController::class, 'updateMart'])->name('superadmin.mart.update');
         Route::patch('/kelola-mart/toggle/{id}', [SuperAdminController::class, 'toggleMartStatus'])->name('superadmin.mart.toggle');
     });
+    // Pastikan diletakkan di dalam middleware superadmin
+// Di dalam group middleware superadmin
+
 
 });
 
