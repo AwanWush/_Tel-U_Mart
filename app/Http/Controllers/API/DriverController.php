@@ -22,7 +22,6 @@ class DriverController extends Controller
             },
             'user.lokasi:id,nama_lokasi,nama_gedung',
             'details' => function ($q) {
-                // PERBAIKAN nullx: Menggunakan alias qty agar terbaca di aplikasi
                 $q->select('id', 'riwayat_pembelian_id', 'nama_produk', 'jumlah', 'jumlah as qty', 'harga_satuan', 'subtotal');
             },
         ])
@@ -72,6 +71,7 @@ class DriverController extends Controller
                     'total_harga' => $item->total_harga,
                     'status' => $item->status,
                     'status_antar' => $item->status_antar,
+                    'kurir_id' => $item->kurir_id,
                     'tipe_layanan' => $item->tipe_layanan,
                     'kurir_id' => $item->kurir_id,
                     'metode_pembayaran' => $item->metode_pembayaran,
@@ -136,7 +136,6 @@ class DriverController extends Controller
         return response()->json(['message' => 'Pesanan berhasil diselesaikan!']);
     }
 
-    // Batalkan pesanan yang sedang diantar (kembalikan ke antrian)
     public function batalkan(Request $request, $id)
     {
         $driverId = $request->user()->id;
@@ -155,8 +154,7 @@ class DriverController extends Controller
         }
 
         $pesanan->update([
-            'kurir_id' => null,
-            'status_antar' => 'diproses',
+            'status_antar' => 'dibatalkan',
         ]);
 
         return response()->json([
@@ -241,7 +239,7 @@ class DriverController extends Controller
             'details:id,riwayat_pembelian_id,nama_produk,jumlah,subtotal',
         ])
             ->where('kurir_id', $user->id)
-            ->where('status_antar', 'selesai')
+            ->whereIn('status_antar', ['selesai', 'dibatalkan'])
             ->orderBy('updated_at', 'desc')
             ->select('id', 'user_id', 'total_harga', 'status_antar', 'updated_at')
             ->get();
