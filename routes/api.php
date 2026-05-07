@@ -27,7 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/absensi', [App\Http\Controllers\API\DriverController::class, 'submitAbsensi']);
         Route::post('/checkout', [App\Http\Controllers\API\DriverController::class, 'submitCheckout']);
 
-        Route::patch('pesanan/{id}/status-antar', [PesananController::class, 'updateStatusAntar']);
+        Route::post('/pesanan/{id}/status-antar', [App\Http\Controllers\API\DriverController::class, 'updateStatusAntar']);
 
         Route::get('/omset',   [App\Http\Controllers\API\DriverController::class, 'omset']);
         Route::get('/riwayat', [App\Http\Controllers\API\DriverController::class, 'riwayat']);

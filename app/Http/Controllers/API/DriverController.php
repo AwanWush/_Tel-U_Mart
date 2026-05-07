@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderUpdateMail;
 use App\Models\Absensi;
 use App\Models\RiwayatPembelian;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class DriverController extends Controller
@@ -113,6 +115,13 @@ class DriverController extends Controller
             'status_antar' => 'sedang diantar',
         ]);
 
+        $pesanan->load(['user', 'details']);
+        if ($pesanan->user && $pesanan->user->email) {
+            Mail::to($pesanan->user->email)->send(
+                new OrderUpdateMail($pesanan, '🛵 Pesanan Anda Sedang Diantar - TJ-T Mart')
+            );
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Pesanan berhasil diklaim!',
@@ -132,6 +141,13 @@ class DriverController extends Controller
             'status_antar' => 'selesai',
             'status' => 'Lunas',
         ]);
+
+        $pesanan->load(['user', 'details']);
+        if ($pesanan->user && $pesanan->user->email) {
+            Mail::to($pesanan->user->email)->send(
+                new OrderUpdateMail($pesanan, '✅ Pesanan Anda Selesai - TJ-T Mart')
+            );
+        }
 
         return response()->json(['message' => 'Pesanan berhasil diselesaikan!']);
     }
@@ -335,6 +351,29 @@ class DriverController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Berhasil Checkout. Hati-hati di jalan, Adit!',
+        ]);
+    }
+
+    public function updateStatusAntar(Request $request, $id)
+    {
+        $driverId = $request->user()->id;
+        $pesanan = RiwayatPembelian::with(['user', 'details'])->findOrFail($id);
+
+        if ($pesanan->kurir_id !== $driverId) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $pesanan->update(['status_antar' => 'tiba']);
+
+        if ($pesanan->user && $pesanan->user->email) {
+            Mail::to($pesanan->user->email)->send(
+                new OrderUpdateMail($pesanan, '📦 Pesanan Anda Telah Tiba - TJ-T Mart')
+            );
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Pesanan tiba dan email terkirim!',
         ]);
     }
 }
