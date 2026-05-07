@@ -11,11 +11,10 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class SuperAdminController extends Controller
 {
-    // app/Http/Controllers/SuperAdmin/SuperAdminController.php
-
     public function index()
     {
         $totalMart = Mart::where('is_active', 1)->count();
@@ -45,7 +44,6 @@ class SuperAdminController extends Controller
 
     public function manageAbsensi()
     {
-        // Halaman ini khusus untuk mengelola absensi driver
         $absensis = Absensi::with('user')
             ->whereDate('created_at', Carbon::today())
             ->orderBy('jam_masuk', 'desc')
@@ -122,13 +120,11 @@ class SuperAdminController extends Controller
             'no_telp' => 'required',
             'nama_bank' => 'required|in:BCA,MANDIRI,BRI,BNI',
             'nomor_rekening' => 'required|numeric|unique:admins,nomor_rekening',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // ✅ tambahan
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         DB::beginTransaction();
         try {
-
-            // ✅ HANDLE FOTO
             $pathFoto = null;
             if ($request->hasFile('foto')) {
                 $pathFoto = $request->file('foto')->store('kurir', 'public');
@@ -164,6 +160,71 @@ class SuperAdminController extends Controller
         }
     }
 
+    public function editKurir($id)
+    {
+        $kurir = User::with('admin')->findOrFail($id);
+
+        return response()->json([
+            'id'             => $kurir->id,
+            'name'           => $kurir->name,
+            'email'          => $kurir->email,
+            'no_telp'        => $kurir->no_telp,
+            'nama_bank'      => $kurir->admin->nama_bank ?? '',
+            'nomor_rekening' => $kurir->admin->nomor_rekening ?? '',
+        ]);
+    }
+
+    public function updateKurir(Request $request, $id)
+    {
+        $request->validate([
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|unique:users,email,' . $id,
+            'no_telp'        => 'required',
+            'nama_bank'      => 'required|in:BCA,MANDIRI,BRI,BNI',
+            'nomor_rekening' => 'required|numeric|unique:admins,nomor_rekening,' . $id . ',user_id',
+            'password'       => 'nullable|min:8',
+            'foto'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $user = User::findOrFail($id);
+
+            $dataUser = [
+                'name'    => $request->name,
+                'email'   => $request->email,
+                'no_telp' => $request->no_telp,
+            ];
+
+            if ($request->filled('password')) {
+                $dataUser['password'] = Hash::make($request->password);
+            }
+
+            if ($request->hasFile('foto')) {
+                if ($user->gambar && Storage::disk('public')->exists($user->gambar)) {
+                    Storage::disk('public')->delete($user->gambar);
+                }
+                $dataUser['gambar'] = $request->file('foto')->store('kurir', 'public');
+            }
+
+            $user->update($dataUser);
+
+            DB::table('admins')->where('user_id', $id)->update([
+                'nama_custom'    => $request->name,
+                'nama_bank'      => $request->nama_bank,
+                'nomor_rekening' => $request->nomor_rekening,
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Data kurir berhasil diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return redirect()->back()->with('error', 'Gagal: ' . $e->getMessage());
+        }
+    }
+
     public function destroyKurir($id)
     {
         $user = User::findOrFail($id);
@@ -174,16 +235,14 @@ class SuperAdminController extends Controller
 
     public function prosesAbsen(Request $request)
     {
-        $sekarang = now(); // Asia/Jakarta
+        $sekarang = now();
         $jamMenit = $sekarang->format('H:i');
         $userId = auth()->id();
 
-        // Cek apakah driver sudah absen MASUK hari ini
         $absenHariIni = Absensi::where('user_id', $userId)
             ->whereDate('created_at', Carbon::today())
             ->first();
 
-        // --- LOGIKA ABSEN MASUK (06:30 - 08:00) ---
         if ($jamMenit >= '06:30' && $jamMenit <= '08:00') {
             if ($absenHariIni) {
                 return response()->json(['status' => 'error', 'message' => 'Anda sudah absen masuk hari ini.'], 422);
@@ -201,7 +260,6 @@ class SuperAdminController extends Controller
             return response()->json(['status' => 'success', 'message' => 'Berhasil Absen Masuk: '.$statusFinal]);
         }
 
-        // --- LOGIKA ABSEN PULANG / CHECKOUT (15:00 ke atas) ---
         if ($jamMenit >= '15:00') {
             if (! $absenHariIni) {
                 return response()->json(['status' => 'error', 'message' => 'Anda belum absen masuk pagi tadi!'], 422);
@@ -211,10 +269,9 @@ class SuperAdminController extends Controller
                 return response()->json(['status' => 'error', 'message' => 'Anda sudah absen pulang sebelumnya.'], 422);
             }
 
-            // Update kolom jam_keluar di baris yang sama
             $absenHariIni->update([
                 'jam_pulang' => $sekarang,
-                'koordinat_absen' => $request->koordinat, // Pastikan kolom ini ada di migrasi database
+                'koordinat_absen' => $request->koordinat,
             ]);
 
             return response()->json(['status' => 'success', 'message' => 'Berhasil Absen Pulang. Hati-hati di jalan!']);

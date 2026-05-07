@@ -72,13 +72,27 @@
                                     {{ $kurir->admin->nomor_rekening ?? '-' }}
                                 </td>
                                 <td class="p-6 text-center">
-                                    <form action="{{ route('superadmin.kurir.destroy', $kurir->id) }}" method="POST"
-                                        onsubmit="return confirm('Hapus kurir ini?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="text-red-500 hover:text-red-700">
-                                            <i class="fas fa-trash-alt"></i>
+                                    <div class="flex items-center justify-center gap-3">
+                                        <button type="button"
+                                            onclick="bukaModalEdit(
+                                                {{ $kurir->id }},
+                                                '{{ addslashes($kurir->name) }}',
+                                                '{{ $kurir->email }}',
+                                                '{{ $kurir->no_telp }}',
+                                                '{{ $kurir->admin->nama_bank ?? '' }}',
+                                                '{{ $kurir->admin->nomor_rekening ?? '' }}'
+                                            )"
+                                            class="text-blue-500 hover:text-blue-700 transition">
+                                            <i class="fas fa-pencil-alt"></i>
                                         </button>
-                                    </form>
+                                        <form action="{{ route('superadmin.kurir.destroy', $kurir->id) }}" method="POST"
+                                            onsubmit="return confirm('Hapus kurir ini?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="text-red-500 hover:text-red-700 transition">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -94,7 +108,7 @@
         </div>
     </div>
 
-    {{-- MODAL TAMBAH KURIR — di luar semua div konten --}}
+    {{-- MODAL TAMBAH KURIR --}}
     <div id="modalTambahKurir"
         class="fixed inset-0 z-[9999] hidden"
         style="background: rgba(0,0,0,0.5);">
@@ -173,17 +187,115 @@
         </div>
     </div>
 
+    {{-- MODAL EDIT KURIR --}}
+    <div id="modalEditKurir"
+        class="fixed inset-0 z-[9999] hidden"
+        style="background: rgba(0,0,0,0.5);">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="bg-white rounded-[2rem] shadow-xl w-full max-w-lg relative">
+
+                <form id="formEditKurir" method="POST" enctype="multipart/form-data" class="p-8">
+                    @csrf
+                    @method('PUT')
+
+                    <h3 class="text-2xl font-black text-[#5B000B] mb-6">Edit Data Kurir</h3>
+
+                    <div class="space-y-4">
+                        <div>
+                            <input type="text" name="name" id="edit_name" placeholder="Nama"
+                                class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-red-500 focus:border-red-500" required>
+                        </div>
+
+                        <div>
+                            <input type="email" name="email" id="edit_email" placeholder="Email"
+                                class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-red-500 focus:border-red-500" required>
+                        </div>
+
+                        <div>
+                            <input type="password" name="password" placeholder="Password baru (kosongkan jika tidak diubah)"
+                                class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-red-500 focus:border-red-500" minlength="8">
+                        </div>
+
+                        <div>
+                            <input type="text" name="no_telp" id="edit_no_telp" placeholder="No HP"
+                                class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-red-500 focus:border-red-500" required>
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-gray-500 font-bold uppercase tracking-widest ml-1">Foto Profil</label>
+                            <input type="file" name="foto" accept="image/*"
+                                class="mt-1 block w-full text-sm text-slate-500
+                                       file:mr-4 file:py-2 file:px-4
+                                       file:rounded-full file:border-0
+                                       file:text-xs file:font-bold
+                                       file:bg-red-50 file:text-red-600
+                                       hover:file:bg-red-100 cursor-pointer">
+                        </div>
+
+                        <div>
+                            <select name="nama_bank" id="edit_nama_bank" required
+                                class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-red-500 focus:border-red-500">
+                                <option value="">Pilih Bank</option>
+                                <option value="BCA">BCA</option>
+                                <option value="MANDIRI">MANDIRI</option>
+                                <option value="BRI">BRI</option>
+                                <option value="BNI">BNI</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <input type="number" name="nomor_rekening" id="edit_nomor_rekening" placeholder="No Rekening"
+                                class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:ring-red-500 focus:border-red-500" required>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex gap-3">
+                        <button type="submit"
+                            class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold transition-all">
+                            Simpan Perubahan
+                        </button>
+                        <button type="button" id="btnBatalEdit"
+                            class="px-6 py-3 border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-all">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // === Modal Tambah ===
         const modal      = document.getElementById('modalTambahKurir');
         const btnBuka    = document.getElementById('btnTambahKurir');
         const btnTutup   = document.getElementById('btnBatalKurir');
 
         btnBuka.addEventListener('click', () => modal.classList.remove('hidden'));
         btnTutup.addEventListener('click', () => modal.classList.add('hidden'));
-
-        // Klik di luar modal untuk tutup
         modal.addEventListener('click', function (e) {
             if (e.target === modal) modal.classList.add('hidden');
+        });
+
+        // === Modal Edit ===
+        const modalEdit    = document.getElementById('modalEditKurir');
+        const btnBatalEdit = document.getElementById('btnBatalEdit');
+
+        function bukaModalEdit(id, name, email, no_telp, nama_bank, nomor_rekening) {
+            document.getElementById('edit_name').value           = name;
+            document.getElementById('edit_email').value          = email;
+            document.getElementById('edit_no_telp').value        = no_telp;
+            document.getElementById('edit_nama_bank').value      = nama_bank;
+            document.getElementById('edit_nomor_rekening').value = nomor_rekening;
+
+            const baseUrl = "{{ url('superadmin/kelola-kurir/update') }}";
+            document.getElementById('formEditKurir').action = baseUrl + '/' + id;
+
+            modalEdit.classList.remove('hidden');
+        }
+
+        btnBatalEdit.addEventListener('click', () => modalEdit.classList.add('hidden'));
+        modalEdit.addEventListener('click', function (e) {
+            if (e.target === modalEdit) modalEdit.classList.add('hidden');
         });
     </script>
 </x-app-layout>

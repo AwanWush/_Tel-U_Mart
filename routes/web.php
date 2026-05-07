@@ -388,12 +388,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/superadmin', [SuperAdminController::class, 'index'])
         ->name('dashboard.superadmin');
 
-        // Tambahkan di dalam Route::middleware(['auth'])->group(...)
-Route::prefix('superadmin')->group(function () {
-    Route::get('/kelola-kurir', [SuperAdminController::class, 'manageKurir'])->name('superadmin.kurir.index');
-    Route::post('/kelola-kurir/store', [SuperAdminController::class, 'storeKurir'])->name('superadmin.kurir.store');
-    Route::delete('/kelola-kurir/delete/{id}', [SuperAdminController::class, 'destroyKurir'])->name('superadmin.kurir.destroy');
-});
+    Route::prefix('superadmin')->group(function () {
+        Route::get('/kelola-kurir', [SuperAdminController::class, 'manageKurir'])->name('superadmin.kurir.index');
+        Route::post('/kelola-kurir/store', [SuperAdminController::class, 'storeKurir'])->name('superadmin.kurir.store');
+        Route::get('/kelola-kurir/edit/{id}', [SuperAdminController::class, 'editKurir'])->name('superadmin.kurir.edit');
+        Route::put('/kelola-kurir/update/{id}', [SuperAdminController::class, 'updateKurir'])->name('superadmin.kurir.update');
+        Route::delete('/kelola-kurir/delete/{id}', [SuperAdminController::class, 'destroyKurir'])->name('superadmin.kurir.destroy');
+    });
 
     // Manajemen Gaji
     Route::get('/gaji-admin', [GajiController::class, 'index'])->name('gaji.admin');
@@ -409,10 +410,6 @@ Route::prefix('superadmin')->group(function () {
         Route::put('/kelola-mart/update/{id}', [SuperAdminController::class, 'updateMart'])->name('superadmin.mart.update');
         Route::patch('/kelola-mart/toggle/{id}', [SuperAdminController::class, 'toggleMartStatus'])->name('superadmin.mart.toggle');
     });
-    // Pastikan diletakkan di dalam middleware superadmin
-// Di dalam group middleware superadmin
-
-
 });
 
 Route::middleware(['auth', 'role:superadmin'])->group(function () {
