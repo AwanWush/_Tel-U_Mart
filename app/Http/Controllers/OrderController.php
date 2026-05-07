@@ -9,7 +9,7 @@ use App\Models\RiwayatPembelian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log; // Import Helper
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -22,20 +22,28 @@ class OrderController extends Controller
         $serviceType = $request->query('type', 'delivery');
         $statusParam = $request->query('status');
         $customAddress = $request->query('address');
-        // $directProductId = $request->query('product_id');
-        // $directQty = (int) $request->query('qty', 1);
         $orderIdParam = $request->query('order_id');
 
         // Khusus Token Listrik
         $isToken = $request->query('type') === 'token';
         $nominalToken = $request->query('nominal');
 
-        $status = ($statusParam == 'success' || $statusParam == 'paid') ? 'Lunas' : 'Belum Bayar';
+        $status = ($statusParam == 'success' || $statusParam == 'paid')
+            ? 'Lunas'
+            : 'Belum Bayar';
 
-        // return DB::transaction(function () use ($amount, $serviceType, $status, $customAddress, $directProductId, $directQty, $orderIdParam, $isToken, $nominalToken) {
-        return DB::transaction(function () use ($amount, $serviceType, $status, $customAddress, $orderIdParam, $isToken, $nominalToken) {
+        return DB::transaction(function () use (
+            $request,
+            $amount,
+            $serviceType,
+            $status,
+            $customAddress,
+            $orderIdParam,
+            $isToken,
+            $nominalToken
+        ) {
 
-            // 2. LOGIKA ANTI-DOUBLE: Cari transaksi lama atau buat baru
+            // 2. LOGIKA ANTI-DOUBLE
             $pesanan = RiwayatPembelian::where('id_transaksi', $orderIdParam)->first();
             $directCheckout = session('direct_checkout');
 
@@ -45,37 +53,63 @@ class OrderController extends Controller
                 $pesanan->user_id = Auth::id();
             }
 
+            // =========================
+            // DATA PESANAN
+            // =========================
             $pesanan->total_harga = $amount;
-$pesanan->status = $status;
-$pesanan->tipe_layanan = $isToken ? 'token_listrik' : $serviceType;
+            $pesanan->status = $status;
+            $pesanan->tipe_layanan = $isToken
+                ? 'token_listrik'
+                : $serviceType;
 
-if ($serviceType === 'delivery') {
-    $pesanan->alamat_pengantaran = $customAddress;   // ← alamat dari URL masuk sini
-    $pesanan->metode_pembayaran  = 'Cash / Tunai';   // ← bukan alamat!
-} else {
-    $pesanan->metode_pembayaran = $isToken
-        ? 'Midtrans Online'
-        : 'Ambil di Toko (Takeaway)';
-}
-$pesanan->save();
+            // biaya tambahan
+            $delivery_fee = $serviceType === 'delivery' ? 3000 : 0;
+            $service_fee = 2000;
 
-            // 3. Simpan Detail & KURANGI STOK
-            $cekDetail = DB::table('detail_pembelian')->where('riwayat_pembelian_id', $pesanan->id)->exists();
+            // alamat pengiriman
+            if ($serviceType === 'delivery') {
+                $pesanan->alamat_pengantaran = $customAddress;
+            }
+
+            // metode pembayaran
+            if ($isToken) {
+                $pesanan->metode_pembayaran = 'Midtrans Online';
+            } else {
+                $pesanan->metode_pembayaran = $request->query(
+                    'payment_method',
+                    'Cash / Tunai'
+                );
+            }
+
+            $pesanan->save();
+
+            // 3. SIMPAN DETAIL & KURANGI STOK
+            $cekDetail = DB::table('detail_pembelian')
+                ->where('riwayat_pembelian_id', $pesanan->id)
+                ->exists();
+
             $nomorTokenGenerated = null;
 
             if (! $cekDetail) {
+
+                // =========================
+                // TOKEN LISTRIK
+                // =========================
                 if ($isToken) {
-                    // --- KASUS: PEMBELIAN TOKEN LISTRIK ---
+
                     if ($status === 'Lunas') {
+
                         $digits = '';
+
                         for ($i = 0; $i < 20; $i++) {
                             $digits .= mt_rand(0, 9);
                         }
+
                         $nomorTokenGenerated = implode('-', str_split($digits, 4));
 
                         DB::table('detail_pembelian')->insert([
                             'riwayat_pembelian_id' => $pesanan->id,
-                            'nama_produk' => "Token: $nomorTokenGenerated (Rp ".number_format($nominalToken, 0, ',', '.').')',
+                            'nama_produk' => "Token: $nomorTokenGenerated (Rp " . number_format($nominalToken, 0, ',', '.') . ')',
                             'harga_satuan' => $amount,
                             'jumlah' => 1,
                             'subtotal' => $amount,
@@ -83,24 +117,16 @@ $pesanan->save();
                             'updated_at' => now(),
                         ]);
                     }
-                    // } elseif (!empty($directProductId) && $directProductId !== 'undefined') {
-                    //     // --- KASUS: CHECKOUT LANGSUNG PRODUK ---
-                    //     $produk = Produk::findOrFail($directProductId);
-                    //     DB::table('detail_pembelian')->insert([
-                    //         'riwayat_pembelian_id' => $pesanan->id,
-                    //         'nama_produk' => $produk->nama_produk,
-                    //         'harga_satuan' => (int) $produk->harga,
-                    //         'jumlah' => $directQty,
-                    //         'subtotal' => $produk->harga * $directQty,
-                    //         'created_at' => now(), 'updated_at' => now(),
-                    //     ]);
-                    //     $produk->decrement('stok', $directQty);
+
+                // =========================
+                // DIRECT CHECKOUT
+                // =========================
                 } elseif ($directCheckout) {
-                    // ===============================
-                    // DIRECT CHECKOUT (DARI SESSION)
-                    // ===============================
+
                     foreach ($directCheckout['order_data'] as $store) {
+
                         foreach ($store['items'] as $item) {
+
                             DB::table('detail_pembelian')->insert([
                                 'riwayat_pembelian_id' => $pesanan->id,
                                 'nama_produk' => $item['name'],
@@ -118,29 +144,40 @@ $pesanan->save();
                     }
 
                     session()->forget('direct_checkout');
+
+                // =========================
+                // DARI KERANJANG
+                // =========================
                 } else {
-                    // --- KASUS: DARI KERANJANG ---
+
                     $selectedIds = session('checkout_cart_items', []);
+
                     $cartItems = Cart::whereIn('id', $selectedIds)
                         ->where('user_id', Auth::id())
                         ->with('produk')
                         ->get();
+
                     foreach ($cartItems as $item) {
+
                         DB::table('detail_pembelian')->insert([
                             'riwayat_pembelian_id' => $pesanan->id,
                             'nama_produk' => $item->produk->nama_produk,
                             'harga_satuan' => (int) $item->produk->harga,
                             'jumlah' => $item->quantity,
                             'subtotal' => $item->quantity * $item->produk->harga,
-                            'created_at' => now(), 'updated_at' => now(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
                         ]);
+
                         $item->produk->decrement('stok', $item->quantity);
                     }
+
                     Cart::whereIn('id', $selectedIds)->delete();
                 }
 
-                // 4. KIRIM NOTIFIKASI & EMAIL (Hanya dikirim jika detail baru saja dibuat)
-                // Ambil ulang data detail untuk dikirim ke email
+                // =========================
+                // NOTIFIKASI
+                // =========================
                 $currentDetails = DB::table('detail_pembelian')
                     ->where('riwayat_pembelian_id', $pesanan->id)
                     ->get()
@@ -151,56 +188,35 @@ $pesanan->save();
                         'subtotal' => $d->subtotal,
                     ]);
 
-                // NotificationHelper::send(
-                //     Auth::user(),
-                //     'transaction',
-                //     'Pesanan Berhasil! 🎉',
-                //     'Pesanan #' . $pesanan->id_transaksi . ' telah diterima dan sedang menunggu konfirmasi.',
-                //     $pesanan // Mengirimkan objek pesanan lengkap untuk kebutuhan Mailable
-                // );
-
                 NotificationHelper::send(
                     Auth::user(),
                     'produk',
                     'Pesanan Produk Berhasil 🛒',
-                    'Pesanan #'.$pesanan->id_transaksi.' berhasil dan sedang diproses.',
+                    'Pesanan #' . $pesanan->id_transaksi . ' berhasil dan sedang diproses.',
                     $pesanan
                 );
             }
 
-            // 5. Siapkan data untuk View
+            // =========================
+            // DATA UNTUK VIEW
+            // =========================
             $order_id = $pesanan->id_transaksi;
             $order_date = $pesanan->created_at->format('d M Y, H:i');
-            // $order_data = DB::table('detail_pembelian')
-            //     ->where('riwayat_pembelian_id', $pesanan->id)
-            //     ->get()
-            //     ->map(fn ($d) => [
-            //         'name' => $d->nama_produk,
-            //         'qty' => $d->jumlah,
-            //         'price' => $d->harga_satuan,
-            //         'store' => 'T-Mart Point'
-            //     ]);
-            // $order_data = DB::table('detail_pembelian')
-            //     ->where('riwayat_pembelian_id', $pesanan->id)
-            //     ->get()
-            //     ->map(fn ($d) => [
-            //         'name' => $d->nama_produk,
-            //         'qty' => $d->jumlah,
-            //         'price' => $d->harga_satuan,
-            //         'store' => 'T-Mart Point'
-            //     ])
-            //     ->toArray();
+
             if ($directCheckout) {
+
                 $order_data = collect($directCheckout['order_data'])
-                    ->flatMap(fn ($store) => collect($store['items'])->map(fn ($item) => [
-                        'name' => $item['name'],
-                        'qty' => $item['qty'],
-                        'price' => $item['price'],
-                        'store' => $store['store'],
-                    ])
+                    ->flatMap(fn ($store) =>
+                        collect($store['items'])->map(fn ($item) => [
+                            'name' => $item['name'],
+                            'qty' => $item['qty'],
+                            'price' => $item['price'],
+                            'store' => $store['store'],
+                        ])
                     )->toArray();
+
             } else {
-                // fallback (cart / token)
+
                 $order_data = DB::table('detail_pembelian')
                     ->where('riwayat_pembelian_id', $pesanan->id)
                     ->get()
@@ -221,6 +237,11 @@ $pesanan->save();
                 'status' => $status,
                 'order_data' => $order_data,
                 'total_payment' => $amount,
+
+                // tambahan
+                'delivery_fee' => $delivery_fee,
+                'service_fee' => $service_fee,
+
                 'delivery_address' => $pesanan->alamat_pengantaran ?? $customAddress,
                 'is_token' => $isToken,
                 'nomor_token' => $nomorTokenGenerated,
