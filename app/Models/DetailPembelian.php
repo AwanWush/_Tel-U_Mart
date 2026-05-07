@@ -13,7 +13,7 @@ class DetailPembelian extends Model
 
     protected $fillable = [
         'riwayat_pembelian_id',
-        'produk_id',
+        // 'produk_id',
         'nama_produk',
         'harga_satuan',
         'keterangan',

@@ -401,6 +401,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/gaji-admin/update/{id}', [GajiController::class, 'update'])->name('gaji.update');
     Route::post('/gaji-admin/store', [GajiController::class, 'store'])->name('gaji.store');
 
+    Route::post('/superadmin/kurir/{id}/aktifkan', [App\Http\Controllers\SuperAdmin\SuperAdminController::class, 'aktifkanKurir'])->name('superadmin.kurir.aktifkan');
     Route::get('/superadmin/absensi', [SuperAdminController::class, 'manageAbsensi'])->name('superadmin.absensi.index');
 
     // Manajemen Mart (Grup Prefix superadmin)

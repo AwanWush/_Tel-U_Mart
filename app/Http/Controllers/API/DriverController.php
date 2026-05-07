@@ -20,11 +20,11 @@ class DriverController extends Controller
 
         $pesanan = RiwayatPembelian::with([
             'user' => function ($q) {
-                $q->select('id', 'name', 'no_telp', 'lokasi_id', 'nomor_kamar');
+                $q->select('id', 'name', 'no_telp', 'lokasi_id', 'nomor_kamar', 'gambar');
             },
             'user.lokasi:id,nama_lokasi,nama_gedung',
             'details' => function ($q) {
-                $q->select('id', 'riwayat_pembelian_id', 'nama_produk', 'jumlah', 'jumlah as qty', 'harga_satuan', 'subtotal');
+                $q->select('id', 'riwayat_pembelian_id', 'nama_produk', 'jumlah', 'harga_satuan', 'subtotal');
             },
         ])
             ->where(function ($query) use ($driverId) {
@@ -50,6 +50,7 @@ class DriverController extends Controller
             })
             ->select('id', 'user_id', 'kurir_id', 'id_transaksi', 'total_harga', 'status', 'status_antar', 'tipe_layanan', 'metode_pembayaran', 'alamat_pengantaran', 'created_at')
             ->orderBy('created_at', 'desc')
+            ->take(20)
             ->get()
             ->map(function ($item) {
                 $alamatDariKolom = $item->alamat_pengantaran ?? null;
@@ -67,6 +68,22 @@ class DriverController extends Controller
                     $pembayaranDisplay = $item->metode_pembayaran;
                 }
 
+                $details = $item->details->map(function ($d) {
+                    $foto = \DB::table('produk')
+                        ->where('nama_produk', $d->nama_produk)
+                        ->value('gambar');
+
+                    return [
+                        'id' => $d->id,
+                        'nama_produk' => $d->nama_produk,
+                        'jumlah' => $d->jumlah,
+                        'qty' => $d->jumlah,
+                        'harga_satuan' => $d->harga_satuan,
+                        'subtotal' => $d->subtotal,
+                        'foto_produk' => $foto ?? null,
+                    ];
+                });
+
                 return [
                     'id' => $item->id,
                     'id_transaksi' => $item->id_transaksi,
@@ -75,12 +92,11 @@ class DriverController extends Controller
                     'status_antar' => $item->status_antar,
                     'kurir_id' => $item->kurir_id,
                     'tipe_layanan' => $item->tipe_layanan,
-                    'kurir_id' => $item->kurir_id,
                     'metode_pembayaran' => $item->metode_pembayaran,
                     'alamat_display' => $alamatDisplay,
                     'pembayaran_display' => $pembayaranDisplay,
                     'user' => $item->user,
-                    'details' => $item->details,
+                    'details' => $details,
                     'created_at' => $item->created_at,
                 ];
             });
@@ -115,7 +131,7 @@ class DriverController extends Controller
             'status_antar' => 'sedang diantar',
         ]);
 
-        $pesanan->load(['user', 'details']);
+        $pesanan->load(['user', 'details.produk']);
         if ($pesanan->user && $pesanan->user->email) {
             Mail::to($pesanan->user->email)->send(
                 new OrderUpdateMail($pesanan, '🛵 Pesanan Anda Sedang Diantar - TJ-T Mart')
@@ -142,7 +158,7 @@ class DriverController extends Controller
             'status' => 'Lunas',
         ]);
 
-        $pesanan->load(['user', 'details']);
+        $pesanan->load(['user', 'details.produk']);
         if ($pesanan->user && $pesanan->user->email) {
             Mail::to($pesanan->user->email)->send(
                 new OrderUpdateMail($pesanan, '✅ Pesanan Anda Selesai - TJ-T Mart')
@@ -155,7 +171,6 @@ class DriverController extends Controller
     public function batalkan(Request $request, $id)
     {
         $driverId = $request->user()->id;
-
         $pesanan = RiwayatPembelian::findOrFail($id);
 
         if ($pesanan->kurir_id !== $driverId) {
@@ -169,9 +184,7 @@ class DriverController extends Controller
             ], 422);
         }
 
-        $pesanan->update([
-            'status_antar' => 'dibatalkan',
-        ]);
+        $pesanan->update(['status_antar' => 'dibatalkan']);
 
         return response()->json([
             'status' => true,
@@ -195,9 +208,7 @@ class DriverController extends Controller
                 'nama_bank' => $adminData->nama_bank ?? '-',
                 'nomor_rekening' => $adminData->nomor_rekening ?? '-',
                 'tanggal_gaji' => $adminData->tanggal_gaji ?? '-',
-                'foto_url' => $user->gambar
-                                        ? url('storage/'.$user->gambar)
-                                        : null,
+                'foto_url' => $user->gambar ? url('storage/'.$user->gambar) : null,
             ],
         ]);
     }
@@ -241,8 +252,8 @@ class DriverController extends Controller
                 'nama_bank' => $adminData->nama_bank ?? '-',
                 'nomor_rekening' => $adminData->nomor_rekening ?? '-',
                 'tanggal_gaji' => $adminData
-                                        ? Carbon::parse($adminData->tanggal_gaji)->format('d M Y')
-                                        : Carbon::now()->format('d M Y'),
+                    ? Carbon::parse($adminData->tanggal_gaji)->format('d M Y')
+                    : Carbon::now()->format('d M Y'),
             ],
         ]);
     }
@@ -269,7 +280,6 @@ class DriverController extends Controller
         $now = Carbon::now('Asia/Jakarta');
         $jamMenit = $now->format('H:i');
 
-        // 1. Cek Duplikasi (Sudah ada di kodemu, pertahankan)
         $absenHariIni = Absensi::where('user_id', $user->id)
             ->whereDate('created_at', Carbon::today())
             ->first();
@@ -278,7 +288,6 @@ class DriverController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Kamu sudah absen hari ini!'], 200);
         }
 
-        // 2. KUNCI RENTANG WAKTU (Harus antara 06:30 sampai 08:00)
         if ($jamMenit < '06:30' || $jamMenit > '08:00') {
             return response()->json([
                 'status' => 'error',
@@ -286,14 +295,8 @@ class DriverController extends Controller
             ], 200);
         }
 
-        // 3. Tentukan Status Berdasarkan Jam
-        if ($jamMenit <= '07:00') {
-            $status = 'Tepat Waktu';
-        } else {
-            $status = 'Terlambat';
-        }
+        $status = $jamMenit <= '07:00' ? 'Tepat Waktu' : 'Terlambat';
 
-        // 4. Simpan
         Absensi::create([
             'user_id' => $user->id,
             'jam_masuk' => $now->toDateTimeString(),
@@ -313,7 +316,6 @@ class DriverController extends Controller
         $now = Carbon::now('Asia/Jakarta');
         $jamMenit = $now->format('H:i');
 
-        // 1. Validasi Rentang Waktu Checkout (15:00 - 23:00)
         if ($jamMenit < '15:00' || $jamMenit > '23:00') {
             return response()->json([
                 'status' => 'error',
@@ -321,12 +323,10 @@ class DriverController extends Controller
             ], 200);
         }
 
-        // 2. Cari data absen driver untuk hari ini
         $absensi = Absensi::where('user_id', auth()->id())
             ->whereDate('created_at', Carbon::today())
             ->first();
 
-        // 3. Cek apakah Driver sudah absen masuk pagi tadi
         if (! $absensi) {
             return response()->json([
                 'status' => 'error',
@@ -334,7 +334,6 @@ class DriverController extends Controller
             ], 200);
         }
 
-        // 4. Cek apakah sudah pernah checkout sebelumnya
         if ($absensi->jam_pulang != null) {
             return response()->json([
                 'status' => 'error',
@@ -342,7 +341,6 @@ class DriverController extends Controller
             ], 200);
         }
 
-        // 5. Update data pulang
         $absensi->update([
             'jam_pulang' => $now->toDateTimeString(),
             'koordinat_absen' => $request->koordinat,
@@ -350,14 +348,14 @@ class DriverController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Berhasil Checkout. Hati-hati di jalan, Adit!',
+            'message' => 'Berhasil Checkout. Hati-hati di jalan!',
         ]);
     }
 
     public function updateStatusAntar(Request $request, $id)
     {
         $driverId = $request->user()->id;
-        $pesanan = RiwayatPembelian::with(['user', 'details'])->findOrFail($id);
+        $pesanan = RiwayatPembelian::with(['user', 'details.produk'])->findOrFail($id);
 
         if ($pesanan->kurir_id !== $driverId) {
             return response()->json(['message' => 'Unauthorized'], 403);
