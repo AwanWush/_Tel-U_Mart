@@ -153,9 +153,13 @@ class DriverController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        // Hitung ongkir yang masuk ke saldo driver
+        $ongkirDriver = ($pesanan->tipe_layanan === 'delivery' || $pesanan->tipe_layanan === 'galon') ? 3000 : 0;
+
         $pesanan->update([
-            'status_antar' => 'selesai',
-            'status' => 'Lunas',
+            'status_antar'  => 'selesai',
+            'status'        => 'Lunas',
+            'ongkir_driver' => $ongkirDriver,
         ]);
 
         $pesanan->load(['user', 'details.produk']);
@@ -239,9 +243,11 @@ class DriverController extends Controller
     public function omset(Request $request)
     {
         $user = $request->user();
+
+        // Saldo driver = akumulasi ongkir dari pesanan yang sudah selesai
         $saldo = RiwayatPembelian::where('kurir_id', $user->id)
             ->where('status_antar', 'selesai')
-            ->sum('total_harga');
+            ->sum('ongkir_driver');
 
         $adminData = DB::table('admins')->where('user_id', $user->id)->first();
 
@@ -251,9 +257,7 @@ class DriverController extends Controller
                 'saldo' => $saldo,
                 'nama_bank' => $adminData->nama_bank ?? '-',
                 'nomor_rekening' => $adminData->nomor_rekening ?? '-',
-                'tanggal_gaji' => $adminData
-                    ? Carbon::parse($adminData->tanggal_gaji)->format('d M Y')
-                    : Carbon::now()->format('d M Y'),
+                'tanggal_gaji' => Carbon::now()->format('d M Y'), // ← selalu tanggal hari ini
             ],
         ]);
     }
