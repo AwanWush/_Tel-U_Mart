@@ -174,46 +174,52 @@ class SuperAdminController extends Controller
 
     public function prosesAbsen(Request $request)
     {
-        // 1. Ambil waktu sekarang (Sudah Asia/Jakarta)
-        $sekarang = now();
+        $sekarang = now(); // Asia/Jakarta
         $jamMenit = $sekarang->format('H:i');
+        $userId = auth()->id();
 
-        // 2. Validasi Batas Akhir (Jam 08:00)
-        if ($jamMenit > '08:00') {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Absensi ditolak! Batas waktu maksimal adalah 08:00 WIB.',
-            ], 422);
+        // Cek apakah driver sudah absen MASUK hari ini
+        $absenHariIni = Absensi::where('user_id', $userId)
+            ->whereDate('created_at', Carbon::today())
+            ->first();
+
+        // --- LOGIKA ABSEN MASUK (06:30 - 08:00) ---
+        if ($jamMenit >= '06:30' && $jamMenit <= '08:00') {
+            if ($absenHariIni) {
+                return response()->json(['status' => 'error', 'message' => 'Anda sudah absen masuk hari ini.'], 422);
+            }
+
+            $statusFinal = ($jamMenit <= '07:00') ? 'Tepat Waktu' : 'Terlambat';
+
+            Absensi::create([
+                'user_id' => $userId,
+                'jam_masuk' => $sekarang,
+                'status' => $statusFinal,
+                'koordinat_absen' => $request->koordinat,
+            ]);
+
+            return response()->json(['status' => 'success', 'message' => 'Berhasil Absen Masuk: '.$statusFinal]);
         }
 
-        // 3. Cek Batas Awal (Jam 06:30)
-        if ($jamMenit < '06:30') {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Absensi belum dibuka. Mulai jam 06:30 WIB.',
-            ], 422);
+        // --- LOGIKA ABSEN PULANG / CHECKOUT (15:00 ke atas) ---
+        if ($jamMenit >= '15:00') {
+            if (! $absenHariIni) {
+                return response()->json(['status' => 'error', 'message' => 'Anda belum absen masuk pagi tadi!'], 422);
+            }
+
+            if ($absenHariIni->jam_pulang != null) {
+                return response()->json(['status' => 'error', 'message' => 'Anda sudah absen pulang sebelumnya.'], 422);
+            }
+
+            // Update kolom jam_keluar di baris yang sama
+            $absenHariIni->update([
+                'jam_pulang' => $sekarang,
+                'koordinat_absen' => $request->koordinat, // Pastikan kolom ini ada di migrasi database
+            ]);
+
+            return response()->json(['status' => 'success', 'message' => 'Berhasil Absen Pulang. Hati-hati di jalan!']);
         }
 
-        // 4. Tentukan Status Berdasarkan Aturan
-        // 06:30 - 07:00 => Tepat Waktu
-        // 07:01 - 08:00 => Terlambat
-        if ($jamMenit >= '06:30' && $jamMenit <= '07:00') {
-            $statusFinal = 'Tepat Waktu';
-        } else {
-            $statusFinal = 'Terlambat';
-        }
-
-        // 5. Simpan ke Database tubes_pbw2
-        Absensi::create([
-            'user_id' => auth()->id(), // ID Driver yang login
-            'jam_masuk' => $sekarang,
-            'status' => $statusFinal,
-            'koordinat_absen' => $request->koordinat,
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Absensi berhasil: '.$statusFinal,
-        ]);
+        return response()->json(['status' => 'error', 'message' => 'Bukan jam absensi (06:30-08:00 / 15:00+)'], 422);
     }
 }

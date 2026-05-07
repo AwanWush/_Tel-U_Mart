@@ -19,7 +19,8 @@
                 <div class="lg:col-span-1 space-y-6">
                     <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 text-center">
                         <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">QR Code Aktif</h3>
-                        <div class="bg-gray-50 p-6 rounded-3xl border-2 border-dashed border-gray-200 inline-block mb-6">
+                        <div
+                            class="bg-gray-50 p-6 rounded-3xl border-2 border-dashed border-gray-200 inline-block mb-6">
                             <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TJT-TELKOM-77"
                                 alt="QR Absensi" class="w-48 h-48 mx-auto">
                         </div>
@@ -37,8 +38,10 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
                         <div class="p-6 bg-dark-maroon flex justify-between items-center">
-                            <h3 class="text-white font-black uppercase tracking-widest text-sm">Log Kehadiran Hari Ini</h3>
-                            <span class="bg-white/10 text-accent px-3 py-1 rounded-full text-[10px] font-black uppercase">
+                            <h3 class="text-white font-black uppercase tracking-widest text-sm">Log Kehadiran Hari Ini
+                            </h3>
+                            <span
+                                class="bg-white/10 text-accent px-3 py-1 rounded-full text-[10px] font-black uppercase">
                                 {{ date('d M Y') }}
                             </span>
                         </div>
@@ -46,21 +49,36 @@
                             <table class="w-full text-left border-collapse">
                                 <thead class="bg-gray-50 border-b border-gray-100">
                                     <tr>
-                                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Kurir</th>
-                                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Jam Absen</th>
-                                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-                                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Peta</th>
+                                        <th class="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                            Kurir</th>
+                                        <th
+                                            class="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
+                                            Jam Absen</th>
+                                        <th
+                                            class="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
+                                            Status</th>
+                                        <th
+                                            class="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
+                                            Peta</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-50">
                                     @forelse($absensis as $absen)
                                         <tr class="hover:bg-gray-50 transition">
+                                            <td class="p-5 text-center font-mono text-sm text-gray-600">
+                                                {{ \Carbon\Carbon::parse($absen->jam_masuk)->format('H:i') }} WIB
+                                            </td>
+                                            <td class="p-5 text-center font-mono text-sm text-red-600 font-bold">
+                                                {{ $absen->jam_keluar ? \Carbon\Carbon::parse($absen->jam_keluar)->format('H:i') . ' WIB' : '-' }}
+                                            </td>
                                             <td class="p-5">
                                                 <div class="flex items-center gap-3">
-                                                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center font-bold text-red-600 text-xs">
+                                                    <div
+                                                        class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center font-bold text-red-600 text-xs">
                                                         {{ substr($absen->user->name, 0, 1) }}
                                                     </div>
-                                                    <span class="font-bold text-gray-800 text-sm">{{ $absen->user->name }}</span>
+                                                    <span
+                                                        class="font-bold text-gray-800 text-sm">{{ $absen->user->name }}</span>
                                                 </div>
                                             </td>
                                             {{-- KOLOM JAM REAL-TIME (WIB) --}}
@@ -68,7 +86,8 @@
                                                 {{ \Carbon\Carbon::parse($absen->jam_masuk)->format('H:i') }} WIB
                                             </td>
                                             <td class="p-5 text-center">
-                                                <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase {{ $absen->status == 'Tepat Waktu' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                                <span
+                                                    class="px-3 py-1 rounded-lg text-[9px] font-black uppercase {{ $absen->status == 'Tepat Waktu' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                                     {{ $absen->status }}
                                                 </span>
                                             </td>

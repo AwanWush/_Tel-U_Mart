@@ -56,29 +56,16 @@ class DriverController extends Controller
                 $kamar = $item->user->nomor_kamar ?? '-';
                 $alamatDariUser = $gedung.' - Kamar '.$kamar;
                 $metodeTercemari = str_contains($item->metode_pembayaran ?? '', 'Gedung')
-                                    || str_contains($item->metode_pembayaran ?? '', 'Kamar');
+                                || str_contains($item->metode_pembayaran ?? '', 'Kamar');
+
                 if ($metodeTercemari) {
-                    $item->alamat_display = $alamatDariKolom ?? $item->metode_pembayaran;
-                    $item->pembayaran_display = 'Cash / Tunai';
+                    $alamatDisplay = $alamatDariKolom ?? $item->metode_pembayaran;
+                    $pembayaranDisplay = 'Cash / Tunai';
                 } else {
-                    $item->alamat_display = $alamatDariKolom ?? $alamatDariUser;
-                    $item->pembayaran_display = $item->metode_pembayaran;
+                    $alamatDisplay = $alamatDariKolom ?? $alamatDariUser;
+                    $pembayaranDisplay = $item->metode_pembayaran;
                 }
 
-                return $item;
-            });
-            \Log::info('CEK PESANAN:', $pesanan->map(function($item) {
-    return [
-        'id'             => $item->id,
-        'alamat_display' => $item->alamat_display ?? 'KOSONG',
-        'pembayaran'     => $item->pembayaran_display ?? 'KOSONG',
-        'alamat_db'      => $item->alamat_pengantaran ?? 'NULL',
-    ];
-})->toArray());
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $pesanan->map(function ($item) {
                 return [
                     'id' => $item->id,
                     'id_transaksi' => $item->id_transaksi,
@@ -86,17 +73,21 @@ class DriverController extends Controller
                     'status' => $item->status,
                     'status_antar' => $item->status_antar,
                     'tipe_layanan' => $item->tipe_layanan,
+                    'kurir_id' => $item->kurir_id,
                     'metode_pembayaran' => $item->metode_pembayaran,
-                    'alamat_display' => $item->alamat_display,
-                    'pembayaran_display' => $item->pembayaran_display,
+                    'alamat_display' => $alamatDisplay,
+                    'pembayaran_display' => $pembayaranDisplay,
                     'user' => $item->user,
                     'details' => $item->details,
                     'created_at' => $item->created_at,
                 ];
-            }),
+            });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $pesanan,
         ]);
     }
-    
 
     public function claim(Request $request, $id)
     {
@@ -260,62 +251,92 @@ class DriverController extends Controller
 
     public function submitAbsensi(Request $request)
     {
-        $user = auth()->user(); // Ambil driver yang login
+        $user = auth()->user();
         $now = Carbon::now('Asia/Jakarta');
-        $jam = $now->format('H:i');
+        $jamMenit = $now->format('H:i');
 
-        // 1. Validasi QR Code (Gunakan kode statis yang kamu print di tembok)
-        if ($request->qr_code !== 'TJT-TELKOM-77') {
-            return response()->json(['message' => 'QR Code tidak valid!'], 400);
+        // 1. Cek Duplikasi (Sudah ada di kodemu, pertahankan)
+        $absenHariIni = Absensi::where('user_id', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->first();
+
+        if ($absenHariIni) {
+            return response()->json(['status' => 'error', 'message' => 'Kamu sudah absen hari ini!'], 200);
         }
 
-        // 2. Cek Batas Waktu Kadaluarsa (Jam 08:00)
-        if ($now->greaterThan(Carbon::createFromTimeString('08:00'))) {
-            return response()->json(['message' => 'QR sudah kadaluarsa (Batas jam 08:00)!'], 403);
+        // 2. KUNCI RENTANG WAKTU (Harus antara 06:30 sampai 08:00)
+        if ($jamMenit < '06:30' || $jamMenit > '08:00') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Absensi Gagal! Sesi absen masuk hanya dibuka jam 06:30 - 08:00 WIB.',
+            ], 200);
         }
 
-        // 3. Tentukan Status (Tepat Waktu atau Terlambat)
-        $status = 'Tepat Waktu';
-        if ($now->greaterThan(Carbon::createFromTimeString('07:00'))) {
+        // 3. Tentukan Status Berdasarkan Jam
+        if ($jamMenit <= '07:00') {
+            $status = 'Tepat Waktu';
+        } else {
             $status = 'Terlambat';
         }
 
-        // 4. Simpan ke Database
-        $absensi = Absensi::updateOrCreate(
-            ['user_id' => $user->id, 'created_at' => $now->toDateString()],
-            [
-                'jam_masuk' => $now->toDateTimeString(),
-                'status' => $status,
-                'koordinat_absen' => $request->lat.','.$request->lng,
-            ]
-        );
+        // 4. Simpan
+        Absensi::create([
+            'user_id' => $user->id,
+            'jam_masuk' => $now->toDateTimeString(),
+            'status' => $status,
+            'koordinat_absen' => $request->koordinat,
+        ]);
 
         return response()->json([
-            'message' => 'Absensi berhasil!',
-            'status' => $status,
-            'jam' => $jam,
+            'status' => 'success',
+            'message' => 'Berhasil Check-in: '.$status,
+            'jam' => $jamMenit,
         ]);
     }
 
     public function submitCheckout(Request $request)
     {
         $now = Carbon::now('Asia/Jakarta');
+        $jamMenit = $now->format('H:i');
 
-        // Validasi jam pulang minimal jam 15:00
-        if ($now->hour < 15) {
-            return response()->json(['message' => 'Belum jam pulang (Minimal jam 15:00)!'], 403);
+        // 1. Validasi Rentang Waktu Checkout (15:00 - 23:00)
+        if ($jamMenit < '15:00' || $jamMenit > '23:00') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Checkout Gagal! Sesi absen pulang hanya dibuka jam 15:00 - 23:00 WIB.',
+            ], 200);
         }
 
+        // 2. Cari data absen driver untuk hari ini
         $absensi = Absensi::where('user_id', auth()->id())
             ->whereDate('created_at', Carbon::today())
             ->first();
 
-        if ($absensi) {
-            $absensi->update(['jam_pulang' => $now->toDateTimeString()]);
-
-            return response()->json(['message' => 'Berhasil Checkout. Hati-hati di jalan!']);
+        // 3. Cek apakah Driver sudah absen masuk pagi tadi
+        if (! $absensi) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kamu tidak bisa checkout karena hari ini kamu tidak absen masuk',
+            ], 200);
         }
 
-        return response()->json(['message' => 'Data absen masuk tidak ditemukan hari ini.'], 404);
+        // 4. Cek apakah sudah pernah checkout sebelumnya
+        if ($absensi->jam_pulang != null) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kamu sudah melakukan checkout sebelumnya hari ini',
+            ], 200);
+        }
+
+        // 5. Update data pulang
+        $absensi->update([
+            'jam_pulang' => $now->toDateTimeString(),
+            'koordinat_absen' => $request->koordinat,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Berhasil Checkout. Hati-hati di jalan, Adit!',
+        ]);
     }
 }
