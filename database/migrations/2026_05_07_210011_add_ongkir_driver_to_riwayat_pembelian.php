@@ -9,19 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up()
+    public function up(): void
 {
-    if (!Schema::hasColumn('riwayat_pembelian', 'alamat_pengantaran')) {
-        Schema::table('riwayat_pembelian', function (Blueprint $table) {
-            $table->string('alamat_pengantaran')->nullable()->after('tipe_layanan');
-        });
-    }
+    Schema::table('riwayat_pembelian', function (Blueprint $table) {
+        $table->unsignedInteger('ongkir_driver')->default(0)->after('total_harga');
+    });
 }
 
 public function down(): void
 {
     Schema::table('riwayat_pembelian', function (Blueprint $table) {
-        $table->dropColumn('alamat_pengantaran');
+        $table->dropColumn('ongkir_driver');
     });
 }
 };

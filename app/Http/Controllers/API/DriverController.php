@@ -153,9 +153,13 @@ class DriverController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        // Hitung ongkir yang masuk ke saldo driver
+        $ongkirDriver = ($pesanan->tipe_layanan === 'delivery' || $pesanan->tipe_layanan === 'galon') ? 3000 : 0;
+
         $pesanan->update([
             'status_antar' => 'selesai',
             'status' => 'Lunas',
+            'ongkir_driver' => $ongkirDriver,
         ]);
 
         $pesanan->load(['user', 'details.produk']);
@@ -239,9 +243,17 @@ class DriverController extends Controller
     public function omset(Request $request)
     {
         $user = $request->user();
+
         $saldo = RiwayatPembelian::where('kurir_id', $user->id)
-            ->where('status_antar', 'selesai')
-            ->sum('total_harga');
+            ->whereIn('status_antar', ['selesai', 'tiba']) // ← fix: tambah 'tiba'
+            ->sum('ongkir_driver');
+
+        // Hitung jumlah pesanan hari ini (selesai + tiba)
+        $pesananHariIni = RiwayatPembelian::where('kurir_id', $user->id)
+            ->whereIn('status_antar', ['selesai', 'tiba'])
+            ->where('ongkir_driver', '>', 0) 
+            ->whereDate('updated_at', Carbon::today())
+            ->count();
 
         $adminData = DB::table('admins')->where('user_id', $user->id)->first();
 
@@ -249,11 +261,10 @@ class DriverController extends Controller
             'status' => 'success',
             'data' => [
                 'saldo' => $saldo,
+                'pesanan_hari_ini' => $pesananHariIni,
                 'nama_bank' => $adminData->nama_bank ?? '-',
                 'nomor_rekening' => $adminData->nomor_rekening ?? '-',
-                'tanggal_gaji' => $adminData
-                    ? Carbon::parse($adminData->tanggal_gaji)->format('d M Y')
-                    : Carbon::now()->format('d M Y'),
+                'tanggal_gaji' => Carbon::now()->format('d M Y'),
             ],
         ]);
     }
@@ -266,7 +277,7 @@ class DriverController extends Controller
             'details:id,riwayat_pembelian_id,nama_produk,jumlah,subtotal',
         ])
             ->where('kurir_id', $user->id)
-            ->whereIn('status_antar', ['selesai', 'dibatalkan'])
+            ->whereIn('status_antar', ['selesai', 'tiba', 'dibatalkan']) // ← fix: tambah 'tiba'
             ->orderBy('updated_at', 'desc')
             ->select('id', 'user_id', 'total_harga', 'status_antar', 'updated_at')
             ->get();
@@ -352,6 +363,8 @@ class DriverController extends Controller
         ]);
     }
 
+    // Ganti fungsi updateStatusAntar() di DriverController.php dengan ini:
+
     public function updateStatusAntar(Request $request, $id)
     {
         $driverId = $request->user()->id;
@@ -361,7 +374,14 @@ class DriverController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $pesanan->update(['status_antar' => 'tiba']);
+        $ongkirDriver = ($pesanan->tipe_layanan === 'delivery' || $pesanan->tipe_layanan === 'galon')
+            ? 3000 : 0;
+
+        $pesanan->update([
+            'status_antar' => 'Selesai',
+            'status' => 'Lunas',
+            'ongkir_driver' => $ongkirDriver,
+        ]);
 
         if ($pesanan->user && $pesanan->user->email) {
             Mail::to($pesanan->user->email)->send(

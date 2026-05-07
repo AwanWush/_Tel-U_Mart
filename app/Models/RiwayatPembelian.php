@@ -16,6 +16,7 @@ class RiwayatPembelian extends Model
         'kurir_id',        
         'id_transaksi',
         'total_harga',
+        'ongkir_driver',
         'status',          
         'status_antar',    
         'metode_pembayaran',
