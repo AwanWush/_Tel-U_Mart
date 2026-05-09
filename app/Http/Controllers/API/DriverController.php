@@ -157,8 +157,13 @@ class DriverController extends Controller
         $ongkirDriver = ($pesanan->tipe_layanan === 'delivery' || $pesanan->tipe_layanan === 'galon') ? 3000 : 0;
 
         $pesanan->update([
+<<<<<<< HEAD
             'status_antar' => 'selesai',
             'status' => 'Lunas',
+=======
+            'status_antar'  => 'selesai',
+            'status'        => 'Lunas',
+>>>>>>> 36d83613fa9038194a12868f1968021c680ac69e
             'ongkir_driver' => $ongkirDriver,
         ]);
 
@@ -264,7 +269,11 @@ class DriverController extends Controller
                 'pesanan_hari_ini' => $pesananHariIni,
                 'nama_bank' => $adminData->nama_bank ?? '-',
                 'nomor_rekening' => $adminData->nomor_rekening ?? '-',
+<<<<<<< HEAD
                 'tanggal_gaji' => Carbon::now()->format('d M Y'),
+=======
+                'tanggal_gaji' => Carbon::now()->format('d M Y'), // ← selalu tanggal hari ini
+>>>>>>> 36d83613fa9038194a12868f1968021c680ac69e
             ],
         ]);
     }
