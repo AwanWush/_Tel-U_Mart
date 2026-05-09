@@ -157,13 +157,8 @@ class DriverController extends Controller
         $ongkirDriver = ($pesanan->tipe_layanan === 'delivery' || $pesanan->tipe_layanan === 'galon') ? 3000 : 0;
 
         $pesanan->update([
-<<<<<<< HEAD
             'status_antar' => 'selesai',
             'status' => 'Lunas',
-=======
-            'status_antar'  => 'selesai',
-            'status'        => 'Lunas',
->>>>>>> 36d83613fa9038194a12868f1968021c680ac69e
             'ongkir_driver' => $ongkirDriver,
         ]);
 
@@ -206,18 +201,26 @@ class DriverController extends Controller
         $user = $request->user();
         $adminData = DB::table('admins')->where('user_id', $user->id)->first();
 
+        $sudahAbsen = DB::table('absensis')
+        ->where('user_id', $user->id)
+        ->whereDate('created_at', Carbon::today())
+        ->whereNotNull('jam_masuk')
+        ->exists();
+
         return response()->json([
             'status' => true,
             'message' => 'Data profil driver',
             'data' => [
                 'id' => $user->id,
                 'name' => $user->name,
+                'status_akun' => $user->status,
                 'email' => $user->email,
                 'no_telp' => $user->no_telp,
                 'nama_bank' => $adminData->nama_bank ?? '-',
                 'nomor_rekening' => $adminData->nomor_rekening ?? '-',
                 'tanggal_gaji' => $adminData->tanggal_gaji ?? '-',
                 'foto_url' => $user->gambar ? url('storage/'.$user->gambar) : null,
+                'is_absen_hari_ini' => $sudahAbsen, 
             ],
         ]);
     }
@@ -269,11 +272,7 @@ class DriverController extends Controller
                 'pesanan_hari_ini' => $pesananHariIni,
                 'nama_bank' => $adminData->nama_bank ?? '-',
                 'nomor_rekening' => $adminData->nomor_rekening ?? '-',
-<<<<<<< HEAD
                 'tanggal_gaji' => Carbon::now()->format('d M Y'),
-=======
-                'tanggal_gaji' => Carbon::now()->format('d M Y'), // ← selalu tanggal hari ini
->>>>>>> 36d83613fa9038194a12868f1968021c680ac69e
             ],
         ]);
     }

@@ -165,11 +165,11 @@ class SuperAdminController extends Controller
         $kurir = User::with('admin')->findOrFail($id);
 
         return response()->json([
-            'id'             => $kurir->id,
-            'name'           => $kurir->name,
-            'email'          => $kurir->email,
-            'no_telp'        => $kurir->no_telp,
-            'nama_bank'      => $kurir->admin->nama_bank ?? '',
+            'id' => $kurir->id,
+            'name' => $kurir->name,
+            'email' => $kurir->email,
+            'no_telp' => $kurir->no_telp,
+            'nama_bank' => $kurir->admin->nama_bank ?? '',
             'nomor_rekening' => $kurir->admin->nomor_rekening ?? '',
         ]);
     }
@@ -177,13 +177,13 @@ class SuperAdminController extends Controller
     public function updateKurir(Request $request, $id)
     {
         $request->validate([
-            'name'           => 'required|string|max:255',
-            'email'          => 'required|email|unique:users,email,' . $id,
-            'no_telp'        => 'required',
-            'nama_bank'      => 'required|in:BCA,MANDIRI,BRI,BNI',
-            'nomor_rekening' => 'required|numeric|unique:admins,nomor_rekening,' . $id . ',user_id',
-            'password'       => 'nullable|min:8',
-            'foto'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,'.$id,
+            'no_telp' => 'required',
+            'nama_bank' => 'required|in:BCA,MANDIRI,BRI,BNI',
+            'nomor_rekening' => 'required|numeric|unique:admins,nomor_rekening,'.$id.',user_id',
+            'password' => 'nullable|min:8',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         DB::beginTransaction();
@@ -191,8 +191,8 @@ class SuperAdminController extends Controller
             $user = User::findOrFail($id);
 
             $dataUser = [
-                'name'    => $request->name,
-                'email'   => $request->email,
+                'name' => $request->name,
+                'email' => $request->email,
                 'no_telp' => $request->no_telp,
             ];
 
@@ -210,8 +210,8 @@ class SuperAdminController extends Controller
             $user->update($dataUser);
 
             DB::table('admins')->where('user_id', $id)->update([
-                'nama_custom'    => $request->name,
-                'nama_bank'      => $request->nama_bank,
+                'nama_custom' => $request->name,
+                'nama_bank' => $request->nama_bank,
                 'nomor_rekening' => $request->nomor_rekening,
             ]);
 
@@ -221,7 +221,7 @@ class SuperAdminController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
 
-            return redirect()->back()->with('error', 'Gagal: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal: '.$e->getMessage());
         }
     }
 
@@ -278,5 +278,26 @@ class SuperAdminController extends Controller
         }
 
         return response()->json(['status' => 'error', 'message' => 'Bukan jam absensi (06:30-08:00 / 15:00+)'], 422);
+    }
+
+    public function sinkronisasiStatusKurir()
+    {
+        // Ambil semua user dengan role kurir (role_id 2) yang masih aktif
+        $drivers = \App\Models\User::where('role_id', 2)->where('status', 'aktif')->get();
+
+        foreach ($drivers as $d) {
+            // Ambil data absensi terakhir
+            $terakhirAbsen = \Illuminate\Support\Facades\DB::table('absensis')
+                ->where('user_id', $d->id)
+                ->latest('created_at')
+                ->value('created_at');
+
+            // Jika tidak pernah absen atau absen terakhir sudah >= 3 hari yang lalu
+            if (! $terakhirAbsen || \Carbon\Carbon::parse($terakhirAbsen)->diffInDays(now()) >= 3) {
+                $d->update(['status' => 'nonaktif']);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Status kurir telah diperbarui otomatis.');
     }
 }

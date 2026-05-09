@@ -409,6 +409,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/kelola-mart', [SuperAdminController::class, 'manageMart'])->name('superadmin.mart.index');
         Route::post('/kelola-mart/store', [SuperAdminController::class, 'storeMart'])->name('superadmin.mart.store');
         Route::put('/kelola-mart/update/{id}', [SuperAdminController::class, 'updateMart'])->name('superadmin.mart.update');
+        Route::get('/superadmin/kurir/sync', [SuperAdminController::class, 'sinkronisasiStatusKurir'])->name('superadmin.kurir.sync');
         Route::patch('/kelola-mart/toggle/{id}', [SuperAdminController::class, 'toggleMartStatus'])->name('superadmin.mart.toggle');
     });
 });
