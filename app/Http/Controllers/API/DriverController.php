@@ -153,7 +153,6 @@ class DriverController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Hitung ongkir yang masuk ke saldo driver
         $ongkirDriver = ($pesanan->tipe_layanan === 'delivery' || $pesanan->tipe_layanan === 'galon') ? 3000 : 0;
 
         $pesanan->update([
@@ -202,10 +201,10 @@ class DriverController extends Controller
         $adminData = DB::table('admins')->where('user_id', $user->id)->first();
 
         $sudahAbsen = DB::table('absensis')
-        ->where('user_id', $user->id)
-        ->whereDate('created_at', Carbon::today())
-        ->whereNotNull('jam_masuk')
-        ->exists();
+            ->where('user_id', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->whereNotNull('jam_masuk')
+            ->exists();
 
         return response()->json([
             'status' => true,
@@ -220,7 +219,7 @@ class DriverController extends Controller
                 'nomor_rekening' => $adminData->nomor_rekening ?? '-',
                 'tanggal_gaji' => $adminData->tanggal_gaji ?? '-',
                 'foto_url' => $user->gambar ? url('storage/'.$user->gambar) : null,
-                'is_absen_hari_ini' => $sudahAbsen, 
+                'is_absen_hari_ini' => $sudahAbsen,
             ],
         ]);
     }
@@ -253,13 +252,12 @@ class DriverController extends Controller
         $user = $request->user();
 
         $saldo = RiwayatPembelian::where('kurir_id', $user->id)
-            ->whereIn('status_antar', ['selesai', 'tiba']) // ← fix: tambah 'tiba'
+            ->whereIn('status_antar', ['selesai', 'tiba'])
             ->sum('ongkir_driver');
 
-        // Hitung jumlah pesanan hari ini (selesai + tiba)
         $pesananHariIni = RiwayatPembelian::where('kurir_id', $user->id)
             ->whereIn('status_antar', ['selesai', 'tiba'])
-            ->where('ongkir_driver', '>', 0) 
+            ->where('ongkir_driver', '>', 0)
             ->whereDate('updated_at', Carbon::today())
             ->count();
 
@@ -281,14 +279,41 @@ class DriverController extends Controller
     {
         $user = $request->user();
         $riwayat = RiwayatPembelian::with([
-            'user:id,name,gambar',
+            'user' => function ($q) {
+                $q->select('id', 'name', 'gambar', 'lokasi_id', 'nomor_kamar', 'alamat_gedung');
+            },
+            'user.lokasi:id,nama_lokasi,nama_gedung',
             'details:id,riwayat_pembelian_id,nama_produk,jumlah,subtotal',
         ])
             ->where('kurir_id', $user->id)
-            ->whereIn('status_antar', ['selesai', 'tiba', 'dibatalkan']) // ← fix: tambah 'tiba'
+            ->whereIn('status_antar', ['selesai', 'tiba', 'dibatalkan'])
             ->orderBy('updated_at', 'desc')
-            ->select('id', 'user_id', 'total_harga', 'status_antar', 'updated_at')
-            ->get();
+            ->select('id', 'user_id', 'total_harga', 'status_antar', 'updated_at', 'alamat_pengantaran', 'metode_pembayaran')
+            ->get()
+            ->map(function ($item) {
+                $alamatDariKolom = $item->alamat_pengantaran ?? null;
+                $gedung = $item->user->lokasi->nama_lokasi ?? $item->user->alamat_gedung ?? '-';
+                $kamar  = $item->user->nomor_kamar ?? '-';
+                $alamatDariUser = $gedung . ' - Kamar ' . $kamar;
+                $metodeTercemari = str_contains($item->metode_pembayaran ?? '', 'Gedung')
+                                || str_contains($item->metode_pembayaran ?? '', 'Kamar');
+
+                if ($metodeTercemari) {
+                    $alamatDisplay = $alamatDariKolom ?? $item->metode_pembayaran;
+                } else {
+                    $alamatDisplay = $alamatDariKolom ?? $alamatDariUser;
+                }
+
+                return [
+                    'id'           => $item->id,
+                    'total_harga'  => $item->total_harga,
+                    'status_antar' => $item->status_antar,
+                    'updated_at'   => $item->updated_at,
+                    'alamat_display' => $alamatDisplay,
+                    'user'         => $item->user,
+                    'details'      => $item->details,
+                ];
+            });
 
         return response()->json(['status' => 'success', 'data' => $riwayat]);
     }
@@ -371,8 +396,6 @@ class DriverController extends Controller
         ]);
     }
 
-    // Ganti fungsi updateStatusAntar() di DriverController.php dengan ini:
-
     public function updateStatusAntar(Request $request, $id)
     {
         $driverId = $request->user()->id;
@@ -400,6 +423,48 @@ class DriverController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Pesanan tiba dan email terkirim!',
+        ]);
+    }
+
+    public function grafik(Request $request)
+    {
+        $user = $request->user();
+        $filter = $request->query('filter', 'bulan');
+
+        if ($filter === 'minggu') {
+            $data = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $tanggal = Carbon::now('Asia/Jakarta')->subDays($i);
+                $total = RiwayatPembelian::where('kurir_id', $user->id)
+                    ->whereIn('status_antar', ['selesai', 'tiba'])
+                    ->where('ongkir_driver', '>', 0)
+                    ->whereDate('updated_at', $tanggal->toDateString())
+                    ->sum('ongkir_driver');
+                $data[] = [
+                    'label' => $tanggal->format('d/m'),
+                    'total' => (float) $total,
+                ];
+            }
+        } else {
+            $data = [];
+            for ($i = 5; $i >= 0; $i--) {
+                $bulan = Carbon::now('Asia/Jakarta')->subMonths($i);
+                $total = RiwayatPembelian::where('kurir_id', $user->id)
+                    ->whereIn('status_antar', ['selesai', 'tiba'])
+                    ->where('ongkir_driver', '>', 0)
+                    ->whereYear('updated_at', $bulan->year)
+                    ->whereMonth('updated_at', $bulan->month)
+                    ->sum('ongkir_driver');
+                $data[] = [
+                    'label' => $bulan->translatedFormat('M'),
+                    'total' => (float) $total,
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $data,
         ]);
     }
 }
