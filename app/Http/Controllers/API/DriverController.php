@@ -281,7 +281,7 @@ class DriverController extends Controller
     {
         $user = $request->user();
         $riwayat = RiwayatPembelian::with([
-            'user:id,name',
+            'user:id,name,gambar',
             'details:id,riwayat_pembelian_id,nama_produk,jumlah,subtotal',
         ])
             ->where('kurir_id', $user->id)
