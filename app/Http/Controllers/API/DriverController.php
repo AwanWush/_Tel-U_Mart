@@ -369,6 +369,34 @@ class DriverController extends Controller
         return $R * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 
+    public function submitAbsensi(Request $request)
+    {
+        $now = Carbon::now('Asia/Jakarta');
+
+        $sudahAbsen = Absensi::where('user_id', auth()->id())
+            ->whereDate('created_at', Carbon::today())
+            ->whereNotNull('jam_masuk')
+            ->exists();
+
+        if ($sudahAbsen) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kamu sudah absen masuk hari ini.',
+            ], 200);
+        }
+
+        Absensi::create([
+            'user_id'         => auth()->id(),
+            'jam_masuk'       => $now->toDateTimeString(),
+            'koordinat_absen' => $request->koordinat,
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Berhasil absen masuk!',
+        ]);
+    }
+
     public function submitCheckout(Request $request)
     {
         $now = Carbon::now('Asia/Jakarta');
