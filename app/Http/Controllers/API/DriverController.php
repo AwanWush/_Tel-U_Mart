@@ -251,12 +251,20 @@ class DriverController extends Controller
     {
         $user = $request->user();
 
+        // Saldo total semua waktu (untuk halaman Omset — tidak berubah)
         $saldo = RiwayatPembelian::where('kurir_id', $user->id)
-            ->whereIn('status_antar', ['selesai', 'tiba'])
+            ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
+            ->sum('ongkir_driver');
+
+        // Saldo hari ini saja (untuk halaman Beranda)
+        $saldoHariIni = RiwayatPembelian::where('kurir_id', $user->id)
+            ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
+            ->where('ongkir_driver', '>', 0)
+            ->whereDate('updated_at', Carbon::today())
             ->sum('ongkir_driver');
 
         $pesananHariIni = RiwayatPembelian::where('kurir_id', $user->id)
-            ->whereIn('status_antar', ['selesai', 'tiba'])
+            ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
             ->where('ongkir_driver', '>', 0)
             ->whereDate('updated_at', Carbon::today())
             ->count();
@@ -267,6 +275,7 @@ class DriverController extends Controller
             'status' => 'success',
             'data' => [
                 'saldo' => $saldo,
+                'saldo_hari_ini' => $saldoHariIni,
                 'pesanan_hari_ini' => $pesananHariIni,
                 'nama_bank' => $adminData->nama_bank ?? '-',
                 'nomor_rekening' => $adminData->nomor_rekening ?? '-',
@@ -294,7 +303,7 @@ class DriverController extends Controller
             'details:id,riwayat_pembelian_id,nama_produk,jumlah,subtotal',
         ])
             ->where('kurir_id', $user->id)
-            ->whereIn('status_antar', ['selesai', 'tiba', 'dibatalkan'])
+            ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba', 'dibatalkan']) // ← FIX: tambah kapital
             ->orderBy('updated_at', 'desc')
             ->select('id', 'user_id', 'total_harga', 'status_antar', 'created_at', 'updated_at', 'alamat_pengantaran', 'metode_pembayaran')
             ->get()
@@ -441,7 +450,7 @@ class DriverController extends Controller
             for ($i = 6; $i >= 0; $i--) {
                 $tanggal = Carbon::now('Asia/Jakarta')->subDays($i);
                 $total = RiwayatPembelian::where('kurir_id', $user->id)
-                    ->whereIn('status_antar', ['selesai', 'tiba'])
+                    ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
                     ->where('ongkir_driver', '>', 0)
                     ->whereDate('updated_at', $tanggal->toDateString())
                     ->sum('ongkir_driver');
@@ -455,7 +464,7 @@ class DriverController extends Controller
             for ($i = 5; $i >= 0; $i--) {
                 $bulan = Carbon::now('Asia/Jakarta')->subMonths($i);
                 $total = RiwayatPembelian::where('kurir_id', $user->id)
-                    ->whereIn('status_antar', ['selesai', 'tiba'])
+                    ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
                     ->where('ongkir_driver', '>', 0)
                     ->whereYear('updated_at', $bulan->year)
                     ->whereMonth('updated_at', $bulan->month)
