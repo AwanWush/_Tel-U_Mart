@@ -278,81 +278,86 @@ class DriverController extends Controller
     public function riwayat(Request $request)
     {
         $user = $request->user();
+
+        // Koordinat per mart
+        $martKoordinat = [
+            1 => ['lat' => -6.971204472034136, 'lng' => 107.62863290561009, 'nama' => 'TJ Mart Putra'],
+            2 => ['lat' => -6.970040951360206, 'lng' => 107.6271015587333,  'nama' => 'T Mart Putra'],
+            3 => ['lat' => -6.974471953604368, 'lng' => 107.62890391051174, 'nama' => 'TJ Mart Putri'],
+        ];
+
         $riwayat = RiwayatPembelian::with([
             'user' => function ($q) {
                 $q->select('id', 'name', 'gambar', 'lokasi_id', 'nomor_kamar', 'alamat_gedung');
             },
-            'user.lokasi:id,nama_lokasi,nama_gedung',
+            'user.lokasi:id,nama_lokasi,nama_gedung,latitude,longitude,mart_id',
             'details:id,riwayat_pembelian_id,nama_produk,jumlah,subtotal',
         ])
             ->where('kurir_id', $user->id)
             ->whereIn('status_antar', ['selesai', 'tiba', 'dibatalkan'])
             ->orderBy('updated_at', 'desc')
-            ->select('id', 'user_id', 'total_harga', 'status_antar', 'updated_at', 'alamat_pengantaran', 'metode_pembayaran')
+            ->select('id', 'user_id', 'total_harga', 'status_antar', 'created_at', 'updated_at', 'alamat_pengantaran', 'metode_pembayaran')
             ->get()
-            ->map(function ($item) {
+            ->map(function ($item) use ($martKoordinat) {
                 $alamatDariKolom = $item->alamat_pengantaran ?? null;
                 $gedung = $item->user->lokasi->nama_lokasi ?? $item->user->alamat_gedung ?? '-';
-                $kamar  = $item->user->nomor_kamar ?? '-';
-                $alamatDariUser = $gedung . ' - Kamar ' . $kamar;
+                $kamar = $item->user->nomor_kamar ?? '-';
+                $alamatDariUser = $gedung.' - Kamar '.$kamar;
                 $metodeTercemari = str_contains($item->metode_pembayaran ?? '', 'Gedung')
                                 || str_contains($item->metode_pembayaran ?? '', 'Kamar');
 
-                if ($metodeTercemari) {
-                    $alamatDisplay = $alamatDariKolom ?? $item->metode_pembayaran;
-                } else {
-                    $alamatDisplay = $alamatDariKolom ?? $alamatDariUser;
+                $alamatDisplay = $metodeTercemari
+                    ? ($alamatDariKolom ?? $item->metode_pembayaran)
+                    : ($alamatDariKolom ?? $alamatDariUser);
+
+                // Nama mart & hitung jarak
+                $martId = $item->user->lokasi->mart_id ?? null;
+                $namaMart = $martKoordinat[$martId]['nama'] ?? 'TJ Mart Putri';
+                $jarakText = '- m';
+                $durasiText = '- menit';
+
+                $lat = $item->user->lokasi->latitude ?? null;
+                $lng = $item->user->lokasi->longitude ?? null;
+
+                if ($lat && $lng && $martId && isset($martKoordinat[$martId])) {
+                    $martLat = $martKoordinat[$martId]['lat'];
+                    $martLng = $martKoordinat[$martId]['lng'];
+                    $jarakMeter = $this->hitungJarak($martLat, $martLng, $lat, $lng);
+                    $jarakText = $jarakMeter < 1000
+                        ? round($jarakMeter).' m'
+                        : round($jarakMeter / 1000, 1).' km';
+                    $durasiMenit = max(1, round($jarakMeter / 200));
+                    $durasiText = $durasiMenit.' menit';
                 }
 
                 return [
-                    'id'           => $item->id,
-                    'total_harga'  => $item->total_harga,
+                    'id' => $item->id,
+                    'total_harga' => $item->total_harga,
                     'status_antar' => $item->status_antar,
-                    'updated_at'   => $item->updated_at,
+                    'created_at' => $item->created_at,
+                    'updated_at' => $item->updated_at,
                     'alamat_display' => $alamatDisplay,
-                    'user'         => $item->user,
-                    'details'      => $item->details,
+                    'nama_mart' => $namaMart,
+                    'jarak' => $jarakText,
+                    'durasi' => $durasiText,
+                    'user' => $item->user,
+                    'details' => $item->details,
                 ];
             });
 
         return response()->json(['status' => 'success', 'data' => $riwayat]);
     }
 
-    public function submitAbsensi(Request $request)
+    private function hitungJarak($lat1, $lng1, $lat2, $lng2): float
     {
-        $user = auth()->user();
-        $now = Carbon::now('Asia/Jakarta');
-        $jamMenit = $now->format('H:i');
+        $R = 6371000;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+                cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+                sin($dLng / 2) * sin($dLng / 2);
 
-        $absenHariIni = Absensi::where('user_id', $user->id)
-            ->whereDate('created_at', Carbon::today())
-            ->first();
-
-        if ($absenHariIni) {
-            return response()->json(['status' => 'error', 'message' => 'Kamu sudah absen hari ini!'], 200);
-        }
-
-        if ($jamMenit < '06:30' || $jamMenit > '08:00') {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Absensi Gagal! Sesi absen masuk hanya dibuka jam 06:30 - 08:00 WIB.',
-            ], 200);
-        }
-
-        $status = $jamMenit <= '07:00' ? 'Tepat Waktu' : 'Terlambat';
-
-        Absensi::create([
-            'user_id' => $user->id,
-            'jam_masuk' => $now->toDateTimeString(),
-            'status' => $status,
-            'koordinat_absen' => $request->koordinat,
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Berhasil Check-in: '.$status,
-            'jam' => $jamMenit,
-        ]);
+        return $R * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 
     public function submitCheckout(Request $request)

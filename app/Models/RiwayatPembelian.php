@@ -22,6 +22,8 @@ class RiwayatPembelian extends Model
         'metode_pembayaran',
         'alamat_pengantaran',
         'tipe_layanan',
+        'jarak',
+        'durasi',
     ];
 
     public function user()
