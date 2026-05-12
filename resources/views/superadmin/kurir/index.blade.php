@@ -1,6 +1,15 @@
 <x-app-layout>
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px]">
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+                <a href="{{ route('dashboard.superadmin') }}"
+                    class="flex items-center gap-1.5 font-semibold text-[#5B000B] hover:underline transition">
+                    <i class="fas fa-home text-xs"></i>
+                    Dashboard
+                </a>
+                <span class="text-gray-300">/</span>
+                <span class="text-gray-400 font-medium">Absensi Kurir</span>
+            </div>
 
             {{-- Header --}}
             <div class="flex justify-between items-center mb-8">
