@@ -288,11 +288,11 @@ class DriverController extends Controller
     {
         $user = $request->user();
 
-        // Koordinat per mart
+        // ↓ FIX: koordinat & nama mart yang benar
         $martKoordinat = [
-            1 => ['lat' => -6.971204472034136, 'lng' => 107.62863290561009, 'nama' => 'TJ Mart Putra'],
-            2 => ['lat' => -6.970040951360206, 'lng' => 107.6271015587333,  'nama' => 'T Mart Putra'],
-            3 => ['lat' => -6.974471953604368, 'lng' => 107.62890391051174, 'nama' => 'TJ Mart Putri'],
+            1 => ['lat' => -6.971239292483579, 'lng' => 107.62864390210581, 'nama' => 'TJ Mart Putra'],
+            2 => ['lat' => -6.970046548388595, 'lng' => 107.62704675063495, 'nama' => 'T Mart Putra'],
+            3 => ['lat' => -6.974392142676222, 'lng' => 107.62888832540412, 'nama' => 'TJ Mart Putri'],
         ];
 
         $riwayat = RiwayatPembelian::with([
@@ -303,9 +303,9 @@ class DriverController extends Controller
             'details:id,riwayat_pembelian_id,nama_produk,jumlah,subtotal',
         ])
             ->where('kurir_id', $user->id)
-            ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba', 'dibatalkan']) // ← FIX: tambah kapital
+            ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba', 'dibatalkan'])
             ->orderBy('updated_at', 'desc')
-            ->select('id', 'user_id', 'total_harga', 'status_antar', 'created_at', 'updated_at', 'alamat_pengantaran', 'metode_pembayaran')
+            ->select('id', 'user_id', 'total_harga', 'status_antar', 'created_at', 'updated_at', 'alamat_pengantaran', 'metode_pembayaran', 'tipe_layanan')
             ->get()
             ->map(function ($item) use ($martKoordinat) {
                 $alamatDariKolom = $item->alamat_pengantaran ?? null;
@@ -321,7 +321,9 @@ class DriverController extends Controller
 
                 // Nama mart & hitung jarak
                 $martId = $item->user->lokasi->mart_id ?? null;
-                $namaMart = $martKoordinat[$martId]['nama'] ?? 'TJ Mart Putri';
+                $namaMart = ($martId && isset($martKoordinat[$martId]))
+                    ? $martKoordinat[$martId]['nama']
+                    : 'TJ Mart Putri';
                 $jarakText = '- m';
                 $durasiText = '- menit';
 
@@ -339,6 +341,10 @@ class DriverController extends Controller
                     $durasiText = $durasiMenit.' menit';
                 }
 
+                $isDelivery = ($item->tipe_layanan === 'delivery' || $item->tipe_layanan === 'galon');
+                $ongkir = $isDelivery ? 3000 : 0;
+                $biayaLayanan = $isDelivery ? 1000 : 0;
+
                 return [
                     'id' => $item->id,
                     'total_harga' => $item->total_harga,
@@ -349,6 +355,8 @@ class DriverController extends Controller
                     'nama_mart' => $namaMart,
                     'jarak' => $jarakText,
                     'durasi' => $durasiText,
+                    'ongkir' => $ongkir,
+                    'biaya_layanan' => $biayaLayanan,
                     'user' => $item->user,
                     'details' => $item->details,
                 ];
