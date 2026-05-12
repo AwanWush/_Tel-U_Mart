@@ -68,6 +68,17 @@ class DriverController extends Controller
                     $pembayaranDisplay = $item->metode_pembayaran;
                 }
 
+                // Ambil nama mart dari produk pertama di detail pesanan
+                $namaMart = '-';
+                $namaProdukPertama = $item->details->first()->nama_produk ?? null;
+                if ($namaProdukPertama) {
+                    $namaMart = DB::table('produk')
+                        ->join('produk_mart', 'produk.id', '=', 'produk_mart.produk_id')
+                        ->join('mart', 'mart.id', '=', 'produk_mart.mart_id')
+                        ->where('produk.nama_produk', $namaProdukPertama)
+                        ->value('mart.nama_mart') ?? '-';
+                }
+
                 $details = $item->details->map(function ($d) {
                     $foto = \DB::table('produk')
                         ->where('nama_produk', $d->nama_produk)
@@ -95,6 +106,7 @@ class DriverController extends Controller
                     'metode_pembayaran' => $item->metode_pembayaran,
                     'alamat_display' => $alamatDisplay,
                     'pembayaran_display' => $pembayaranDisplay,
+                    'nama_mart' => $namaMart,
                     'user' => $item->user,
                     'details' => $details,
                     'created_at' => $item->created_at,
@@ -319,16 +331,31 @@ class DriverController extends Controller
                     ? ($alamatDariKolom ?? $item->metode_pembayaran)
                     : ($alamatDariKolom ?? $alamatDariUser);
 
-                // Nama mart & hitung jarak
-                $martId = $item->user->lokasi->mart_id ?? null;
-                $namaMart = ($martId && isset($martKoordinat[$martId]))
-                    ? $martKoordinat[$martId]['nama']
-                    : 'TJ Mart Putri';
+                // Ambil nama mart dari produk pertama di detail pesanan
+                $namaMart = null;
+                $namaProdukPertama = $item->details->first()->nama_produk ?? null;
+                if ($namaProdukPertama) {
+                    $namaMart = DB::table('produk')
+                        ->join('produk_mart', 'produk.id', '=', 'produk_mart.produk_id')
+                        ->join('mart', 'mart.id', '=', 'produk_mart.mart_id')
+                        ->where('produk.nama_produk', $namaProdukPertama)
+                        ->value('mart.nama_mart');
+                }
+
+                // Fallback ke mart_id lokasi jika tidak ketemu
+                if (!$namaMart) {
+                    $martId = $item->user->lokasi->mart_id ?? null;
+                    $namaMart = ($martId && isset($martKoordinat[$martId]))
+                        ? $martKoordinat[$martId]['nama']
+                        : 'TJ Mart Putri';
+                }
+
                 $jarakText = '- m';
                 $durasiText = '- menit';
 
                 $lat = $item->user->lokasi->latitude ?? null;
                 $lng = $item->user->lokasi->longitude ?? null;
+                $martId = $item->user->lokasi->mart_id ?? null;
 
                 if ($lat && $lng && $martId && isset($martKoordinat[$martId])) {
                     $martLat = $martKoordinat[$martId]['lat'];
