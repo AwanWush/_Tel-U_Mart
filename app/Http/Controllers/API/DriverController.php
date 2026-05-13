@@ -34,6 +34,7 @@ class DriverController extends Controller
                         ->where(function ($subQ) {
                             $subQ->where('tipe_layanan', 'delivery')
                                 ->orWhere(function ($galonQ) {
+                                    // ↓ FIX: hapus filter metode_pengiriman, semua galon bisa diantar
                                     $galonQ->where('tipe_layanan', 'galon')
                                         ->whereIn('id_transaksi', function ($query) {
                                             $query->select(DB::raw("CONCAT('COD-', id)"))
@@ -68,15 +69,20 @@ class DriverController extends Controller
                     $pembayaranDisplay = $item->metode_pembayaran;
                 }
 
-                // Ambil nama mart dari produk pertama di detail pesanan
-                $namaMart = '-';
-                $namaProdukPertama = $item->details->first()->nama_produk ?? null;
-                if ($namaProdukPertama) {
-                    $namaMart = DB::table('produk')
-                        ->join('produk_mart', 'produk.id', '=', 'produk_mart.produk_id')
-                        ->join('mart', 'mart.id', '=', 'produk_mart.mart_id')
-                        ->where('produk.nama_produk', $namaProdukPertama)
-                        ->value('mart.nama_mart') ?? '-';
+                // ↓ FIX: nama mart — galon selalu TJ Mart Putra, delivery cek via produk_mart
+                $namaMart = 'TJ Mart Putra'; // default untuk galon
+                if ($item->tipe_layanan !== 'galon') {
+                    $namaProdukPertama = $item->details->first()->nama_produk ?? null;
+                    if ($namaProdukPertama) {
+                        $namaMartDariDB = DB::table('produk')
+                            ->join('produk_mart', 'produk.id', '=', 'produk_mart.produk_id')
+                            ->join('mart', 'mart.id', '=', 'produk_mart.mart_id')
+                            ->where('produk.nama_produk', $namaProdukPertama)
+                            ->value('mart.nama_mart');
+                        if ($namaMartDariDB) {
+                            $namaMart = $namaMartDariDB;
+                        }
+                    }
                 }
 
                 $details = $item->details->map(function ($d) {
@@ -263,12 +269,10 @@ class DriverController extends Controller
     {
         $user = $request->user();
 
-        // Saldo total semua waktu (untuk halaman Omset — tidak berubah)
         $saldo = RiwayatPembelian::where('kurir_id', $user->id)
             ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
             ->sum('ongkir_driver');
 
-        // Saldo hari ini saja (untuk halaman Beranda)
         $saldoHariIni = RiwayatPembelian::where('kurir_id', $user->id)
             ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
             ->where('ongkir_driver', '>', 0)
@@ -300,7 +304,6 @@ class DriverController extends Controller
     {
         $user = $request->user();
 
-        // ↓ FIX: koordinat & nama mart yang benar
         $martKoordinat = [
             1 => ['lat' => -6.971239292483579, 'lng' => 107.62864390210581, 'nama' => 'TJ Mart Putra'],
             2 => ['lat' => -6.970046548388595, 'lng' => 107.62704675063495, 'nama' => 'T Mart Putra'],
@@ -317,7 +320,7 @@ class DriverController extends Controller
             ->where('kurir_id', $user->id)
             ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba', 'dibatalkan'])
             ->orderBy('updated_at', 'desc')
-            ->select('id', 'user_id', 'total_harga', 'status_antar', 'created_at', 'updated_at', 'alamat_pengantaran', 'metode_pembayaran', 'tipe_layanan')
+            ->select('id', 'user_id', 'total_harga', 'status_antar', 'created_at', 'updated_at', 'alamat_pengantaran', 'metode_pembayaran', 'tipe_layanan', 'jarak', 'durasi')
             ->get()
             ->map(function ($item) use ($martKoordinat) {
                 $alamatDariKolom = $item->alamat_pengantaran ?? null;
@@ -331,46 +334,60 @@ class DriverController extends Controller
                     ? ($alamatDariKolom ?? $item->metode_pembayaran)
                     : ($alamatDariKolom ?? $alamatDariUser);
 
-                // Ambil nama mart dari produk pertama di detail pesanan
-                $namaMart = null;
-                $namaProdukPertama = $item->details->first()->nama_produk ?? null;
-                if ($namaProdukPertama) {
-                    $namaMart = DB::table('produk')
-                        ->join('produk_mart', 'produk.id', '=', 'produk_mart.produk_id')
-                        ->join('mart', 'mart.id', '=', 'produk_mart.mart_id')
-                        ->where('produk.nama_produk', $namaProdukPertama)
-                        ->value('mart.nama_mart');
+                // ↓ FIX: galon selalu TJ Mart Putra, delivery cek via produk_mart
+                $namaMart = 'TJ Mart Putra'; // default untuk galon
+                if ($item->tipe_layanan !== 'galon') {
+                    $namaProdukPertama = $item->details->first()->nama_produk ?? null;
+                    if ($namaProdukPertama) {
+                        $namaMartDariDB = DB::table('produk')
+                            ->join('produk_mart', 'produk.id', '=', 'produk_mart.produk_id')
+                            ->join('mart', 'mart.id', '=', 'produk_mart.mart_id')
+                            ->where('produk.nama_produk', $namaProdukPertama)
+                            ->value('mart.nama_mart');
+                        if ($namaMartDariDB) {
+                            $namaMart = $namaMartDariDB;
+                        }
+                    }
+                    // Fallback ke mart_id lokasi user jika produk tidak ketemu
+                    if (!isset($namaMartDariDB) || !$namaMartDariDB) {
+                        $martId = $item->user->lokasi->mart_id ?? null;
+                        $namaMart = ($martId && isset($martKoordinat[$martId]))
+                            ? $martKoordinat[$martId]['nama']
+                            : 'TJ Mart Putri';
+                    }
                 }
 
-                // Fallback ke mart_id lokasi jika tidak ketemu
-                if (!$namaMart) {
+                // Pakai jarak & durasi aktual dari DB, fallback kalkulasi jika NULL
+                $jarakText = $item->jarak ?? null;
+                $durasiText = $item->durasi ?? null;
+
+                if (!$jarakText || !$durasiText) {
+                    $lat = $item->user->lokasi->latitude ?? null;
+                    $lng = $item->user->lokasi->longitude ?? null;
                     $martId = $item->user->lokasi->mart_id ?? null;
-                    $namaMart = ($martId && isset($martKoordinat[$martId]))
-                        ? $martKoordinat[$martId]['nama']
-                        : 'TJ Mart Putri';
-                }
 
-                $jarakText = '- m';
-                $durasiText = '- menit';
+                    // Untuk galon, pakai mart_id = 1 (TJ Mart Putra) jika lokasi tidak punya mart_id
+                    if ($item->tipe_layanan === 'galon' && !$martId) {
+                        $martId = 1;
+                    }
 
-                $lat = $item->user->lokasi->latitude ?? null;
-                $lng = $item->user->lokasi->longitude ?? null;
-                $martId = $item->user->lokasi->mart_id ?? null;
-
-                if ($lat && $lng && $martId && isset($martKoordinat[$martId])) {
-                    $martLat = $martKoordinat[$martId]['lat'];
-                    $martLng = $martKoordinat[$martId]['lng'];
-                    $jarakMeter = $this->hitungJarak($martLat, $martLng, $lat, $lng);
-                    $jarakText = $jarakMeter < 1000
-                        ? round($jarakMeter).' m'
-                        : round($jarakMeter / 1000, 1).' km';
-                    $durasiMenit = max(1, round($jarakMeter / 200));
-                    $durasiText = $durasiMenit.' menit';
+                    if ($lat && $lng && $martId && isset($martKoordinat[$martId])) {
+                        $martLat = $martKoordinat[$martId]['lat'];
+                        $martLng = $martKoordinat[$martId]['lng'];
+                        $jarakMeter = $this->hitungJarak($martLat, $martLng, $lat, $lng);
+                        $jarakText = $jarakText ?? ($jarakMeter < 1000
+                            ? round($jarakMeter).' m'
+                            : round($jarakMeter / 1000, 1).' km');
+                        $durasiText = $durasiText ?? max(1, round($jarakMeter / 80)).' menit';
+                    } else {
+                        $jarakText = $jarakText ?? '- m';
+                        $durasiText = $durasiText ?? '- menit';
+                    }
                 }
 
                 $isDelivery = ($item->tipe_layanan === 'delivery' || $item->tipe_layanan === 'galon');
                 $ongkir = $isDelivery ? 3000 : 0;
-                $biayaLayanan = $isDelivery ? 1000 : 0;
+                $biayaLayanan = $isDelivery ? 2000 : 0;
 
                 return [
                     'id' => $item->id,
@@ -486,9 +503,11 @@ class DriverController extends Controller
             ? 3000 : 0;
 
         $pesanan->update([
-            'status_antar' => 'Selesai',
-            'status' => 'Lunas',
+            'status_antar'  => 'Selesai',
+            'status'        => 'Lunas',
             'ongkir_driver' => $ongkirDriver,
+            'jarak'         => $request->input('jarak'),
+            'durasi'        => $request->input('durasi'),
         ]);
 
         if ($pesanan->user && $pesanan->user->email) {
