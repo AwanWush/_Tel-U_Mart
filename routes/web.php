@@ -1,43 +1,43 @@
 <?php
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\PembayaranController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProdukController;
-use App\Http\Controllers\KategoriProdukController;
-use App\Http\Controllers\ProdukReviewController;
-use App\Http\Controllers\UserGalonController;
-use App\Http\Controllers\UserTokenController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\WishlistController;
-use App\Http\Controllers\NotificationController; 
+
+use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\LaporanPenjualanController;
 use App\Http\Controllers\Admin\PesananController;
 use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KategoriProdukController;
 use App\Http\Controllers\MartController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\Admin\AdminOrderController;
-use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\MetodePembayaranController;
-use App\Http\Controllers\Admin\LaporanPenjualanController;
-use App\Http\Controllers\SuperAdmin\SuperAdminController;
-use App\Http\Controllers\SuperAdmin\GajiController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\ProdukReviewController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RiwayatController;
 use App\Http\Controllers\SuperAdmin\AdminManagementController;
+use App\Http\Controllers\SuperAdmin\GajiController;
 use App\Http\Controllers\SuperAdmin\KategoriController;
+use App\Http\Controllers\SuperAdmin\SuperAdminController;
+use App\Http\Controllers\UserGalonController;
+use App\Http\Controllers\UserTokenController;
+use App\Http\Controllers\WishlistController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 Route::post('/pembayaran', [MetodePembayaranController::class, 'store'])
     ->name('pembayaran.store')
     ->middleware('auth');
 
-    // Route::post('/checkout', [CheckoutController::class, 'processCheckout'])
-    // ->name('checkout.process');
+// Route::post('/checkout', [CheckoutController::class, 'processCheckout'])
+// ->name('checkout.process');
 
 Route::get('/checkout', [CheckoutController::class, 'index'])
     ->name('checkout');
 
-    
 Route::middleware(['auth'])->group(function () {
 
     // HALAMAN CHECKOUT
@@ -47,7 +47,6 @@ Route::middleware(['auth'])->group(function () {
     // PROSES CHECKOUT
     Route::post('/checkout', [CheckoutController::class, 'processCheckout'])
         ->name('checkout.process');
-
 
     // BELI SEKARANG (POST)
     Route::post('/checkout/direct', [CheckoutController::class, 'directCheckout'])
@@ -98,11 +97,11 @@ Route::get('/process-checkout', [CheckoutController::class, 'processCheckout'])-
 Route::get('/order/success', [OrderController::class, 'success'])
     ->name('order.success');
 Route::get('/', function () {
-    return redirect()->route('login'); 
-    
+    return redirect()->route('login');
+
 });
 
-//==================== DASHBOARD SESUAI ROLE ==================== //
+// ==================== DASHBOARD SESUAI ROLE ==================== //
 // Route::get('/dashboard', function () {
 //     $user = Auth::user();
 
@@ -143,7 +142,6 @@ Route::middleware(['auth', 'verified'])->get(
 Route::get('/dashboard/user', [DashboardController::class, 'user'])
     ->name('dashboard.user');
 
-
 // ==================== Bawaan Breeze ==================== //
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -151,11 +149,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
-
 // ==================== USER (TIDAK WAJIB LOGIN) ==================== //
 Route::group([], function () {
-    
+
     Route::view('/produk-list', 'dashboard.user')->name('produk.list');
     Route::view('/pesanan-saya', 'dashboard.user')->name('pesanan.user');
     Route::view('/riwayat-pembelian', 'dashboard.user')->name('riwayat.pembelian');
@@ -182,13 +178,13 @@ Route::get('/kategori/{kategori}', [ProdukController::class, 'byKategori'])
 require __DIR__.'/auth.php';
 // ==================== CHECKOUT (WAJIB LOGIN) ==================== //
 // Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('/checkout', 'checkout.index')->name('checkout.index');
+Route::view('/checkout', 'checkout.index')->name('checkout.index');
 // });
 
 // ==================== Profil ==================== //
 Route::get('/profil/transaksi', [ProfileController::class, 'transaksi'])
-->middleware(['auth', 'verified'])
-->name('profil.transaksi');
+    ->middleware(['auth', 'verified'])
+    ->name('profil.transaksi');
 
 // ==================== FITUR TAMBAHAN: GALON & TOKEN LISTRIK ==================== //
 Route::middleware(['auth'])->group(function () {
@@ -200,27 +196,27 @@ Route::middleware(['auth'])->group(function () {
         ->name('payment.snap-galon');
     Route::post('/payment/snap-product', [PaymentController::class, 'snapProduct'])
         ->name('payment.snap-product');
-        
+
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::get('/payment/method', [CheckoutController::class, 'showPaymentMethod'])->name('payment.method');
     // Token
     Route::get('/token-listrik', [UserTokenController::class, 'index'])->name('token.index');
     Route::post('/token-listrik/beli', [UserTokenController::class, 'store'])->name('token.store');
-    
+
     // Riwayat Token
     Route::get('/token-listrik/riwayat', [UserTokenController::class, 'history'])->name('token.history');
     Route::get('/token-listrik/detail/{id}', [UserTokenController::class, 'detail'])->name('token.detail');
 
     Route::get('/token/result/{id}', [UserTokenController::class, 'result'])
         ->name('token.result');
-    
+
     // Galon
     Route::get('/galon', [UserGalonController::class, 'index'])->name('galon.index');
     Route::post('/galon/beli', [UserGalonController::class, 'store'])->name('galon.store');
-    
+
     // Riwayat Galon
     Route::get('/galon/riwayat', [UserGalonController::class, 'history'])->name('galon.history');
-    
+
     Route::get('/fitur-user/galon-result/{id}', [UserGalonController::class, 'result'])
         ->name('galon.result');
 
@@ -235,49 +231,46 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Halaman profil user
     Route::get('/akun-saya', [ProfileController::class, 'edit'])
-    ->name('user.akun');
-    
+        ->name('user.akun');
+
     // Update profil user
     Route::patch('/akun-saya', [ProfileController::class, 'update'])
-    ->name('user.akun.update');
+        ->name('user.akun.update');
 });
 
 // Route untuk versi route-based halaman transaksi
 Route::get('/profil/transaksi-page', [ProfileController::class, 'transaksiPage'])
-->middleware(['auth', 'verified'])
-->name('profil.transaksi.page');
-
+    ->middleware(['auth', 'verified'])
+    ->name('profil.transaksi.page');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/cart', [CartController::class,'index'])->name('cart.index');
-    Route::post('/cart/add', [CartController::class,'add'])->name('cart.add');
-    Route::patch('/cart/{id}', [CartController::class,'update'])->name('cart.update');
-    Route::delete('/cart/{id}', [CartController::class,'remove'])->name('cart.remove');
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{id}', [CartController::class, 'remove'])->name('cart.remove');
 });
-
-
 
 // Route::middleware(['auth'])->post(
 //     '/checkout/selected',
 //     [CheckoutController::class, 'selected']
 //     )->name('checkout.selected');
-    
-    Route::middleware(['auth'])->group(function () {
-        
-        Route::get('/wishlist', [WishlistController::class,'index'])
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/wishlist', [WishlistController::class, 'index'])
         ->name('wishlist.index');
-        
-    Route::post('/wishlist', [WishlistController::class,'store'])
-    ->name('wishlist.store');
 
-    Route::post('/wishlist/remove-selected', [WishlistController::class,'removeSelected'])
-    ->name('wishlist.removeSelected');
+    Route::post('/wishlist', [WishlistController::class, 'store'])
+        ->name('wishlist.store');
 
-    Route::post('/wishlist/move-to-cart', [WishlistController::class,'moveToCart'])
-    ->name('wishlist.moveToCart');
-    
-    Route::delete('/wishlist/{id}', [WishlistController::class,'destroy'])
-    ->name('wishlist.destroy');
+    Route::post('/wishlist/remove-selected', [WishlistController::class, 'removeSelected'])
+        ->name('wishlist.removeSelected');
+
+    Route::post('/wishlist/move-to-cart', [WishlistController::class, 'moveToCart'])
+        ->name('wishlist.moveToCart');
+
+    Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])
+        ->name('wishlist.destroy');
 });
 
 // Hapus atau keluarkan dari Route::prefix('bantuan')
@@ -308,14 +301,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/delete-selected', [NotificationController::class, 'deleteSelected'])
         ->name('notifications.deleteSelected');
 
-         Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
-Route::delete('/notifications/delete-all', [NotificationController::class, 'deleteAll'])->name('notifications.deleteAll');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+    Route::delete('/notifications/delete-all', [NotificationController::class, 'deleteAll'])->name('notifications.deleteAll');
 });
 
-    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])
-        ->name('notifications.destroy');
-
-       
+Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])
+    ->name('notifications.destroy');
 
 Route::get('/riwayat-pembelian', [RiwayatController::class, 'index'])->name('riwayat.pembelian');
 
@@ -324,26 +315,22 @@ Route::get('/riwayat-pembelian', [RiwayatController::class, 'index'])->name('riw
 // Route::delete('/pembayaran/{id}', [PembayaranController::class, 'destroy'])->name('pembayaran.destroy');
 Route::resource('pembayaran', PembayaranController::class)->only(['index', 'create', 'store', 'destroy']);
 Route::post('/payment/create', [PembayaranController::class, 'createPayment'])
-->name('payment.create');
+    ->name('payment.create');
 
 Route::post('/payment/callback', [PembayaranController::class, 'callback'])
-->name('payment.callback');
-
-
-
+    ->name('payment.callback');
 
 Route::post('/logout', function () {
     Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
+
     return redirect('/login');
 })->name('logout');
 
-
-
 // // ==================== ADMINN ==================== //
 Route::middleware(['auth', 'verified'])->group(function () {
-        Route::resource('admin/produk', AdminProdukController::class)
+    Route::resource('admin/produk', AdminProdukController::class)
         ->names('admin.produk')
         ->except(['show']);
     Route::resource('admin/kategori', KategoriProdukController::class)
@@ -351,27 +338,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except(['show']);
 });
 
-
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin/pesanan', [PesananController::class, 'index'])
         ->name('admin.pesanan.index');
     Route::post('/admin/orders/{id}/update-status', [AdminOrderController::class, 'updateStatus'])
         ->name('admin.orders.update');
 });
-    Route::get('/admin/penjualan-bulan-ini', [DashboardController::class, 'admin'])->name('penjualan.bulanini');
-    Route::get('/admin/produk-laris', [DashboardController::class, 'admin'])->name('produk.laris');
+Route::get('/admin/penjualan-bulan-ini', [DashboardController::class, 'admin'])->name('penjualan.bulanini');
+Route::get('/admin/produk-laris', [DashboardController::class, 'admin'])->name('produk.laris');
 
-    Route::middleware(['auth', 'verified'])->group(function () {
-
-        
-});
+Route::middleware(['auth', 'verified'])->group(function () {});
 
 Route::middleware(['auth', 'verified'])
     ->prefix('admin/produk')
     ->name('admin.produk.')
     ->group(function () {
 
-        Route::get('/laporan', 
+        Route::get('/laporan',
             [LaporanPenjualanController::class, 'index']
         )->name('laporan.index');
 
@@ -380,29 +363,36 @@ Route::middleware(['auth', 'verified'])
 Route::get('/admin/produk/laporan/export', [LaporanPenjualanController::class, 'export'])
     ->name('admin.produk.laporan.export');
 
-
-
 // ==================== SUPER ADMIN (WAJIB LOGIN) ==================== //
 Route::middleware(['auth'])->group(function () {
     // Dashboard Utama Super Admin
     Route::get('/dashboard/superadmin', [SuperAdminController::class, 'index'])
         ->name('dashboard.superadmin');
 
-    Route::prefix('superadmin')->group(function () {
-        Route::get('/kelola-kurir', [SuperAdminController::class, 'manageKurir'])->name('superadmin.kurir.index');
-        Route::post('/kelola-kurir/store', [SuperAdminController::class, 'storeKurir'])->name('superadmin.kurir.store');
-        Route::get('/kelola-kurir/edit/{id}', [SuperAdminController::class, 'editKurir'])->name('superadmin.kurir.edit');
-        Route::put('/kelola-kurir/update/{id}', [SuperAdminController::class, 'updateKurir'])->name('superadmin.kurir.update');
-        Route::delete('/kelola-kurir/delete/{id}', [SuperAdminController::class, 'destroyKurir'])->name('superadmin.kurir.destroy');
-    });
+// Manajemen Kurir (Grup Prefix superadmin)
+Route::prefix('superadmin')->name('superadmin.')->group(function () {
+    Route::get('/kelola-kurir', [SuperAdminController::class, 'manageKurir'])->name('kurir.index');
+    Route::post('/kelola-kurir/store', [SuperAdminController::class, 'storeKurir'])->name('kurir.store');
+    Route::get('/kelola-kurir/edit/{id}', [SuperAdminController::class, 'editKurir'])->name('kurir.edit');
+    Route::put('/kelola-kurir/update/{id}', [SuperAdminController::class, 'updateKurir'])->name('kurir.update');
+    Route::delete('/kelola-kurir/delete/{id}', [SuperAdminController::class, 'destroyKurir'])->name('kurir.destroy');
+    
+    // Sekarang rute ini otomatis bernama superadmin.kurir.nonaktifkan
+    Route::post('/kelola-kurir/nonaktifkan/{id}', [SuperAdminController::class, 'nonaktifkanKurir'])->name('kurir.nonaktifkan');
+    Route::post('/kelola-kurir/aktifkan/{id}', [SuperAdminController::class, 'aktifkanKurir'])->name('kurir.aktifkan');
+// Cari bagian ini di routes/web.php dan ubah jadi begini:
+Route::post('/kelola-kurir/update-status/{id}', [SuperAdminController::class, 'updateStatusDinamis'])->name('kurir.update-status');
+    Route::get('/kurir/sync', [SuperAdminController::class, 'sinkronisasiStatusKurir'])->name('kurir.sync');
+});
 
     // Manajemen Gaji
     Route::get('/gaji-admin', [GajiController::class, 'index'])->name('gaji.admin');
     Route::post('/gaji-admin/update/{id}', [GajiController::class, 'update'])->name('gaji.update');
     Route::post('/gaji-admin/store', [GajiController::class, 'store'])->name('gaji.store');
 
-    Route::post('/superadmin/kurir/{id}/aktifkan', [App\Http\Controllers\SuperAdmin\SuperAdminController::class, 'aktifkanKurir'])->name('superadmin.kurir.aktifkan');
     Route::get('/superadmin/absensi', [SuperAdminController::class, 'manageAbsensi'])->name('superadmin.absensi.index');
+    Route::get('/superadmin/absensi/export', [SuperAdminController::class, 'exportAbsensi'])
+        ->name('superadmin.absensi.export');
 
     // Manajemen Mart (Grup Prefix superadmin)
     Route::prefix('superadmin')->group(function () {
