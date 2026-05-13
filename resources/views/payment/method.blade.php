@@ -1,10 +1,11 @@
 <x-app-layout>
     @php
         $serviceType = request()->query('type', 'delivery');
-        $totalPrice  = (int) request()->query('amount', 0);
+        $totalPrice = (int) request()->query('amount', 0);
 
         if (!function_exists('formatRupiah')) {
-            function formatRupiah($angka) {
+            function formatRupiah($angka)
+            {
                 return 'Rp ' . number_format($angka, 0, ',', '.');
             }
         }
@@ -12,52 +13,53 @@
 
     <!DOCTYPE html>
     <html lang="id">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Metode Pembayaran</title>
 
-            <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Metode Pembayaran</title>
 
-            <style>
-                body {
-                    font-family: Inter, sans-serif;
-                    background: #ffffff;
-                }
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-                :root {
-                    --red-main: #dc2626;
-                    --red-hover: #b91c1c;
-                    --red-soft: #fee2e2;
-                    --red-border: #fecaca;
-                }
+        <style>
+            body {
+                font-family: Inter, sans-serif;
+                background: #ffffff;
+            }
 
-                .card-modern {
-                    background: #fff;
-                    border-radius: 28px;
-                    border: 1px solid rgba(0,0,0,0.05);
-                    box-shadow: 0 12px 30px rgba(0,0,0,0.04);
-                }
+            :root {
+                --red-main: #dc2626;
+                --red-hover: #b91c1c;
+                --red-soft: #fee2e2;
+                --red-border: #fecaca;
+            }
 
-                .method-active {
-                    border-color: var(--red-main) !important;
-                    background: var(--red-soft);
-                    box-shadow: 0 8px 24px rgba(220,38,38,.25);
-                }
+            .card-modern {
+                background: #fff;
+                border-radius: 28px;
+                border: 1px solid rgba(0, 0, 0, 0.05);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
+            }
 
-                .select-method-btn {
-                    transition: all .25s ease;
-                }
+            .method-active {
+                border-color: var(--red-main) !important;
+                background: var(--red-soft);
+                box-shadow: 0 8px 24px rgba(220, 38, 38, .25);
+            }
 
-                .select-method-btn:hover {
-                    transform: translateY(-2px);
-                }
-            </style>
-        </head>
+            .select-method-btn {
+                transition: all .25s ease;
+            }
 
-        <body x-data="{ selected: 'va_online' }">
+            .select-method-btn:hover {
+                transform: translateY(-2px);
+            }
+        </style>
+    </head>
+
+    <body x-data="{ selected: 'va_online' }">
 
         <x-slot name="header"></x-slot>
         <div class="max-w-3xl mx-auto py-8 px-4 pb-40">
@@ -67,14 +69,15 @@
                 <ol class="inline-flex items-center space-x-1">
                     <li><a href="/" class="hover:text-red-600">Home</a></li>
                     <li><span class="mx-2">/</span><a href="/checkout" class="hover:text-red-600">Checkout</a></li>
-                    <li><span class="mx-2">/</span><span class="font-semibold text-gray-900">Metode Pembayaran</span></li>
+                    <li><span class="mx-2">/</span><span class="font-semibold text-gray-900">Metode Pembayaran</span>
+                    </li>
                 </ol>
             </nav>
 
             {{-- Header --}}
             <div class="flex items-center gap-4 mb-8">
                 <a href="/checkout"
-                class="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 hover:bg-red-50 transition">
+                    class="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 hover:bg-red-50 transition">
                     <i class="fas fa-arrow-left text-red-600"></i>
                 </a>
                 <h1 class="text-3xl font-extrabold text-gray-900">Metode Pembayaran</h1>
@@ -92,16 +95,17 @@
                         Pembayaran Online
                     </h2>
 
-                    <div
-                        class="select-method-btn p-5 border-2 rounded-2xl cursor-pointer"
+                    <div class="select-method-btn p-5 border-2 rounded-2xl cursor-pointer"
                         :class="selected === 'va_online'
-                            ? 'method-active border-red-600'
-                            : 'border-red-200 bg-red-50/40'"
+                            ?
+                            'method-active border-red-600' :
+                            'border-red-200 bg-red-50/40'"
                         @click="selected='va_online'; document.getElementById('selected_method_hidden').value='va_online'">
 
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-red-100 text-red-600">
+                                <div
+                                    class="w-12 h-12 rounded-xl flex items-center justify-center bg-red-100 text-red-600">
                                     <i class="fas fa-university text-xl"></i>
                                 </div>
                                 <div>
@@ -109,8 +113,7 @@
                                     <p class="text-xs text-gray-500">BCA • Mandiri • BNI • BRI</p>
                                 </div>
                             </div>
-                            <i class="fas fa-check-circle text-red-600" 
-                            x-show="selected==='va_online'"></i>
+                            <i class="fas fa-check-circle text-red-600" x-show="selected==='va_online'"></i>
                         </div>
                     </div>
                 </div>
@@ -121,18 +124,19 @@
                         Tunai (Cash)
                     </h2>
 
-                    @if($serviceType === 'delivery')
+                    @if ($serviceType === 'delivery')
                         {{-- CASH ON DELIVERY --}}
-                        <div
-                            class="select-method-btn p-5 border-2 rounded-2xl cursor-pointer"
+                        <div class="select-method-btn p-5 border-2 rounded-2xl cursor-pointer"
                             :class="selected === 'cash_cod'
-                                ? 'method-active border-red-600'
-                                : 'border-red-200 bg-red-50/40'"
+                                ?
+                                'method-active border-red-600' :
+                                'border-red-200 bg-red-50/40'"
                             @click="selected='cash_cod'; document.getElementById('selected_method_hidden').value='cash_cod'">
 
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-red-100 text-red-600">
+                                    <div
+                                        class="w-12 h-12 rounded-xl flex items-center justify-center bg-red-100 text-red-600">
                                         <i class="fas fa-truck"></i>
                                     </div>
                                     <div>
@@ -141,22 +145,22 @@
                                     </div>
                                 </div>
 
-                                <i class="fas fa-check-circle text-red-600"
-                                x-show="selected === 'cash_cod'"></i>
+                                <i class="fas fa-check-circle text-red-600" x-show="selected === 'cash_cod'"></i>
                             </div>
                         </div>
                     @else
                         {{-- BAYAR DI KASIR --}}
-                        <div
-                            class="select-method-btn p-5 border-2 rounded-2xl cursor-pointer"
+                        <div class="select-method-btn p-5 border-2 rounded-2xl cursor-pointer"
                             :class="selected === 'cash_kasir'
-                                ? 'method-active border-red-600'
-                                : 'border-red-200 bg-red-50/40'"
+                                ?
+                                'method-active border-red-600' :
+                                'border-red-200 bg-red-50/40'"
                             @click="selected='cash_kasir'; document.getElementById('selected_method_hidden').value='cash_kasir'">
 
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-red-100 text-red-600">
+                                    <div
+                                        class="w-12 h-12 rounded-xl flex items-center justify-center bg-red-100 text-red-600">
                                         <i class="fas fa-cash-register"></i>
                                     </div>
                                     <div>
@@ -167,8 +171,7 @@
                                     </div>
                                 </div>
 
-                                <i class="fas fa-check-circle text-red-600"
-                                x-show="selected === 'cash_kasir'"></i>
+                                <i class="fas fa-check-circle text-red-600" x-show="selected === 'cash_kasir'"></i>
                             </div>
                         </div>
                     @endif
@@ -207,90 +210,85 @@
 
         {{-- MIDTRANS --}}
         <script src="https://app.sandbox.midtrans.com/snap/snap.js"
-                data-client-key="{{ config('services.midtrans.clientKey') }}"></script>
-                    
-            <script>
-                document.getElementById('payBtn').addEventListener('click', async () => {
+            data-client-key="{{ config('services.midtrans.clientKey') }}"></script>
 
-                    const method = document.getElementById('selected_method_hidden').value;
-                    const amount = document.getElementById('total_amount').value;
+        <script>
+            document.getElementById('payBtn').addEventListener('click', async () => {
 
-                    // Ambil data dari URL (SAMA seperti kode lama)
-                    const params   = new URLSearchParams(window.location.search);
-                    const type     = params.get('type') || 'delivery';
-                    const product  = params.get('product_id') || '';
-                    const qty      = params.get('qty') || '';
-                    const address  = params.get('address') || '';
+                const method = document.getElementById('selected_method_hidden').value;
+                const amount = document.getElementById('total_amount').value;
 
-                    const payBtn = document.getElementById('payBtn');
-                    payBtn.disabled = true;
-                    payBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+                // Ambil data dari URL (SAMA seperti kode lama)
+                const params = new URLSearchParams(window.location.search);
+                const type = params.get('type') || 'delivery';
+                const product = params.get('product_id') || '';
+                const qty = params.get('qty') || '';
+                const address = params.get('address') || '';
 
-                    // Metode pembayaran cash
-                    if (method.includes('cash')) {
-                        window.location.href =
-                            `/order/success?method=${method}&type=${type}&status=unpaid&amount=${amount}&product_id=${product}&qty=${qty}&address=${encodeURIComponent(address)}`;
-                        return;
-                    }
+                const payBtn = document.getElementById('payBtn');
+                payBtn.disabled = true;
+                payBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
 
-                    // Metode pembayaran online
-                    try {
-                        const res = await fetch("{{ route('payment.snap-product') }}", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                total_amount: amount,
-                                product_id: product,
-                                qty: qty
-                            })
-                        });
+                // Metode pembayaran cash
+                if (method.includes('cash')) {
+                    window.location.href =
+                        `/order/success?method=${method}&type=${type}&status=unpaid&amount=${amount}&product_id=${product}&qty=${qty}&address=${encodeURIComponent(address)}`;
+                    return;
+                }
 
-                        const data = await res.json();
+                // Metode pembayaran online
+                try {
+                    const res = await fetch("{{ route('payment.snap-product') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            total_amount: amount,
+                            product_id: product,
+                            qty: qty
+                        })
+                    });
 
-                        window.snap.pay(data.snap_token, {
-                            // onSuccess: () => {
-                            //     window.location.href =
-                            //         `/order/success?method=online&status=paid&amount=${amount}&product_id=${product}&qty=${qty}&address=${encodeURIComponent(address)}`;
-                            // },
-                            // onPending: () => {
-                            //     window.location.href =
-                            //         `/order/success?method=online&status=pending&amount=${amount}&product_id=${product}&qty=${qty}&address=${encodeURIComponent(address)}`;
-                            // },
-                            onSuccess: (result) => {
-                                window.location.href =
-                                    `/order/success?method=online
-                                    &status=paid
-                                    &amount=${amount}
-                                    &order_id=${result.order_id}`;
-                            },
-                            onPending: (result) => {
-                                window.location.href =
-                                    `/order/success?method=online
-                                    &status=pending
-                                    &amount=${amount}
-                                    &order_id=${result.order_id}`;
-                            },
-                            onError: () => {
-                                alert('Pembayaran gagal.');
-                                location.reload();
-                            },
-                            onClose: () => {
-                                payBtn.disabled = false;
-                                payBtn.innerHTML = 'Konfirmasi Pembayaran';
-                            }
-                        });
+                    const data = await res.json();
 
-                    } catch (e) {
-                        console.error(e);
-                        alert('Terjadi kesalahan sistem: ' + e.message);
-                        payBtn.disabled = false;
-                        payBtn.innerHTML = 'Konfirmasi Pembayaran';
-                    }
-                });
-            </script>
-        </body>
+                    window.snap.pay(data.snap_token, {
+                        // onSuccess: () => {
+                        //     window.location.href =
+                        //         `/order/success?method=online&status=paid&amount=${amount}&product_id=${product}&qty=${qty}&address=${encodeURIComponent(address)}`;
+                        // },
+                        // onPending: () => {
+                        //     window.location.href =
+                        //         `/order/success?method=online&status=pending&amount=${amount}&product_id=${product}&qty=${qty}&address=${encodeURIComponent(address)}`;
+                        // },
+                        onSuccess: (result) => {
+                            window.location.href =
+                                `/order/success?method=online&status=paid&amount=${amount}&order_id=${result.order_id}&payment_method=Midtrans%20Online&type=${type}&address=${encodeURIComponent(address)}`;
+                        },
+                        onPending: (result) => {
+                            window.location.href =
+                                `/order/success?method=online&status=pending&amount=${amount}&order_id=${result.order_id}&payment_method=Midtrans%20Online&type=${type}&address=${encodeURIComponent(address)}`;
+                        },
+                        onError: () => {
+                            alert('Pembayaran gagal.');
+                            location.reload();
+                        },
+                        onClose: () => {
+                            payBtn.disabled = false;
+                            payBtn.innerHTML = 'Konfirmasi Pembayaran';
+                        }
+                    });
+
+                } catch (e) {
+                    console.error(e);
+                    alert('Terjadi kesalahan sistem: ' + e.message);
+                    payBtn.disabled = false;
+                    payBtn.innerHTML = 'Konfirmasi Pembayaran';
+                }
+            });
+        </script>
+    </body>
+
     </html>
 </x-app-layout>

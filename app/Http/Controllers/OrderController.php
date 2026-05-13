@@ -66,20 +66,19 @@ class OrderController extends Controller
             $delivery_fee = $serviceType === 'delivery' ? 3000 : 0;
             $service_fee = 2000;
 
-            // alamat pengiriman
-            if ($serviceType === 'delivery') {
-                $pesanan->alamat_pengantaran = $customAddress;
-            }
-
             // metode pembayaran
             if ($isToken) {
                 $pesanan->metode_pembayaran = 'Midtrans Online';
             } else {
-                $pesanan->metode_pembayaran = $request->query(
-                    'payment_method',
-                    'Cash / Tunai'
-                );
+                $pesanan->metode_pembayaran = $request->query('payment_method', 'Cash / Tunai');
             }
+
+            // alamat pengiriman
+            if ($serviceType === 'delivery') {
+                $pesanan->alamat_pengantaran = $customAddress;
+            }
+            Log::info('Metode disimpan: ' . $pesanan->metode_pembayaran);
+Log::info('Query payment_method: ' . $request->query('payment_method'));
 
             $pesanan->save();
 

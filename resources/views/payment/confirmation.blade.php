@@ -14,7 +14,7 @@
                 ['id' => 'mandiri-va', 'name' => 'Bank Mandiri Virtual Account', 'type' => 'VA', 'bank' => 'Mandiri'],
                 ['id' => 'bca-va', 'name' => 'Bank BCA Virtual Account', 'type' => 'VA', 'bank' => 'BCA'],
                 ['id' => 'bri-va', 'name' => 'Bank BRI Virtual Account', 'type' => 'VA', 'bank' => 'BRI'],
-            ]
+            ],
         ],
         'e_wallet' => [
             'title' => 'E-Wallet',
@@ -22,15 +22,15 @@
                 ['id' => 'gopay', 'name' => 'GoPay', 'type' => 'QR'],
                 ['id' => 'ovo', 'name' => 'OVO', 'type' => 'QR'],
                 ['id' => 'dana', 'name' => 'Dana', 'type' => 'QR'],
-            ]
+            ],
         ],
         'cash' => [
             'title' => 'Tunai',
             'methods' => [
                 ['id' => 'cod', 'name' => 'Cash On Delivery (COD)', 'type' => 'CASH'],
                 ['id' => 'cash-counter', 'name' => 'Cash (Bayar di Kasir)', 'type' => 'CASH'],
-            ]
-        ]
+            ],
+        ],
     ];
 
     // Tambahkan status yang lebih dinamis untuk tampilan
@@ -127,7 +127,7 @@
     <div class="pt-20"></div> {{-- Tambahan padding agar footer terlihat di atas konten --}}
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('payment-method-form');
             const confirmButton = document.getElementById('confirm-button');
             const radioButtons = form.querySelectorAll('input[name="selected_method"]');
@@ -148,46 +148,7 @@
             });
 
             // 2. Fungsi Utama Pembayaran (Dijalankan saat tombol diklik)
-            window.payWithMidtrans = function () {
-                const selectedRadio = form.querySelector('input[name="selected_method"]:checked');
-                const paymentType = selectedRadio.getAttribute('data-type');
-
-                // JIKA PILIH TUNAI/CASH
-                if (paymentType === 'CASH') {
-                    // Tambahkan token CSRF secara manual jika ingin submit via JS
-                    const csrfToken = document.querySelector('input[name="_token"]').value;
-
-                    // Buat form bayangan atau langsung submit form yang ada
-                    // Pastikan route 'payment.process' menangani logika penyimpanan DB untuk CASH
-                    form.submit();
-                    return;
-                }
-
-                // JIKA PILIH DIGITAL (VA/QR)
-                const snapToken = "{{ $snapToken ?? '' }}";
-
-if (snapToken && snapToken !== "") {
-window.snap.pay(snapToken, {
-    onSuccess: function (result) {
-        // Ganti URL agar mengarah ke route success dengan parameter lengkap
-        window.location.href = "{{ route('order.success') }}?status=paid" + 
-                               "&order_id=" + result.order_id + 
-                               "&amount=" + result.gross_amount +
-                               "&product_id={{ $productId ?? '' }}" + 
-                               "&qty={{ $qty ?? 1 }}";
-    },
-    onPending: function (result) {
-        window.location.href = "{{ route('order.success') }}?status=pending" + 
-                               "&order_id=" + result.order_id + 
-                               "&amount=" + result.gross_amount +
-                               "&product_id={{ $productId ?? '' }}" + 
-                               "&qty={{ $qty ?? 1 }}";
-    }
-});
-                } else {
-                    alert("Snap Token tidak tersedia. Silakan muat ulang halaman.");
-                }
-            }; window.payWithMidtrans = function () {
+            window.payWithMidtrans = function() {
                 const selectedRadio = form.querySelector('input[name="selected_method"]:checked');
                 const paymentType = selectedRadio.getAttribute('data-type');
 
@@ -207,10 +168,50 @@ window.snap.pay(snapToken, {
 
                 if (snapToken && snapToken !== "") {
                     window.snap.pay(snapToken, {
-                        onSuccess: function (result) {
+                        onSuccess: function(result) {
+                            // Ganti URL agar mengarah ke route success dengan parameter lengkap
+                            window.location.href = "{{ route('order.success') }}?status=paid" +
+                                "&order_id=" + result.order_id +
+                                "&amount=" + result.gross_amount +
+                                "&product_id={{ $productId ?? '' }}" +
+                                "&qty={{ $qty ?? 1 }}";
+                        },
+                        onPending: function(result) {
+                            window.location.href = "{{ route('order.success') }}?status=pending" +
+                                "&order_id=" + result.order_id +
+                                "&amount=" + result.gross_amount +
+                                "&product_id={{ $productId ?? '' }}" +
+                                "&qty={{ $qty ?? 1 }}";
+                        }
+                    });
+                } else {
+                    alert("Snap Token tidak tersedia. Silakan muat ulang halaman.");
+                }
+            };
+            window.payWithMidtrans = function() {
+                const selectedRadio = form.querySelector('input[name="selected_method"]:checked');
+                const paymentType = selectedRadio.getAttribute('data-type');
+
+                // JIKA PILIH TUNAI/CASH
+                if (paymentType === 'CASH') {
+                    // Tambahkan token CSRF secara manual jika ingin submit via JS
+                    const csrfToken = document.querySelector('input[name="_token"]').value;
+
+                    // Buat form bayangan atau langsung submit form yang ada
+                    // Pastikan route 'payment.process' menangani logika penyimpanan DB untuk CASH
+                    form.submit();
+                    return;
+                }
+
+                // JIKA PILIH DIGITAL (VA/QR)
+                const snapToken = "{{ $snapToken ?? '' }}";
+
+                if (snapToken && snapToken !== "") {
+                    window.snap.pay(snapToken, {
+                        onSuccess: function(result) {
                             window.location.href = "/order/status/{{ $orderId }}";
                         },
-                        onPending: function (result) {
+                        onPending: function(result) {
                             window.location.href = "/order/status/{{ $orderId }}";
                         },
                         // ... dst

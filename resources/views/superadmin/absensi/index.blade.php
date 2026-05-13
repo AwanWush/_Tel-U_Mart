@@ -30,21 +30,6 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {{-- QR CODE CONFIGURATION --}}
                 <div class="lg:col-span-1 space-y-6">
-                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 text-center">
-                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">QR Code Aktif</h3>
-                        <div class="bg-gray-50 p-6 rounded-3xl border-2 border-dashed border-gray-200 inline-block mb-6">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TJT-TELKOM-77"
-                                alt="QR Absensi" class="w-48 h-48 mx-auto">
-                        </div>
-                        <button onclick="window.print()"
-                            class="w-full bg-black text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gray-800 transition-all shadow-lg">
-                            <i class="fas fa-print mr-2"></i> Cetak QR Code
-                        </button>
-                        <p class="text-[10px] text-gray-400 mt-4 leading-relaxed uppercase font-bold">
-                            QR ini berlaku untuk semua driver di area Telkom University.
-                        </p>
-                    </div>
-
                     {{-- SUMMARY CARD --}}
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 space-y-4">
                         <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Ringkasan Hari Ini</h3>
@@ -80,6 +65,22 @@
                             <span class="font-black text-gray-700 text-xl">{{ $absensis->count() }}</span>
                         </div>
                     </div>
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 text-center">
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">QR Code Aktif</h3>
+                        <div class="bg-gray-50 p-6 rounded-3xl border-2 border-dashed border-gray-200 inline-block mb-6">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TJT-TELKOM-77"
+                                alt="QR Absensi" class="w-48 h-48 mx-auto">
+                        </div>
+                        <button onclick="window.print()"
+                            class="w-full bg-black text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gray-800 transition-all shadow-lg">
+                            <i class="fas fa-print mr-2"></i> Cetak QR Code
+                        </button>
+                        <p class="text-[10px] text-gray-400 mt-4 leading-relaxed uppercase font-bold">
+                            QR ini berlaku untuk semua driver di area Telkom University.
+                        </p>
+                    </div>
+
+                    
                 </div>
 
                 {{-- ATTENDANCE LOG TABLE --}}
