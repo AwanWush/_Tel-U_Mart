@@ -16,6 +16,16 @@ class DriverController extends Controller
 {
     public function index(Request $request)
     {
+        $user = $request->user();
+
+        // Proteksi: Jika status nonaktif, kembalikan data kosong atau pesan error
+        if ($user->status !== 'aktif') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akun Anda dinonaktifkan. Silakan hubungi Super Admin.',
+                'data' => [],
+            ], 403);
+        }
         $driverId = $request->user()->id;
 
         $pesanan = RiwayatPembelian::with([
@@ -127,6 +137,13 @@ class DriverController extends Controller
 
     public function claim(Request $request, $id)
     {
+        $user = $request->user();
+        if ($user->status !== 'aktif') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal! Akun Anda sedang dinonaktifkan.',
+            ], 403);
+        }
         $driverId = $request->user()->id;
         $pesanan = RiwayatPembelian::findOrFail($id);
 
@@ -349,7 +366,7 @@ class DriverController extends Controller
                         }
                     }
                     // Fallback ke mart_id lokasi user jika produk tidak ketemu
-                    if (!isset($namaMartDariDB) || !$namaMartDariDB) {
+                    if (! isset($namaMartDariDB) || ! $namaMartDariDB) {
                         $martId = $item->user->lokasi->mart_id ?? null;
                         $namaMart = ($martId && isset($martKoordinat[$martId]))
                             ? $martKoordinat[$martId]['nama']
@@ -361,13 +378,13 @@ class DriverController extends Controller
                 $jarakText = $item->jarak ?? null;
                 $durasiText = $item->durasi ?? null;
 
-                if (!$jarakText || !$durasiText) {
+                if (! $jarakText || ! $durasiText) {
                     $lat = $item->user->lokasi->latitude ?? null;
                     $lng = $item->user->lokasi->longitude ?? null;
                     $martId = $item->user->lokasi->mart_id ?? null;
 
                     // Untuk galon, pakai mart_id = 1 (TJ Mart Putra) jika lokasi tidak punya mart_id
-                    if ($item->tipe_layanan === 'galon' && !$martId) {
+                    if ($item->tipe_layanan === 'galon' && ! $martId) {
                         $martId = 1;
                     }
 
@@ -438,13 +455,13 @@ class DriverController extends Controller
         }
 
         Absensi::create([
-            'user_id'         => auth()->id(),
-            'jam_masuk'       => $now->toDateTimeString(),
+            'user_id' => auth()->id(),
+            'jam_masuk' => $now->toDateTimeString(),
             'koordinat_absen' => $request->koordinat,
         ]);
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Berhasil absen masuk!',
         ]);
     }
@@ -503,11 +520,11 @@ class DriverController extends Controller
             ? 3000 : 0;
 
         $pesanan->update([
-            'status_antar'  => 'Selesai',
-            'status'        => 'Lunas',
+            'status_antar' => 'Selesai',
+            'status' => 'Lunas',
             'ongkir_driver' => $ongkirDriver,
-            'jarak'         => $request->input('jarak'),
-            'durasi'        => $request->input('durasi'),
+            'jarak' => $request->input('jarak'),
+            'durasi' => $request->input('durasi'),
         ]);
 
         if ($pesanan->user && $pesanan->user->email) {

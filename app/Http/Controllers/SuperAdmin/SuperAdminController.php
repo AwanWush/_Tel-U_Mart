@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SuperAdmin;
 
+use App\Exports\AbsensiExport;
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use App\Models\Mart;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SuperAdminController extends Controller
 {
@@ -42,14 +44,64 @@ class SuperAdminController extends Controller
         ));
     }
 
-    public function manageAbsensi()
+    public function manageAbsensi(Request $request)
     {
-        $absensis = Absensi::with('user')
-            ->whereDate('created_at', Carbon::today())
-            ->orderBy('jam_masuk', 'desc')
-            ->get();
+        $filter = $request->get('filter', 'hari_ini');
+        $dari = $request->get('dari');
+        $sampai = $request->get('sampai');
 
-        return view('superadmin.absensi.index', compact('absensis'));
+        $query = Absensi::with('user');
+
+        switch ($filter) {
+            case 'seminggu':
+                $dari = Carbon::now()->subDays(6)->format('Y-m-d');
+                $sampai = Carbon::now()->format('Y-m-d');
+                break;
+
+            case 'sebulan':
+                $dari = Carbon::now()->startOfMonth()->format('Y-m-d');
+                $sampai = Carbon::now()->endOfMonth()->format('Y-m-d');
+                break;
+
+            case 'custom':
+                break;
+
+            default:
+                $filter = 'hari_ini';
+                $dari = Carbon::today()->format('Y-m-d');
+                $sampai = Carbon::today()->format('Y-m-d');
+                break;
+        }
+
+        if ($filter !== 'custom' || ($dari && $sampai)) {
+            $query->whereBetween('created_at', [
+                Carbon::parse($dari)->startOfDay(),
+                Carbon::parse($sampai)->endOfDay(),
+            ]);
+        }
+
+        $absensis = $query->orderBy('created_at', 'desc')->get();
+
+        return view('superadmin.absensi.index', [
+            'absensis' => $absensis,
+            'activeFilter' => $filter,
+            'dari' => $dari,
+            'sampai' => $sampai,
+        ]);
+    }
+
+    public function exportAbsensi(Request $request)
+    {
+        $filter = $request->get('filter', 'hari_ini');
+        $dari = $request->get('dari');
+        $sampai = $request->get('sampai');
+
+        $filename = 'absensi_'.$filter.'_'.now()->format('Ymd_His').'.xlsx';
+
+        return Excel::download(
+            new AbsensiExport($filter, $dari, $sampai),
+            $filename
+        );
     }
 
     public function manageMart()
@@ -299,5 +351,32 @@ class SuperAdminController extends Controller
         }
 
         return redirect()->back()->with('success', 'Status kurir telah diperbarui otomatis.');
+    }
+
+    public function nonaktifkanKurir($id)
+    {
+        $user = User::findOrFail($id);
+        // Ubah status jadi nonaktif
+        $user->update(['status' => 'nonaktif']);
+
+        return redirect()->back()->with('success', 'Akun Kurir '.$user->name.' telah dinonaktifkan.');
+    }
+
+    public function aktifkanKurir($id)
+    {
+        $user = User::findOrFail($id);
+        // Ubah status jadi aktif kembali
+        $user->update(['status' => 'aktif']);
+
+        return redirect()->back()->with('success', 'Akun Kurir '.$user->name.' telah diaktifkan kembali.');
+    }
+
+    public function updateStatusDinamis(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $user->status = $request->status;
+        $user->save();
+
+        return redirect()->back()->with('success', 'Status '.$user->name.' berhasil diubah menjadi '.$request->status);
     }
 }

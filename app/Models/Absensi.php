@@ -17,7 +17,6 @@ class Absensi extends Model
         'user_id',
         'jam_masuk',
         'jam_pulang',
-        'status',
         'koordinat_absen',
     ];
 

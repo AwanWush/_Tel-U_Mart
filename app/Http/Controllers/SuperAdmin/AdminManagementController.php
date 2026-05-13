@@ -60,7 +60,6 @@ class AdminManagementController extends Controller
         return back()->with('success', 'Lokasi tugas admin berhasil diperbarui.');
     }
 
-    // Fitur Tambahan: Toggle Aktif/Nonaktif Admin
     public function toggleStatus($id)
     {
         $user = DB::table('users')->where('id', $id)->first();

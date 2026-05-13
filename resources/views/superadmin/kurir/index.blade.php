@@ -71,18 +71,27 @@
                                     </div>
                                 </td>
 
-                                {{-- LOGIKA STATUS AKUN --}}
                                 <td class="p-6 text-center">
-                                    @if ($kurir->status == 'aktif')
-                                        <span
-                                            class="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black uppercase rounded-full">Aktif</span>
-                                    @else
-                                        <div class="flex flex-col items-center">
-                                            <span
-                                                class="px-3 py-1 bg-red-100 text-red-700 text-[10px] font-black uppercase rounded-full">Nonaktif</span>
-                                            <span class="text-[9px] text-red-400 font-bold mt-1">Mangkir 3 Hari</span>
-                                        </div>
-                                    @endif
+                                    {{-- Form tersembunyi untuk proses update --}}
+                                    <form id="form-status-{{ $kurir->id }}"
+                                        action="{{ route('superadmin.kurir.update-status', $kurir->id) }}"
+                                        method="POST" class="hidden">
+                                        @csrf
+                                        <input type="hidden" name="status" id="input-status-{{ $kurir->id }}">
+                                    </form>
+
+                                    {{-- Dropdown Status --}}
+                                    <select id="select-status-{{ $kurir->id }}"
+                                        onchange="confirmStatusChange(this, {{ $kurir->id }}, '{{ $kurir->status }}')"
+                                        class="text-[10px] font-black uppercase rounded-full px-3 py-1 border-none cursor-pointer focus:ring-0 transition-all
+        {{ trim($kurir->status) == 'aktif' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+
+                                        <option value="aktif" {{ trim($kurir->status) == 'aktif' ? 'selected' : '' }}>
+                                            Aktif</option>
+                                        <option value="nonaktif"
+                                            {{ trim($kurir->status) == 'nonaktif' ? 'selected' : '' }}>Nonaktif
+                                        </option>
+                                    </select>
                                 </td>
 
                                 <td class="p-6 text-gray-600 font-medium">{{ $kurir->email }}</td>
@@ -100,36 +109,45 @@
                                 <td class="p-6 text-gray-600 font-medium font-mono">
                                     {{ $kurir->admin->nomor_rekening ?? '-' }}
                                 </td>
+
+                                {{-- Kolom Aksi: Semua tombol kontrol ada di sini --}}
                                 <td class="p-6 text-center">
                                     <div class="flex items-center justify-center gap-3">
 
-                                        {{-- LOGIKA TOMBOL AKTIFKAN KEMBALI --}}
+                                        {{-- Tombol Toggle Status --}}
                                         @if ($kurir->status == 'nonaktif')
                                             <form action="{{ route('superadmin.kurir.aktifkan', $kurir->id) }}"
-                                                method="POST">
+                                                method="POST" class="inline">
                                                 @csrf
                                                 <button type="submit"
-                                                    class="text-orange-500 hover:text-orange-700 transition"
+                                                    class="text-emerald-500 hover:text-emerald-700 transition"
                                                     title="Aktifkan Kembali">
                                                     <i class="fas fa-power-off"></i>
                                                 </button>
                                             </form>
+                                        @else
+                                            <form action="{{ route('superadmin.kurir.nonaktifkan', $kurir->id) }}"
+                                                method="POST" class="inline"
+                                                onsubmit="return confirm('Apakah Anda yakin akan menonaktifkan akun kurir {{ $kurir->name }}? Driver ini tidak akan bisa menerima pesanan lagi.')">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="text-orange-500 hover:text-orange-700 transition"
+                                                    title="Nonaktifkan">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            </form>
                                         @endif
 
+                                        {{-- Tombol Edit --}}
                                         <button type="button"
-                                            onclick="bukaModalEdit(
-                                    {{ $kurir->id }},
-                                    '{{ addslashes($kurir->name) }}',
-                                    '{{ $kurir->email }}',
-                                    '{{ $kurir->no_telp }}',
-                                    '{{ $kurir->admin->nama_bank ?? '' }}',
-                                    '{{ $kurir->admin->nomor_rekening ?? '' }}'
-                                )"
+                                            onclick="bukaModalEdit({{ $kurir->id }}, '{{ addslashes($kurir->name) }}', '{{ $kurir->email }}', '{{ $kurir->no_telp }}', '{{ $kurir->admin->nama_bank ?? '' }}', '{{ $kurir->admin->nomor_rekening ?? '' }}')"
                                             class="text-blue-500 hover:text-blue-700 transition">
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
+
+                                        {{-- Tombol Hapus --}}
                                         <form action="{{ route('superadmin.kurir.destroy', $kurir->id) }}"
-                                            method="POST" onsubmit="return confirm('Hapus kurir ini?')">
+                                            method="POST" class="inline" onsubmit="return confirm('Hapus kurir ini?')">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="text-red-500 hover:text-red-700 transition">
                                                 <i class="fas fa-trash-alt"></i>
@@ -349,5 +367,30 @@
         modalEdit.addEventListener('click', function(e) {
             if (e.target === modalEdit) modalEdit.classList.add('hidden');
         });
+
+        function confirmStatusChange(selectElement, id, currentStatus) {
+            const newStatus = selectElement.value;
+
+            // Jika status tidak berubah, jangan lakukan apa-apa
+            if (newStatus === currentStatus) return;
+
+            let confirmAction = true;
+
+            // Jika mau menonaktifkan, kasih dialog babi ini
+            if (newStatus === 'nonaktif') {
+                confirmAction = confirm(
+                    "Apakah Anda yakin akan menonaktifkan akun kurir ini? Driver ini tidak akan bisa menerima pesanan lagi."
+                );
+            }
+
+            if (confirmAction) {
+                // Set value ke form tersembunyi lalu submit
+                document.getElementById('input-status-' + id).value = newStatus;
+                document.getElementById('form-status-' + id).submit();
+            } else {
+                // Balikin lagi dropdown ke status semula kalau user klik 'Cancel'
+                selectElement.value = currentStatus;
+            }
+        }
     </script>
 </x-app-layout>
