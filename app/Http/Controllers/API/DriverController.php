@@ -293,12 +293,14 @@ class DriverController extends Controller
         $saldoHariIni = RiwayatPembelian::where('kurir_id', $user->id)
             ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
             ->where('ongkir_driver', '>', 0)
+            ->where('id_transaksi', 'not like', 'REWARD-%')
             ->whereDate('updated_at', Carbon::today())
             ->sum('ongkir_driver');
 
         $pesananHariIni = RiwayatPembelian::where('kurir_id', $user->id)
             ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
             ->where('ongkir_driver', '>', 0)
+            ->where('id_transaksi', 'not like', 'REWARD-%')
             ->whereDate('updated_at', Carbon::today())
             ->count();
 
@@ -337,9 +339,31 @@ class DriverController extends Controller
             ->where('kurir_id', $user->id)
             ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba', 'dibatalkan'])
             ->orderBy('updated_at', 'desc')
-            ->select('id', 'user_id', 'total_harga', 'status_antar', 'created_at', 'updated_at', 'alamat_pengantaran', 'metode_pembayaran', 'tipe_layanan', 'jarak', 'durasi')
+            // FIX: tambah id_transaksi dan ongkir_driver agar row reward bisa dideteksi di map()
+            ->select('id', 'user_id', 'id_transaksi', 'ongkir_driver', 'total_harga', 'status_antar', 'created_at', 'updated_at', 'alamat_pengantaran', 'metode_pembayaran', 'tipe_layanan', 'jarak', 'durasi')
             ->get()
             ->map(function ($item) use ($martKoordinat) {
+
+                // FIX: early return untuk row bonus reward — skip logika alamat/mart yang butuh relasi user
+                if (str_starts_with($item->id_transaksi ?? '', 'REWARD-')) {
+                    return [
+                        'id'             => $item->id,
+                        'id_transaksi'   => $item->id_transaksi,
+                        'total_harga'    => 0,
+                        'ongkir'         => 300000,
+                        'biaya_layanan'  => 0,
+                        'status_antar'   => $item->status_antar,
+                        'created_at'     => $item->created_at,
+                        'updated_at'     => $item->updated_at,
+                        'alamat_display' => 'Bonus Reward Bulanan',
+                        'nama_mart'      => '-',
+                        'jarak'          => '-',
+                        'durasi'         => '-',
+                        'user'           => null,
+                        'details'        => [],
+                    ];
+                }
+
                 $alamatDariKolom = $item->alamat_pengantaran ?? null;
                 $gedung = $item->user->lokasi->nama_lokasi ?? $item->user->alamat_gedung ?? '-';
                 $kamar = $item->user->nomor_kamar ?? '-';
@@ -408,6 +432,7 @@ class DriverController extends Controller
 
                 return [
                     'id' => $item->id,
+                    'id_transaksi' => $item->id_transaksi,
                     'total_harga' => $item->total_harga,
                     'status_antar' => $item->status_antar,
                     'created_at' => $item->created_at,
@@ -578,6 +603,92 @@ class DriverController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $data,
+        ]);
+    }
+
+    public function rewardStatus(Request $request)
+    {
+        $user = $request->user();
+        $target = 150;
+
+        $pesananBulanIni = RiwayatPembelian::where('kurir_id', $user->id)
+            ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
+            ->where('ongkir_driver', '>', 0)
+            ->whereYear('updated_at', Carbon::now()->year)
+            ->whereMonth('updated_at', Carbon::now()->month)
+            ->count();
+
+        // Cek apakah sudah klaim reward bulan ini
+        // (ditandai dengan row reward di riwayat_pembelian dengan id_transaksi = 'REWARD-bulan-tahun')
+        $rewardKey = 'REWARD-' . Carbon::now()->format('m-Y');
+        $sudahKlaim = RiwayatPembelian::where('kurir_id', $user->id)
+            ->where('id_transaksi', $rewardKey)
+            ->exists();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'pesanan_bulan_ini' => $pesananBulanIni,
+                'target'            => $target,
+                'sudah_klaim'       => $sudahKlaim,
+                'bisa_klaim'        => !$sudahKlaim && $pesananBulanIni >= $target,
+            ],
+        ]);
+    }
+
+    public function rewardKlaim(Request $request)
+    {
+        $user = $request->user();
+        $target = 150;
+
+        $pesananBulanIni = RiwayatPembelian::where('kurir_id', $user->id)
+            ->whereIn('status_antar', ['selesai', 'Selesai', 'tiba', 'Tiba'])
+            ->where('ongkir_driver', '>', 0)
+            ->whereYear('updated_at', Carbon::now()->year)
+            ->whereMonth('updated_at', Carbon::now()->month)
+            ->count();
+
+        $rewardKey = 'REWARD-' . Carbon::now()->format('m-Y');
+        $sudahKlaim = RiwayatPembelian::where('kurir_id', $user->id)
+            ->where('id_transaksi', $rewardKey)
+            ->exists();
+
+        if ($sudahKlaim) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Reward bulan ini sudah diklaim.',
+            ], 422);
+        }
+
+        if ($pesananBulanIni < $target) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Belum mencapai target pesanan.',
+            ], 422);
+        }
+
+        // Insert row bonus ke riwayat_pembelian
+        RiwayatPembelian::create([
+            'user_id'          => $user->id,
+            'kurir_id'         => $user->id,
+            'id_transaksi'     => $rewardKey,
+            'total_harga'      => 0,
+            'ongkir_driver'    => 300000,
+            'status'           => 'Lunas',
+            'status_antar'     => 'selesai',
+            'metode_pembayaran'=> 'Reward',
+            'tipe_layanan'     => 'delivery',
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Reward Rp300.000 berhasil diklaim!',
+            'data'    => [
+                'pesanan_bulan_ini' => $pesananBulanIni,
+                'target'            => $target,
+                'sudah_klaim'       => true,
+                'bisa_klaim'        => false,
+            ],
         ]);
     }
 }
